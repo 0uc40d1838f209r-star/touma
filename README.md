@@ -37,9 +37,20 @@ npm run dev
    VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
    ```
 
-5. `npm run dev` を再起動すると、ログイン画面が表示されます。各スタッフは「アカウントを新規作成する」からメールアドレスで登録してください(確認メールのリンクを開いてからログイン)
+5. `npm run dev` を再起動すると、ID とパスワードのログイン画面が表示されます
 
-> メンバーを限定したい場合は、Supabase ダッシュボードの **Authentication → Sign In / Up** で「Allow new users to sign up」をオフにし、管理者が **Authentication → Users → Add user** で招待する運用にしてください。
+## スタッフアカウントの発行(管理者の作業)
+
+ログインは **ID + パスワード** 方式です。アカウントは管理者が Supabase ダッシュボードで発行します:
+
+1. **Authentication → Users** を開き、右上の **Add user → Create new user** をクリック
+2. **Email** に `ID@staff.eigyo-map.local` の形式で入力(例: 山田さんの ID を `yamada` にするなら `yamada@staff.eigyo-map.local`)
+3. **Password** にそのスタッフ用のパスワードを入力
+4. **Auto Confirm User** に必ずチェックを入れて作成
+
+スタッフには「ID(例: yamada)とパスワード」を伝えるだけで OK。アプリ側が自動的に `@staff.eigyo-map.local` を補って認証します。
+
+> 部外者の登録を防ぐため、**Authentication → Sign In / Up** の「Allow new users to sign up」はオフにしておくことを推奨します(アプリに新規登録機能はないので、オフにしても支障ありません)。
 
 ## 公開(デプロイ)
 
