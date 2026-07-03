@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+.facility-pin {
+  background: transparent;
+  border: none;
+}
+
+.leaflet-container {
+  font: inherit;
+}
