@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Contact, Facility, FacilityStatus, Visit } from "../types";
-import { FACILITY_STATUSES, FACILITY_TYPES } from "../types";
+import type { Contact, Facility, FacilityStatus, Staff, Visit, VisitOutcome } from "../types";
+import { FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, OUTCOMES } from "../types";
 import { store } from "../lib/store";
 import { supabase } from "../lib/supabaseStore";
 
@@ -206,80 +206,189 @@ function ContactsTab({ facilityId, contacts, onChanged }: { facilityId: string; 
 }
 
 function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visits: Visit[]; onChanged: () => void }) {
-  const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null); // "new" = 新規追加
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(today);
   const [staff, setStaff] = useState(() => localStorage.getItem("touma-staff-name") ?? "");
   const [station, setStation] = useState(() => localStorage.getItem("touma-station-name") ?? "");
+  const [outcome, setOutcome] = useState<VisitOutcome>("greeting");
   const [memo, setMemo] = useState("");
+  const [roster, setRoster] = useState<Staff[]>([]);
 
-  // 訪問者名が未設定ならログイン ID を初期値にする
   useEffect(() => {
-    if (staff || !supabase) return;
+    store.listStaff().then(setRoster);
+  }, []);
+
+  // 初回のみ: 訪問者名が未設定ならログイン ID を初期値にする
+  useEffect(() => {
+    if (!supabase) return;
     supabase.auth.getUser().then(({ data }) => {
       const id = data.user?.email?.split("@")[0];
       if (id) setStaff((prev) => prev || id);
     });
-  }, [staff]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const stations = [...new Set(roster.map((s) => s.station))];
+  const members = roster.filter((s) => s.station === station).map((s) => s.name);
+
+  const openNew = () => {
+    setEditingId("new");
+    setDate(today);
+    setOutcome("greeting");
+    setMemo("");
+  };
+  const openEdit = (v: Visit) => {
+    setEditingId(v.id);
+    setDate(v.visited_on);
+    setStation(v.station_name);
+    setStaff(v.staff_name);
+    setOutcome(v.outcome ?? "greeting");
+    setMemo(v.memo);
+  };
 
   const submit = async () => {
-    if (!date) return;
+    if (!date || !editingId) return;
     localStorage.setItem("touma-staff-name", staff);
     localStorage.setItem("touma-station-name", station);
-    await store.createVisit({
+    const data = {
       facility_id: facilityId,
       visited_on: date,
       staff_name: staff,
       station_name: station,
+      outcome,
       memo,
-    });
+    };
+    if (editingId === "new") await store.createVisit(data);
+    else await store.updateVisit(editingId, data);
     setMemo("");
     setDate(today);
-    setAdding(false);
+    setEditingId(null);
     onChanged();
+  };
+
+  // 名簿があればプルダウン、無ければ手入力 (プルダウンでも「手入力」を選べる)
+  const selectOrInput = (
+    value: string,
+    onChange: (v: string) => void,
+    options: string[],
+    placeholder: string,
+  ) => {
+    if (options.length === 0 || (value !== "" && !options.includes(value))) {
+      return (
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm"
+        />
+      );
+    }
+    return (
+      <select
+        value={options.includes(value) ? value : ""}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm"
+      >
+        <option value="">{placeholder}を選択</option>
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+      </select>
+    );
   };
 
   return (
     <div className="space-y-3">
-      {adding ? (
+      {editingId ? (
         <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
-          <input value={station} onChange={(e) => setStation(e.target.value)} placeholder="拠点名 (例: ○○ステーション)" className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
-          <input value={staff} onChange={(e) => setStaff(e.target.value)} placeholder="訪問者名" className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
+          {selectOrInput(
+            station,
+            (v) => {
+              setStation(v);
+              // 拠点を変えたら訪問者の選択をリセット (前の拠点のスタッフが残らないように)
+              if (v !== station) setStaff("");
+            },
+            stations,
+            "拠点",
+          )}
+          {selectOrInput(staff, setStaff, members, "訪問者")}
+          <div>
+            <div className="mb-1 text-xs font-medium text-gray-500">成果</div>
+            <div className="flex flex-wrap gap-1.5">
+              {(Object.keys(OUTCOMES) as VisitOutcome[]).map((o) => (
+                <button
+                  key={o}
+                  type="button"
+                  onClick={() => setOutcome(o)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+                    outcome === o ? OUTCOMES[o].badge + " ring-2 ring-blue-500" : "bg-white text-gray-500 border border-gray-300"
+                  }`}
+                >
+                  {OUTCOMES[o].label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {MEMO_TEMPLATES.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setMemo((m) => (m ? m + "\n" + t : t))}
+                className="rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-600 active:bg-gray-100"
+              >
+                + {t}
+              </button>
+            ))}
+          </div>
           <textarea value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="面談内容・反応などのメモ" rows={3} className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
           <div className="flex gap-2">
             <button onClick={submit} className="flex-1 rounded bg-blue-600 py-2 text-sm font-medium text-white">
-              記録する
+              {editingId === "new" ? "記録する" : "保存する"}
             </button>
-            <button onClick={() => setAdding(false)} className="rounded border border-gray-300 px-3 py-2 text-sm">
+            <button onClick={() => setEditingId(null)} className="rounded border border-gray-300 px-3 py-2 text-sm">
               キャンセル
             </button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white">
+        <button onClick={openNew} className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white">
           + 訪問を記録
         </button>
       )}
-      {visits.length === 0 && !adding && <p className="text-sm text-gray-500">訪問記録はまだありません。</p>}
+      {visits.length === 0 && !editingId && <p className="text-sm text-gray-500">訪問記録はまだありません。</p>}
       <ol className="relative space-y-3 border-l-2 border-gray-200 pl-4">
         {visits.map((v) => (
           <li key={v.id} className="relative">
             <span className="absolute -left-[23px] top-1.5 h-3 w-3 rounded-full border-2 border-white bg-blue-500" />
             <div className="rounded-lg border border-gray-200 p-3">
-              <div className="flex items-center justify-between">
-                <div className="text-sm font-medium">{v.visited_on}</div>
-                <button
-                  onClick={async () => {
-                    if (confirm("この訪問記録を削除しますか?")) {
-                      await store.deleteVisit(v.id);
-                      onChanged();
-                    }
-                  }}
-                  className="text-xs text-red-500"
-                >
-                  削除
-                </button>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="text-sm font-medium">{v.visited_on}</span>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] ${OUTCOMES[v.outcome ?? "greeting"].badge}`}>
+                    {OUTCOMES[v.outcome ?? "greeting"].label}
+                  </span>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <button onClick={() => openEdit(v)} className="text-xs text-blue-600">
+                    編集
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (confirm("この訪問記録を削除しますか?")) {
+                        await store.deleteVisit(v.id);
+                        onChanged();
+                      }
+                    }}
+                    className="text-xs text-red-500"
+                  >
+                    削除
+                  </button>
+                </div>
               </div>
               {(v.station_name || v.staff_name) && (
                 <div className="text-xs text-gray-500">
@@ -294,3 +403,4 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     </div>
   );
 }
+

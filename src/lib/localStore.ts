@@ -3,7 +3,9 @@ import type {
   Facility,
   NewContact,
   NewFacility,
+  NewStaff,
   NewVisit,
+  Staff,
   Visit,
 } from "../types";
 import type { Store } from "./store";
@@ -14,15 +16,17 @@ interface Data {
   facilities: Facility[];
   contacts: Contact[];
   visits: Visit[];
+  staff: Staff[];
 }
 
 function load(): Data {
+  const empty: Data = { facilities: [], contacts: [], visits: [], staff: [] };
   const raw = localStorage.getItem(KEY);
-  if (!raw) return { facilities: [], contacts: [], visits: [] };
+  if (!raw) return empty;
   try {
-    return JSON.parse(raw) as Data;
+    return { ...empty, ...(JSON.parse(raw) as Partial<Data>) };
   } catch {
-    return { facilities: [], contacts: [], visits: [] };
+    return empty;
   }
 }
 
@@ -90,6 +94,9 @@ export const localStore: Store = {
       .visits.filter((v) => v.facility_id === facilityId)
       .sort((a, b) => b.visited_on.localeCompare(a.visited_on));
   },
+  async listAllVisits() {
+    return load().visits;
+  },
   async createVisit(data: NewVisit) {
     const d = load();
     const visit: Visit = { ...data, id: uid(), created_at: new Date().toISOString() };
@@ -97,9 +104,33 @@ export const localStore: Store = {
     save(d);
     return visit;
   },
+  async updateVisit(id: string, patch: Partial<NewVisit>) {
+    const d = load();
+    const i = d.visits.findIndex((v) => v.id === id);
+    if (i < 0) throw new Error("訪問記録が見つかりません");
+    d.visits[i] = { ...d.visits[i], ...patch };
+    save(d);
+    return d.visits[i];
+  },
   async deleteVisit(id: string) {
     const d = load();
     d.visits = d.visits.filter((v) => v.id !== id);
+    save(d);
+  },
+
+  async listStaff() {
+    return load().staff;
+  },
+  async createStaff(data: NewStaff) {
+    const d = load();
+    const member: Staff = { ...data, id: uid(), created_at: new Date().toISOString() };
+    d.staff.push(member);
+    save(d);
+    return member;
+  },
+  async deleteStaff(id: string) {
+    const d = load();
+    d.staff = d.staff.filter((s) => s.id !== id);
     save(d);
   },
 };

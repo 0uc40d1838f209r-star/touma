@@ -9,6 +9,8 @@ import FacilityForm from "./components/FacilityForm";
 import FilterBar from "./components/FilterBar";
 import FacilityList from "./components/FacilityList";
 import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
+import StaffManager from "./components/StaffManager";
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -41,7 +43,8 @@ function MainScreen() {
   const [search, setSearch] = useState("");
   const [activeTypes, setActiveTypes] = useState<Set<FacilityType>>(new Set());
   const [activeStatuses, setActiveStatuses] = useState<Set<FacilityStatus>>(new Set());
-  const [mobileView, setMobileView] = useState<"map" | "list">("map");
+  const [view, setView] = useState<"map" | "list" | "stats">("map");
+  const [showStaff, setShowStaff] = useState(false);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Facility | null>(null);
@@ -80,7 +83,7 @@ function MainScreen() {
     setSelectedId(id);
     const f = facilities.find((x) => x.id === id);
     if (f) setFlyTarget({ lat: f.lat, lng: f.lng, key: Date.now() });
-    setMobileView("map");
+    setView("map");
   };
 
   const openNewForm = () => {
@@ -137,8 +140,17 @@ function MainScreen() {
             </span>
           )}
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <span className="hidden text-xs text-gray-400 sm:inline">{filtered.length} / {facilities.length} 件</span>
+          <button
+            onClick={() => setView(view === "stats" ? "map" : "stats")}
+            className={`hidden text-xs md:inline ${view === "stats" ? "font-bold text-blue-600" : "text-gray-500 underline"}`}
+          >
+            📊 実績
+          </button>
+          <button onClick={() => setShowStaff(true)} className="text-xs text-gray-500 underline">
+            ⚙ 名簿
+          </button>
           {isSupabaseMode && (
             <button onClick={() => supabase?.auth.signOut()} className="text-xs text-gray-500 underline">
               ログアウト
@@ -157,6 +169,9 @@ function MainScreen() {
       />
 
       <div className="relative min-h-0 flex-1">
+        {view === "stats" ? (
+          <Dashboard facilities={facilities} />
+        ) : (
         <div className="flex h-full">
           {/* PC: サイドバー一覧 */}
           <aside className="hidden w-80 shrink-0 overflow-y-auto border-r border-gray-200 bg-white md:block">
@@ -164,7 +179,7 @@ function MainScreen() {
           </aside>
 
           {/* 地図 (モバイルではタブで切替) */}
-          <div className={`relative min-w-0 flex-1 ${mobileView === "list" ? "hidden md:block" : ""}`}>
+          <div className={`relative min-w-0 flex-1 ${view === "list" ? "hidden md:block" : ""}`}>
             <MapView
               facilities={filtered}
               selectedId={selectedId}
@@ -187,15 +202,16 @@ function MainScreen() {
           </div>
 
           {/* モバイル: リスト表示 */}
-          {mobileView === "list" && (
+          {view === "list" && (
             <div className="min-w-0 flex-1 overflow-y-auto bg-white md:hidden">
               <FacilityList facilities={filtered} selectedId={selectedId} onSelect={selectFacility} />
             </div>
           )}
         </div>
+        )}
 
         {/* 追加ボタン */}
-        {!picking && !formOpen && (
+        {!picking && !formOpen && view !== "stats" && (
           <button
             onClick={openNewForm}
             className="absolute bottom-20 right-4 z-[1000] flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-3xl font-light text-white shadow-lg active:bg-blue-700 md:bottom-6 md:right-6"
@@ -206,7 +222,7 @@ function MainScreen() {
         )}
 
         {/* 詳細パネル: PC は右サイド / スマホはボトムシート */}
-        {selected && !formOpen && !picking && (
+        {selected && !formOpen && !picking && view !== "stats" && (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1000] h-[62vh] md:inset-y-0 md:left-auto md:right-0 md:h-full md:w-96">
             <FacilityDetail
               facility={selected}
@@ -219,23 +235,26 @@ function MainScreen() {
         )}
       </div>
 
-      {/* モバイル: 地図/リスト切替タブ */}
+      {/* モバイル: 地図/リスト/実績切替タブ */}
       <nav className="flex border-t border-gray-200 bg-white md:hidden">
         {(
           [
             ["map", "🗺 地図"],
             ["list", "📋 リスト"],
+            ["stats", "📊 実績"],
           ] as const
         ).map(([key, label]) => (
           <button
             key={key}
-            onClick={() => setMobileView(key)}
-            className={`flex-1 py-3 text-sm font-medium ${mobileView === key ? "text-blue-600" : "text-gray-400"}`}
+            onClick={() => setView(key)}
+            className={`flex-1 py-3 text-sm font-medium ${view === key ? "text-blue-600" : "text-gray-400"}`}
           >
             {label}
           </button>
         ))}
       </nav>
+
+      {showStaff && <StaffManager onClose={() => setShowStaff(false)} />}
 
       {formOpen && (
         <FacilityForm

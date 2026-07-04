@@ -4,7 +4,9 @@ import type {
   Facility,
   NewContact,
   NewFacility,
+  NewStaff,
   NewVisit,
+  Staff,
   Visit,
 } from "../types";
 import type { Store } from "./store";
@@ -93,17 +95,57 @@ export const supabaseStore: Store = {
         .order("visited_on", { ascending: false }),
     );
   },
+  async listAllVisits() {
+    const all: Visit[] = [];
+    const page = 1000;
+    for (let from = 0; ; from += page) {
+      const batch = unwrap<Visit[]>(
+        await client()
+          .from("visits")
+          .select("*")
+          .order("visited_on", { ascending: false })
+          .range(from, from + page - 1),
+      );
+      all.push(...batch);
+      if (batch.length < page) break;
+    }
+    return all;
+  },
   async createVisit(data: NewVisit) {
     const result = await client().from("visits").insert(data).select().single();
-    // station_name 列の migration がまだ実行されていない環境では列抜きで再試行する
-    if (result.error?.message.includes("station_name")) {
-      const { station_name: _omitted, ...rest } = data;
-      return unwrap<Visit>(await client().from("visits").insert(rest).select().single());
+    // migration がまだ実行されていない環境では、無い列を抜いて再試行する
+    if (result.error?.message.includes("column")) {
+      const { station_name: _s, outcome: _o, ...base } = data;
+      return unwrap<Visit>(await client().from("visits").insert(base).select().single());
+    }
+    return unwrap<Visit>(result);
+  },
+  async updateVisit(id: string, patch: Partial<NewVisit>) {
+    const result = await client().from("visits").update(patch).eq("id", id).select().single();
+    if (result.error?.message.includes("column")) {
+      const { station_name: _s, outcome: _o, ...base } = patch;
+      return unwrap<Visit>(
+        await client().from("visits").update(base).eq("id", id).select().single(),
+      );
     }
     return unwrap<Visit>(result);
   },
   async deleteVisit(id: string) {
     const { error } = await client().from("visits").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+  },
+
+  async listStaff() {
+    const result = await client().from("staff").select("*").order("station").order("name");
+    // staff テーブルの migration がまだの環境では空の名簿として扱う
+    if (result.error) return [];
+    return (result.data ?? []) as Staff[];
+  },
+  async createStaff(data: NewStaff) {
+    return unwrap<Staff>(await client().from("staff").insert(data).select().single());
+  },
+  async deleteStaff(id: string) {
+    const { error } = await client().from("staff").delete().eq("id", id);
     if (error) throw new Error(error.message);
   },
 };

@@ -3,7 +3,9 @@ import type {
   Facility,
   NewContact,
   NewFacility,
+  NewStaff,
   NewVisit,
+  Staff,
   Visit,
 } from "../types";
 import { localStore } from "./localStore";
@@ -21,8 +23,14 @@ export interface Store {
   deleteContact(id: string): Promise<void>;
 
   listVisits(facilityId: string): Promise<Visit[]>;
+  listAllVisits(): Promise<Visit[]>;
   createVisit(data: NewVisit): Promise<Visit>;
+  updateVisit(id: string, patch: Partial<NewVisit>): Promise<Visit>;
   deleteVisit(id: string): Promise<void>;
+
+  listStaff(): Promise<Staff[]>;
+  createStaff(data: NewStaff): Promise<Staff>;
+  deleteStaff(id: string): Promise<void>;
 }
 
 export const isSupabaseMode = supabase !== null;
