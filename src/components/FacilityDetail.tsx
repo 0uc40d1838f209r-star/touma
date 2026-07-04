@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { Contact, Facility, FacilityStatus, Visit } from "../types";
 import { FACILITY_STATUSES, FACILITY_TYPES } from "../types";
 import { store } from "../lib/store";
+import { supabase } from "../lib/supabaseStore";
 
 interface Props {
   facility: Facility;
@@ -209,12 +210,29 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(today);
   const [staff, setStaff] = useState(() => localStorage.getItem("touma-staff-name") ?? "");
+  const [station, setStation] = useState(() => localStorage.getItem("touma-station-name") ?? "");
   const [memo, setMemo] = useState("");
+
+  // 訪問者名が未設定ならログイン ID を初期値にする
+  useEffect(() => {
+    if (staff || !supabase) return;
+    supabase.auth.getUser().then(({ data }) => {
+      const id = data.user?.email?.split("@")[0];
+      if (id) setStaff((prev) => prev || id);
+    });
+  }, [staff]);
 
   const submit = async () => {
     if (!date) return;
     localStorage.setItem("touma-staff-name", staff);
-    await store.createVisit({ facility_id: facilityId, visited_on: date, staff_name: staff, memo });
+    localStorage.setItem("touma-station-name", station);
+    await store.createVisit({
+      facility_id: facilityId,
+      visited_on: date,
+      staff_name: staff,
+      station_name: station,
+      memo,
+    });
     setMemo("");
     setDate(today);
     setAdding(false);
@@ -226,6 +244,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
       {adding ? (
         <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
+          <input value={station} onChange={(e) => setStation(e.target.value)} placeholder="拠点名 (例: ○○ステーション)" className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
           <input value={staff} onChange={(e) => setStaff(e.target.value)} placeholder="訪問者名" className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
           <textarea value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="面談内容・反応などのメモ" rows={3} className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
           <div className="flex gap-2">
@@ -262,7 +281,11 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
                   削除
                 </button>
               </div>
-              {v.staff_name && <div className="text-xs text-gray-500">訪問者: {v.staff_name}</div>}
+              {(v.station_name || v.staff_name) && (
+                <div className="text-xs text-gray-500">
+                  {[v.station_name, v.staff_name && `訪問者: ${v.staff_name}`].filter(Boolean).join(" / ")}
+                </div>
+              )}
               {v.memo && <p className="mt-1 whitespace-pre-wrap text-sm text-gray-700">{v.memo}</p>}
             </div>
           </li>

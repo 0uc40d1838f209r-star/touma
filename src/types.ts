@@ -30,6 +30,7 @@ export interface Visit {
   facility_id: string;
   visited_on: string;
   staff_name: string;
+  station_name: string;
   memo: string;
   created_at: string;
 }

@@ -17,9 +17,11 @@ export default function FacilityList({ facilities, selectedId, onSelect }: Props
       </div>
     );
   }
+  const MAX = 200;
+  const shown = facilities.slice(0, MAX);
   return (
     <ul className="divide-y divide-gray-100">
-      {facilities.map((f) => (
+      {shown.map((f) => (
         <li key={f.id}>
           <button
             onClick={() => onSelect(f.id)}
@@ -36,6 +38,11 @@ export default function FacilityList({ facilities, selectedId, onSelect }: Props
           </button>
         </li>
       ))}
+      {facilities.length > MAX && (
+        <li className="px-4 py-3 text-center text-xs text-gray-500">
+          他に {facilities.length - MAX} 件あります。検索や種別・ステータスの絞り込みで探してください。
+        </li>
+      )}
     </ul>
   );
 }

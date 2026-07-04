@@ -28,9 +28,21 @@ function unwrap<T>(result: { data: T | null; error: { message: string } | null }
 
 export const supabaseStore: Store = {
   async listFacilities() {
-    return unwrap<Facility[]>(
-      await client().from("facilities").select("*").order("created_at"),
-    );
+    // Supabase は 1 リクエスト最大 1000 行のため、全件をページングで取得する
+    const all: Facility[] = [];
+    const page = 1000;
+    for (let from = 0; ; from += page) {
+      const batch = unwrap<Facility[]>(
+        await client()
+          .from("facilities")
+          .select("*")
+          .order("created_at")
+          .range(from, from + page - 1),
+      );
+      all.push(...batch);
+      if (batch.length < page) break;
+    }
+    return all;
   },
   async createFacility(data: NewFacility) {
     return unwrap<Facility>(
@@ -82,7 +94,13 @@ export const supabaseStore: Store = {
     );
   },
   async createVisit(data: NewVisit) {
-    return unwrap<Visit>(await client().from("visits").insert(data).select().single());
+    const result = await client().from("visits").insert(data).select().single();
+    // station_name 列の migration がまだ実行されていない環境では列抜きで再試行する
+    if (result.error?.message.includes("station_name")) {
+      const { station_name: _omitted, ...rest } = data;
+      return unwrap<Visit>(await client().from("visits").insert(rest).select().single());
+    }
+    return unwrap<Visit>(result);
   },
   async deleteVisit(id: string) {
     const { error } = await client().from("visits").delete().eq("id", id);
