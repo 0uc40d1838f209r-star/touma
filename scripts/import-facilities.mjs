@@ -1,10 +1,12 @@
 // 厚労省オープンデータから営業先(居宅介護支援・病院・診療所)を Supabase に取り込むスクリプト
 //
 // 使い方:
-//   1. データを用意 (UTF-8 CSV):
-//        居宅介護支援: https://www.mhlw.go.jp/content/12300000/jigyosho_430.csv
-//        病院 施設票:   https://www.mhlw.go.jp/content/11121000/01-1_hospital_facility_info_20251201.zip (要解凍)
-//        診療所 施設票: https://www.mhlw.go.jp/content/11121000/02-1_clinic_facility_info_20251201.zip (要解凍)
+//   1. データを用意 (UTF-8 CSV。ファイル名は以下に揃える):
+//        jigyosho_430.csv … 居宅介護支援: https://www.mhlw.go.jp/content/12300000/jigyosho_430.csv
+//        hospital.csv     … 病院 施設票 (医療情報ネット オープンデータの zip を解凍してリネーム)
+//        clinic.csv       … 診療所 施設票 (同上)
+//        最新の zip URL は https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/newpage_43373.html に掲載
+//        (自動実行は .github/workflows/update-facilities.yml がこの手順を毎月実行する)
 //   2. 実行:
 //        SUPABASE_URL=... SUPABASE_ANON_KEY=... APP_ID=... APP_PASSWORD=... \
 //        node scripts/import-facilities.mjs --data-dir <CSVのあるフォルダ> [--dry-run] [--limit N]
@@ -182,8 +184,8 @@ async function insertBatch(token, records) {
 // ---- main ----
 const candidates = [
   ...extractKyotaku(),
-  ...extractMedical("01-1_hospital_facility_info_20251201.csv", "hospital"),
-  ...extractMedical("02-1_clinic_facility_info_20251201.csv", "clinic"),
+  ...extractMedical("hospital.csv", "hospital"),
+  ...extractMedical("clinic.csv", "clinic"),
 ];
 
 const valid = [];

@@ -1,0 +1,48 @@
+name: 施設データ自動更新
+
+# 毎月5日の昼(日本時間)に厚労省オープンデータの最新版を取得し、
+# 新しく登録された施設だけを Supabase に追加する (既存の施設・営業記録には触らない)
+on:
+  schedule:
+    - cron: "0 3 5 * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 最新のオープンデータをダウンロード
+        run: |
+          set -euo pipefail
+          mkdir -p data
+
+          # 居宅介護支援 (URL は固定で中身が更新される)
+          curl -sSL -o data/jigyosho_430.csv "https://www.mhlw.go.jp/content/12300000/jigyosho_430.csv"
+
+          # 病院・診療所: 掲載ページから最新の zip URL を探す (ファイル名に日付が入るため)
+          page=$(curl -sSL "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/newpage_43373.html")
+          hosp=$(echo "$page" | grep -oE '/content/[0-9]+/01-1_hospital_facility_info_[0-9]+\.zip' | sort | tail -1)
+          clinic=$(echo "$page" | grep -oE '/content/[0-9]+/02-1_clinic_facility_info_[0-9]+\.zip' | sort | tail -1)
+          echo "hospital zip: $hosp"
+          echo "clinic zip:   $clinic"
+          test -n "$hosp" && test -n "$clinic"
+
+          curl -sSL -o data/hospital.zip "https://www.mhlw.go.jp$hosp"
+          curl -sSL -o data/clinic.zip "https://www.mhlw.go.jp$clinic"
+          unzip -o -q data/hospital.zip -d data
+          unzip -o -q data/clinic.zip -d data
+          mv data/01-1_hospital_facility_info_*.csv data/hospital.csv
+          mv data/02-1_clinic_facility_info_*.csv data/clinic.csv
+
+      - name: 新規施設を Supabase に追加
+        env:
+          SUPABASE_URL: https://vpbzerbjswtrdvaerauo.supabase.co
+          SUPABASE_ANON_KEY: sb_publishable_cSYYFeuhiVeBpk_59QGRkg_lYc1Jnkc
+          APP_ID: ${{ secrets.APP_ID }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+        run: node scripts/import-facilities.mjs --data-dir data
