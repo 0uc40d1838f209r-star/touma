@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
-import type { Facility, FacilityStatus, FacilityType, NewFacility } from "./types";
+import type { Facility, FacilityStatus, FacilityType, NewFacility, Visit } from "./types";
 import { isSupabaseMode, store } from "./lib/store";
 import { supabase } from "./lib/supabaseStore";
 import MapView from "./components/MapView";
@@ -52,13 +52,29 @@ function MainScreen() {
   const [pickedPos, setPickedPos] = useState<{ lat: number; lng: number } | null>(null);
   const [flyTarget, setFlyTarget] = useState<{ lat: number; lng: number; key: number } | null>(null);
 
+  const [allVisits, setAllVisits] = useState<Visit[]>([]);
+
   const reload = useCallback(async () => {
     setFacilities(await store.listFacilities());
+  }, []);
+  const reloadVisits = useCallback(async () => {
+    setAllVisits(await store.listAllVisits());
   }, []);
 
   useEffect(() => {
     reload();
-  }, [reload]);
+    reloadVisits();
+  }, [reload, reloadVisits]);
+
+  // 施設ごとの最終訪問日 (一覧に表示)
+  const lastVisitMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const v of allVisits) {
+      const cur = m.get(v.facility_id);
+      if (!cur || v.visited_on > cur) m.set(v.facility_id, v.visited_on);
+    }
+    return m;
+  }, [allVisits]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -175,7 +191,7 @@ function MainScreen() {
         <div className="flex h-full">
           {/* PC: サイドバー一覧 */}
           <aside className="hidden w-80 shrink-0 overflow-y-auto border-r border-gray-200 bg-white md:block">
-            <FacilityList facilities={filtered} selectedId={selectedId} onSelect={selectFacility} />
+            <FacilityList facilities={filtered} selectedId={selectedId} onSelect={selectFacility} lastVisit={lastVisitMap} />
           </aside>
 
           {/* 地図 (モバイルではタブで切替) */}
@@ -204,7 +220,7 @@ function MainScreen() {
           {/* モバイル: リスト表示 */}
           {view === "list" && (
             <div className="min-w-0 flex-1 overflow-y-auto bg-white md:hidden">
-              <FacilityList facilities={filtered} selectedId={selectedId} onSelect={selectFacility} />
+              <FacilityList facilities={filtered} selectedId={selectedId} onSelect={selectFacility} lastVisit={lastVisitMap} />
             </div>
           )}
         </div>
@@ -230,6 +246,7 @@ function MainScreen() {
               onEdit={openEditForm}
               onDelete={deleteSelected}
               onStatusChange={changeStatus}
+              onVisitsChanged={reloadVisits}
             />
           </div>
         )}

@@ -10,9 +10,10 @@ interface Props {
   onEdit: () => void;
   onDelete: () => void;
   onStatusChange: (status: FacilityStatus) => void;
+  onVisitsChanged?: () => void;
 }
 
-export default function FacilityDetail({ facility, onClose, onEdit, onDelete, onStatusChange }: Props) {
+export default function FacilityDetail({ facility, onClose, onEdit, onDelete, onStatusChange, onVisitsChanged }: Props) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [tab, setTab] = useState<"info" | "contacts" | "visits">("info");
@@ -24,7 +25,8 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
     ]);
     setContacts(c);
     setVisits(v);
-  }, [facility.id]);
+    onVisitsChanged?.(); // 一覧の最終訪問日などを更新
+  }, [facility.id, onVisitsChanged]);
 
   useEffect(() => {
     reload();

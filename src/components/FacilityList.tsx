@@ -5,9 +5,10 @@ interface Props {
   facilities: Facility[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  lastVisit?: Map<string, string>;
 }
 
-export default function FacilityList({ facilities, selectedId, onSelect }: Props) {
+export default function FacilityList({ facilities, selectedId, onSelect, lastVisit }: Props) {
   if (facilities.length === 0) {
     return (
       <div className="p-6 text-center text-sm text-gray-500">
@@ -34,7 +35,12 @@ export default function FacilityList({ facilities, selectedId, onSelect }: Props
                 {FACILITY_STATUSES[f.status].label}
               </span>
             </div>
-            {f.address && <div className="mt-0.5 truncate pl-5 text-xs text-gray-500">{f.address}</div>}
+            <div className="mt-0.5 flex items-baseline justify-between gap-2 pl-5">
+              {f.address && <span className="min-w-0 truncate text-xs text-gray-500">{f.address}</span>}
+              {lastVisit?.get(f.id) && (
+                <span className="shrink-0 text-[11px] text-blue-600">🕐 {lastVisit.get(f.id)}</span>
+              )}
+            </div>
           </button>
         </li>
       ))}

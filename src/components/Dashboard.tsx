@@ -127,6 +127,36 @@ export default function Dashboard({ facilities }: { facilities: Facility[] }) {
           </div>
         )}
 
+        {/* この月の訪問記録 (新しい順) */}
+        {monthVisits.length > 0 && (
+          <div className="rounded-xl bg-white p-4 shadow-sm">
+            <h3 className="mb-2 text-sm font-bold">この月の訪問記録</h3>
+            <ul className="divide-y divide-gray-100">
+              {monthVisits.slice(0, 50).map((v) => (
+                <li key={v.id} className="py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="min-w-0 truncate text-sm font-medium">
+                      {facilityName.get(v.facility_id) ?? "(削除された施設)"}
+                    </span>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] ${OUTCOMES[v.outcome ?? "greeting"].badge}`}>
+                      {OUTCOMES[v.outcome ?? "greeting"].label}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {v.visited_on}
+                    {[v.station_name, v.staff_name].filter(Boolean).length > 0 &&
+                      " ・ " + [v.station_name, v.staff_name].filter(Boolean).join(" / ")}
+                  </div>
+                  {v.memo && <p className="mt-0.5 truncate text-xs text-gray-600">{v.memo}</p>}
+                </li>
+              ))}
+              {monthVisits.length > 50 && (
+                <li className="py-2 text-center text-xs text-gray-400">他 {monthVisits.length - 50} 件</li>
+              )}
+            </ul>
+          </div>
+        )}
+
         {/* スタッフ別 */}
         <div className="rounded-xl bg-white p-4 shadow-sm">
           <h3 className="mb-2 text-sm font-bold">スタッフ別の訪問件数</h3>

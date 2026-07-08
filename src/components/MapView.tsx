@@ -169,21 +169,43 @@ function ViewMemory({ facilities }: { facilities: Facility[] }) {
   return null;
 }
 
-function LocateButton({ onLocated }: { onLocated: (lat: number, lng: number) => void }) {
+// 起動時から現在地を追跡して青い点を出し続ける。ボタンは「現在地へ移動」
+function LocateButton({
+  myPos,
+  onLocated,
+}: {
+  myPos: [number, number] | null;
+  onLocated: (pos: [number, number] | null) => void;
+}) {
   const map = useMap();
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    const id = navigator.geolocation.watchPosition(
+      (pos) => onLocated([pos.coords.latitude, pos.coords.longitude]),
+      () => onLocated(null), // 権限拒否などは黙って非表示にする
+      { enableHighAccuracy: true, maximumAge: 15000 },
+    );
+    return () => navigator.geolocation.clearWatch(id);
+  }, [onLocated]);
+
   const locate = () => {
+    if (myPos) {
+      map.flyTo(myPos, Math.max(map.getZoom(), 15));
+      return;
+    }
     if (!navigator.geolocation || busy) return;
     setBusy(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setBusy(false);
-        onLocated(pos.coords.latitude, pos.coords.longitude);
+        onLocated([pos.coords.latitude, pos.coords.longitude]);
         map.flyTo([pos.coords.latitude, pos.coords.longitude], 15);
       },
       () => {
         setBusy(false);
-        alert("現在地を取得できませんでした");
+        alert("現在地を取得できませんでした。位置情報の許可を確認してください。");
       },
       { enableHighAccuracy: true, timeout: 10000 },
     );
@@ -219,7 +241,7 @@ export default function MapView({ facilities, selectedId, onSelect, picking, onP
       <MapEvents picking={picking} onPick={onPick} />
       <FlyTo target={flyTarget} />
       <ViewMemory facilities={facilities} />
-      <LocateButton onLocated={(lat, lng) => setMyPos([lat, lng])} />
+      <LocateButton myPos={myPos} onLocated={setMyPos} />
       {myPos && (
         <CircleMarker
           center={myPos}
