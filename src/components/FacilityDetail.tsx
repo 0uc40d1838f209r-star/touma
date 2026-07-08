@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Contact, Facility, FacilityStatus, Staff, Visit, VisitOutcome } from "../types";
-import { FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, OUTCOMES } from "../types";
+import { FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS } from "../types";
 import { store } from "../lib/store";
 import { supabase } from "../lib/supabaseStore";
 
@@ -214,6 +214,8 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
   const [staff, setStaff] = useState(() => localStorage.getItem("touma-staff-name") ?? "");
   const [station, setStation] = useState(() => localStorage.getItem("touma-station-name") ?? "");
   const [outcome, setOutcome] = useState<VisitOutcome>("greeting");
+  const [met, setMet] = useState("");
+  const [reaction, setReaction] = useState("");
   const [memo, setMemo] = useState("");
   const [roster, setRoster] = useState<Staff[]>([]);
 
@@ -238,6 +240,8 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     setEditingId("new");
     setDate(today);
     setOutcome("greeting");
+    setMet("");
+    setReaction("");
     setMemo("");
   };
   const openEdit = (v: Visit) => {
@@ -246,6 +250,8 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     setStation(v.station_name);
     setStaff(v.staff_name);
     setOutcome(v.outcome ?? "greeting");
+    setMet(v.met ?? "");
+    setReaction(v.reaction ?? "");
     setMemo(v.memo);
   };
 
@@ -259,6 +265,8 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
       staff_name: staff,
       station_name: station,
       outcome,
+      met,
+      reaction,
       memo,
     };
     if (editingId === "new") await store.createVisit(data);
@@ -335,6 +343,40 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
               ))}
             </div>
           </div>
+          <div>
+            <div className="mb-1 text-xs font-medium text-gray-500">面談相手 (任意・もう一度押すと解除)</div>
+            <div className="flex flex-wrap gap-1.5">
+              {MET_OPTIONS.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMet(met === m ? "" : m)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+                    met === m ? "bg-indigo-100 text-indigo-800 ring-2 ring-blue-500" : "bg-white text-gray-500 border border-gray-300"
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="mb-1 text-xs font-medium text-gray-500">先方の反応 (任意)</div>
+            <div className="flex flex-wrap gap-1.5">
+              {Object.entries(REACTIONS).map(([key, r]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setReaction(reaction === key ? "" : key)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+                    reaction === key ? r.badge + " ring-2 ring-blue-500" : "bg-white text-gray-500 border border-gray-300"
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex flex-wrap gap-1.5">
             {MEMO_TEMPLATES.map((t) => (
               <button
@@ -374,6 +416,11 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
                   <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] ${OUTCOMES[v.outcome ?? "greeting"].badge}`}>
                     {OUTCOMES[v.outcome ?? "greeting"].label}
                   </span>
+                  {v.reaction && REACTIONS[v.reaction] && (
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] ${REACTIONS[v.reaction].badge}`}>
+                      {REACTIONS[v.reaction].label}
+                    </span>
+                  )}
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <button onClick={() => openEdit(v)} className="text-xs text-blue-600">
@@ -392,9 +439,11 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
                   </button>
                 </div>
               </div>
-              {(v.station_name || v.staff_name) && (
+              {(v.station_name || v.staff_name || v.met) && (
                 <div className="text-xs text-gray-500">
-                  {[v.station_name, v.staff_name && `訪問者: ${v.staff_name}`].filter(Boolean).join(" / ")}
+                  {[v.station_name, v.staff_name && `訪問者: ${v.staff_name}`, v.met && `面談: ${v.met}`]
+                    .filter(Boolean)
+                    .join(" / ")}
                 </div>
               )}
               {v.memo && <p className="mt-1 whitespace-pre-wrap text-sm text-gray-700">{v.memo}</p>}

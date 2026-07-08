@@ -34,6 +34,8 @@ export interface Visit {
   staff_name: string;
   station_name: string;
   outcome: VisitOutcome;
+  met: string; // 面談相手 (空 = 未選択)
+  reaction: string; // 先方の反応 hot/warm/cold (空 = 未選択)
   memo: string;
   created_at: string;
 }
@@ -55,6 +57,16 @@ export const OUTCOMES: Record<VisitOutcome, { label: string; badge: string }> = 
   consult: { label: "相談あり", badge: "bg-sky-100 text-sky-800" },
   new_client: { label: "新規獲得!", badge: "bg-amber-200 text-amber-900 font-bold" },
   other: { label: "その他", badge: "bg-gray-100 text-gray-500" },
+};
+
+// 面談相手の選択肢
+export const MET_OPTIONS = ["ケアマネ", "相談員・連携室", "医師", "事務・受付", "不在"];
+
+// 先方の反応
+export const REACTIONS: Record<string, { label: string; badge: string }> = {
+  hot: { label: "😊 好感触", badge: "bg-rose-100 text-rose-800" },
+  warm: { label: "😐 ふつう", badge: "bg-gray-100 text-gray-600" },
+  cold: { label: "😞 いまいち", badge: "bg-slate-200 text-slate-600" },
 };
 
 // メモ入力のワンタップ定型文

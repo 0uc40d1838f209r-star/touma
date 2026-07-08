@@ -115,7 +115,7 @@ export const supabaseStore: Store = {
     const result = await client().from("visits").insert(data).select().single();
     // migration がまだ実行されていない環境では、無い列を抜いて再試行する
     if (result.error?.message.includes("column")) {
-      const { station_name: _s, outcome: _o, ...base } = data;
+      const { station_name: _s, outcome: _o, met: _m, reaction: _r, ...base } = data;
       return unwrap<Visit>(await client().from("visits").insert(base).select().single());
     }
     return unwrap<Visit>(result);
@@ -123,7 +123,7 @@ export const supabaseStore: Store = {
   async updateVisit(id: string, patch: Partial<NewVisit>) {
     const result = await client().from("visits").update(patch).eq("id", id).select().single();
     if (result.error?.message.includes("column")) {
-      const { station_name: _s, outcome: _o, ...base } = patch;
+      const { station_name: _s, outcome: _o, met: _m, reaction: _r, ...base } = patch;
       return unwrap<Visit>(
         await client().from("visits").update(base).eq("id", id).select().single(),
       );

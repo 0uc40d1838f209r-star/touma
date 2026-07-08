@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Facility, Visit, VisitOutcome } from "../types";
-import { OUTCOMES } from "../types";
+import { OUTCOMES, REACTIONS } from "../types";
 import { store } from "../lib/store";
 
 // 月次の営業実績: 拠点別の訪問件数・成果の内訳・スタッフ別件数
@@ -45,6 +45,14 @@ export default function Dashboard({ facilities }: { facilities: Facility[] }) {
 
   const newClients = monthVisits.filter((v) => v.outcome === "new_client");
 
+  // 先方の反応と不在の集計 (データドリブンな振り返り用)
+  const reactionCounts = useMemo(() => {
+    const m: Record<string, number> = { hot: 0, warm: 0, cold: 0 };
+    for (const v of monthVisits) if (v.reaction && m[v.reaction] !== undefined) m[v.reaction]++;
+    return m;
+  }, [monthVisits]);
+  const absentCount = monthVisits.filter((v) => v.met === "不在").length;
+
   const shiftMonth = (delta: number) => {
     const [y, m] = month.split("-").map(Number);
     const d = new Date(y, m - 1 + delta, 1);
@@ -86,6 +94,26 @@ export default function Dashboard({ facilities }: { facilities: Facility[] }) {
             </div>
           ))}
         </div>
+
+        {/* 先方の反応・不在 */}
+        {monthVisits.length > 0 && (
+          <div className="rounded-xl bg-white p-4 shadow-sm">
+            <h3 className="mb-2 text-sm font-bold">先方の反応</h3>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              {Object.entries(REACTIONS).map(([key, r]) => (
+                <span key={key}>
+                  {r.label} <span className="font-bold">{reactionCounts[key]}</span>件
+                </span>
+              ))}
+              <span className="text-gray-500">
+                🚪 不在 <span className="font-bold">{absentCount}</span>件
+                {monthVisits.length > 0 && absentCount > 0 && (
+                  <span className="ml-1 text-xs">(訪問の {Math.round((absentCount / monthVisits.length) * 100)}%)</span>
+                )}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* 拠点別の訪問件数 (横棒) */}
         <div className="rounded-xl bg-white p-4 shadow-sm">
