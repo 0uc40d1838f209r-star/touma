@@ -3,7 +3,7 @@ import { CircleMarker, MapContainer, Marker, TileLayer, useMap, useMapEvents } f
 import L from "leaflet";
 import Supercluster from "supercluster";
 import type { Facility, FacilityStatus } from "../types";
-import { FACILITY_TYPES } from "../types";
+import { FACILITY_TYPES, totalReferrals } from "../types";
 
 const STATUS_COLORS: Record<FacilityStatus, string> = {
   not_visited: "#9ca3af",
@@ -20,16 +20,35 @@ function pinIcon(facility: Facility, selected: boolean): L.DivIcon {
   const scale = selected ? 1.25 : 1;
   const w = Math.round(34 * scale);
   const h = Math.round(44 * scale);
+
+  const refs = totalReferrals(facility); // うちへの紹介件数
+  const cm = facility.care_manager_count ?? 0; // ケアマネ人数
+  const gold = "#f59e0b";
+  // 紹介実績あり: 涙型を金の縁取りで強調
+  const stroke = refs > 0 ? gold : "white";
+  const strokeW = refs > 0 ? 3 : 2;
+  // 中央の白丸: 居宅ならケアマネ人数を数字で表示
+  const center =
+    facility.type === "kyotaku" && cm > 0
+      ? `<circle cx="17" cy="15" r="6.5" fill="white"/><text x="17" y="15" text-anchor="middle" dominant-baseline="central" font-size="${cm >= 10 ? 7 : 9}" font-weight="bold" fill="#374151">${cm}</text>`
+      : `<circle cx="17" cy="15" r="5.5" fill="white"/>`;
+  // 左上の金バッジ: ★+紹介件数
+  const refBadge =
+    refs > 0
+      ? `<span style="position:absolute;top:-2px;left:-5px;height:${Math.round(15 * scale)}px;padding:0 ${Math.round(3 * scale)}px;border-radius:9999px;background:${gold};border:2px solid white;color:white;font-size:${Math.round(9 * scale)}px;font-weight:bold;line-height:1;display:flex;align-items:center;white-space:nowrap">★${refs}</span>`
+      : "";
+
   return L.divIcon({
     className: "facility-pin",
     html: `
       <div style="position:relative;width:${w}px;height:${h}px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))">
         <svg width="${w}" height="${h}" viewBox="0 0 34 44">
           <path d="M17 43C17 43 32 24.6 32 15.5 32 7 25.3 1 17 1 8.7 1 2 7 2 15.5 2 24.6 17 43 17 43Z"
-                fill="${color}" stroke="white" stroke-width="2"/>
-          <circle cx="17" cy="15" r="5.5" fill="white"/>
+                fill="${color}" stroke="${stroke}" stroke-width="${strokeW}"/>
+          ${center}
         </svg>
         <span style="position:absolute;top:0;right:0;width:${Math.round(13 * scale)}px;height:${Math.round(13 * scale)}px;border-radius:9999px;background:${dot};border:2px solid white"></span>
+        ${refBadge}
       </div>`,
     iconSize: [w, h],
     iconAnchor: [w / 2, h - 1],

@@ -18,6 +18,7 @@ export default function FacilityForm({ initial, hidden, pickedPos, onStartPick, 
   const [address, setAddress] = useState(initial?.address ?? "");
   const [phone, setPhone] = useState(initial?.phone ?? "");
   const [status, setStatus] = useState<FacilityStatus>(initial?.status ?? "not_visited");
+  const [cmCount, setCmCount] = useState(initial?.care_manager_count ?? 0);
   const [note, setNote] = useState(initial?.note ?? "");
   const [pos, setPos] = useState<{ lat: number; lng: number } | null>(
     initial ? { lat: initial.lat, lng: initial.lng } : null,
@@ -64,6 +65,8 @@ export default function FacilityForm({ initial, hidden, pickedPos, onStartPick, 
       note,
       lat: pos.lat,
       lng: pos.lng,
+      referrals: initial?.referrals ?? {},
+      care_manager_count: cmCount,
     });
   };
 
@@ -162,6 +165,36 @@ export default function FacilityForm({ initial, hidden, pickedPos, onStartPick, 
               className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
             />
           </label>
+
+          <div>
+            <span className="mb-1 block text-xs font-medium text-gray-500">
+              ケアマネ人数 {type === "kyotaku" ? "" : "(居宅の場合)"}
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setCmCount((n) => Math.max(0, n - 1))}
+                className="h-9 w-9 shrink-0 rounded-lg border border-gray-300 text-lg font-bold text-gray-600 active:bg-gray-100"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                min={0}
+                value={cmCount}
+                onChange={(e) => setCmCount(Math.max(0, Number(e.target.value) || 0))}
+                className="w-20 rounded-lg border border-gray-300 px-3 py-2.5 text-center text-sm"
+              />
+              <span className="text-sm text-gray-500">名</span>
+              <button
+                type="button"
+                onClick={() => setCmCount((n) => n + 1)}
+                className="h-9 w-9 shrink-0 rounded-lg border border-gray-300 text-lg font-bold text-gray-600 active:bg-gray-100"
+              >
+                ＋
+              </button>
+            </div>
+          </div>
 
           <div>
             <span className="mb-1 block text-xs font-medium text-gray-500">営業ステータス</span>

@@ -1,5 +1,5 @@
 import type { Facility } from "../types";
-import { FACILITY_STATUSES, FACILITY_TYPES } from "../types";
+import { FACILITY_STATUSES, FACILITY_TYPES, totalReferrals } from "../types";
 
 interface Props {
   facilities: Facility[];
@@ -41,6 +41,20 @@ export default function FacilityList({ facilities, selectedId, onSelect, lastVis
                 <span className="shrink-0 text-[11px] text-blue-600">🕐 {lastVisit.get(f.id)}</span>
               )}
             </div>
+            {(totalReferrals(f) > 0 || (f.care_manager_count ?? 0) > 0) && (
+              <div className="mt-1 flex flex-wrap gap-1.5 pl-5">
+                {totalReferrals(f) > 0 && (
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+                    ★ {totalReferrals(f)} 紹介
+                  </span>
+                )}
+                {(f.care_manager_count ?? 0) > 0 && (
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
+                    ケアマネ {f.care_manager_count}名
+                  </span>
+                )}
+              </div>
+            )}
           </button>
         </li>
       ))}

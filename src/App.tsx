@@ -138,6 +138,12 @@ function MainScreen() {
     await reload();
   };
 
+  const updateFacilityPatch = async (patch: Partial<NewFacility>) => {
+    if (!selected) return;
+    await store.updateFacility(selected.id, patch);
+    await reload();
+  };
+
   const deleteSelected = async () => {
     if (!selected) return;
     await store.deleteFacility(selected.id);
@@ -246,6 +252,7 @@ function MainScreen() {
               onEdit={openEditForm}
               onDelete={deleteSelected}
               onStatusChange={changeStatus}
+              onUpdate={updateFacilityPatch}
               onVisitsChanged={reloadVisits}
             />
           </div>

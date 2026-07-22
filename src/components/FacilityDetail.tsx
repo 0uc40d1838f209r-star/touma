@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Contact, Facility, FacilityStatus, Staff, Visit, VisitOutcome } from "../types";
+import type { Contact, Facility, FacilityStatus, NewFacility, Staff, Visit, VisitOutcome } from "../types";
 import { FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS } from "../types";
 import { store } from "../lib/store";
 import { supabase } from "../lib/supabaseStore";
@@ -10,13 +10,19 @@ interface Props {
   onEdit: () => void;
   onDelete: () => void;
   onStatusChange: (status: FacilityStatus) => void;
+  onUpdate: (patch: Partial<NewFacility>) => void;
   onVisitsChanged?: () => void;
 }
 
-export default function FacilityDetail({ facility, onClose, onEdit, onDelete, onStatusChange, onVisitsChanged }: Props) {
+export default function FacilityDetail({ facility, onClose, onEdit, onDelete, onStatusChange, onUpdate, onVisitsChanged }: Props) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
+  const [stations, setStations] = useState<string[]>([]);
   const [tab, setTab] = useState<"info" | "contacts" | "visits">("info");
+
+  useEffect(() => {
+    store.listStaff().then((staff) => setStations([...new Set(staff.map((s) => s.station))]));
+  }, []);
 
   const reload = useCallback(async () => {
     const [c, v] = await Promise.all([
@@ -110,6 +116,10 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
                 <dd className="whitespace-pre-wrap">{facility.note || "なし"}</dd>
               </div>
             </dl>
+
+            <CareManagerSection facility={facility} onUpdate={onUpdate} />
+            <ReferralSection facility={facility} stations={stations} onUpdate={onUpdate} />
+
             <div className="flex gap-2 pt-2">
               <button onClick={onEdit} className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white active:bg-blue-700">
                 編集
@@ -128,6 +138,123 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
 
         {tab === "contacts" && <ContactsTab facilityId={facility.id} contacts={contacts} onChanged={reload} />}
         {tab === "visits" && <VisitsTab facilityId={facility.id} visits={visits} onChanged={reload} />}
+      </div>
+    </div>
+  );
+}
+
+// ケアマネ人数のステッパー (居宅で強調)
+function CareManagerSection({ facility, onUpdate }: { facility: Facility; onUpdate: (patch: Partial<NewFacility>) => void }) {
+  const count = facility.care_manager_count ?? 0;
+  const set = (n: number) => onUpdate({ care_manager_count: Math.max(0, n) });
+  const emphasized = facility.type === "kyotaku";
+  return (
+    <div className={`rounded-lg border p-3 ${emphasized ? "border-emerald-200 bg-emerald-50" : "border-gray-200"}`}>
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-xs font-medium text-gray-600">ケアマネ人数{emphasized ? "" : " (居宅の場合)"}</span>
+        <span className="text-sm">
+          <span className="text-lg font-bold text-emerald-700">{count}</span> 名
+        </span>
+      </div>
+      <div className="flex items-center gap-3">
+        <button onClick={() => set(count - 1)} className="h-9 w-9 shrink-0 rounded-lg border border-gray-300 bg-white text-lg font-bold text-gray-600 active:bg-gray-100">
+          −
+        </button>
+        <input
+          type="number"
+          min={0}
+          value={count}
+          onChange={(e) => set(Number(e.target.value) || 0)}
+          className="w-20 rounded-lg border border-gray-300 bg-white px-3 py-2 text-center text-sm"
+        />
+        <button onClick={() => set(count + 1)} className="h-9 w-9 shrink-0 rounded-lg border border-gray-300 bg-white text-lg font-bold text-gray-600 active:bg-gray-100">
+          ＋
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// 紹介実績: 拠点ごとの累計紹介件数
+function ReferralSection({ facility, stations, onUpdate }: { facility: Facility; stations: string[]; onUpdate: (patch: Partial<NewFacility>) => void }) {
+  const referrals = facility.referrals ?? {};
+  const entries = Object.entries(referrals).filter(([, n]) => n > 0);
+  const total = entries.reduce((a, [, n]) => a + n, 0);
+  const [pick, setPick] = useState("");
+
+  // 拠点の件数を delta 加算 (0 以下なら拠点ごと削除)
+  const bump = (station: string, delta: number) => {
+    const next = { ...referrals };
+    const n = (next[station] ?? 0) + delta;
+    if (n > 0) next[station] = n;
+    else delete next[station];
+    onUpdate({ referrals: next });
+  };
+  const remove = (station: string) => {
+    const next = { ...referrals };
+    delete next[station];
+    onUpdate({ referrals: next });
+  };
+  const addPicked = () => {
+    if (!pick) return;
+    bump(pick, 1);
+    setPick("");
+  };
+
+  // 名簿の拠点 + 既に記録がある拠点 (名簿外でも消えないように)
+  const options = [...new Set([...stations, ...Object.keys(referrals)])];
+
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-xs font-medium text-gray-600">🎁 紹介実績 (うちへの利用者紹介)</span>
+        {total > 0 && (
+          <span className="text-sm">
+            合計 <span className="text-lg font-bold text-amber-700">{total}</span> 件
+          </span>
+        )}
+      </div>
+      {entries.length === 0 ? (
+        <p className="mb-2 text-xs text-gray-500">まだ記録がありません。紹介があった拠点を選んで追加してください。</p>
+      ) : (
+        <div className="mb-2 space-y-1.5">
+          {entries
+            .sort((a, b) => b[1] - a[1])
+            .map(([station, n]) => (
+              <div key={station} className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5">
+                <span className="min-w-0 flex-1 truncate text-sm font-medium">{station}</span>
+                <span className="shrink-0 text-sm">
+                  <span className="font-bold text-amber-700">{n}</span> 件
+                </span>
+                <button onClick={() => bump(station, -1)} className="h-7 w-7 shrink-0 rounded border border-gray-300 text-sm font-bold text-gray-600 active:bg-gray-100">
+                  −
+                </button>
+                <button onClick={() => bump(station, 1)} className="h-7 w-7 shrink-0 rounded border border-gray-300 text-sm font-bold text-gray-600 active:bg-gray-100">
+                  ＋
+                </button>
+                <button onClick={() => remove(station)} className="shrink-0 px-1 text-xs text-red-500" aria-label={`${station}を削除`}>
+                  ✕
+                </button>
+              </div>
+            ))}
+        </div>
+      )}
+      <div className="flex gap-2">
+        {options.length > 0 ? (
+          <select value={pick} onChange={(e) => setPick(e.target.value)} className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm">
+            <option value="">紹介があった拠点を選択</option>
+            {options.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input value={pick} onChange={(e) => setPick(e.target.value)} placeholder="拠点名を入力" className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm" />
+        )}
+        <button onClick={addPicked} disabled={!pick} className="shrink-0 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-40">
+          ＋ 紹介を記録
+        </button>
       </div>
     </div>
   );

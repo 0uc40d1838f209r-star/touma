@@ -47,19 +47,24 @@ export const supabaseStore: Store = {
     return all;
   },
   async createFacility(data: NewFacility) {
-    return unwrap<Facility>(
-      await client().from("facilities").insert(data).select().single(),
-    );
+    const result = await client().from("facilities").insert(data).select().single();
+    // referrals / care_manager_count 列がまだ無い環境では、その列を抜いて再試行する
+    if (result.error?.message.includes("column")) {
+      const { referrals: _r, care_manager_count: _c, ...base } = data;
+      return unwrap<Facility>(await client().from("facilities").insert(base).select().single());
+    }
+    return unwrap<Facility>(result);
   },
   async updateFacility(id: string, patch: Partial<NewFacility>) {
-    return unwrap<Facility>(
-      await client()
-        .from("facilities")
-        .update({ ...patch, updated_at: new Date().toISOString() })
-        .eq("id", id)
-        .select()
-        .single(),
-    );
+    const withTime = { ...patch, updated_at: new Date().toISOString() };
+    const result = await client().from("facilities").update(withTime).eq("id", id).select().single();
+    if (result.error?.message.includes("column")) {
+      const { referrals: _r, care_manager_count: _c, ...base } = withTime;
+      return unwrap<Facility>(
+        await client().from("facilities").update(base).eq("id", id).select().single(),
+      );
+    }
+    return unwrap<Facility>(result);
   },
   async deleteFacility(id: string) {
     const { error } = await client().from("facilities").delete().eq("id", id);

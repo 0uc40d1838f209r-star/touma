@@ -12,8 +12,15 @@ export interface Facility {
   phone: string;
   status: FacilityStatus;
   note: string;
+  referrals: Record<string, number>; // 拠点名 → その拠点への累計紹介件数
+  care_manager_count: number; // ケアマネ人数 (主に居宅介護支援事業所)
   created_at: string;
   updated_at: string;
+}
+
+// 施設からの紹介件数の合計 (全拠点ぶん)
+export function totalReferrals(f: Facility): number {
+  return Object.values(f.referrals ?? {}).reduce((a, b) => a + b, 0);
 }
 
 export interface Contact {
