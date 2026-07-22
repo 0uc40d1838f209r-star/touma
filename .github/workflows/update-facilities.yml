@@ -46,3 +46,15 @@ jobs:
           APP_ID: ${{ secrets.APP_ID }}
           APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
         run: node scripts/import-facilities.mjs --data-dir data
+
+      # 居宅のケアマネ人数は公表システムから取得する (オープンデータに人数が無いため)。
+      # 外部サイト頼みで時間もかかるので、失敗しても施設の更新結果は残すよう続行扱いにする。
+      - name: 居宅のケアマネ人数を更新
+        continue-on-error: true
+        timeout-minutes: 30
+        env:
+          SUPABASE_URL: https://vpbzerbjswtrdvaerauo.supabase.co
+          SUPABASE_ANON_KEY: sb_publishable_cSYYFeuhiVeBpk_59QGRkg_lYc1Jnkc
+          APP_ID: ${{ secrets.APP_ID }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+        run: node scripts/import-caremanagers.mjs --data-dir data --concurrency 5
