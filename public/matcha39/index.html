@@ -99,52 +99,46 @@
 
 <!-- ============================ HERO ============================ -->
 <section id="top" class="relative min-h-screen flex items-center overflow-hidden bg-kinari">
-  <!-- 和紙のような淡い地の質感 -->
-  <div class="absolute inset-0 bg-gradient-to-br from-matcha-50 via-kinari to-matcha-100/60" aria-hidden="true"></div>
-  <div class="absolute -top-32 -left-32 w-[32rem] h-[32rem] rounded-full bg-matcha-200/30 blur-3xl" aria-hidden="true"></div>
+  <!-- 全面のメインビジュアル -->
+  <img id="heroMain"
+       src="assets/hero-main.jpg"
+       onerror="this.onerror=null;this.src='assets/grade-industrial.jpg'"
+       alt="鮮やかな抹茶の粉と、刷いた一筋"
+       class="absolute inset-0 w-full h-full object-cover object-center" />
 
-  <div class="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 w-full pt-28 pb-16 lg:py-32">
-    <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-center">
+  <!-- 明るさを保ったまま文字を読みやすくするスクリム -->
+  <div class="absolute inset-0 bg-gradient-to-t from-kinari via-kinari/80 to-kinari/35 lg:bg-gradient-to-l lg:from-kinari lg:via-kinari/85 lg:to-transparent" aria-hidden="true"></div>
+  <!-- ヘッダー周りの可読性を確保する上部フェード -->
+  <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-kinari/85 to-transparent lg:hidden" aria-hidden="true"></div>
 
-      <!-- 左: コピー -->
-      <div class="order-2 lg:order-1">
+  <div class="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 w-full pt-28 pb-20 lg:py-32">
+    <div class="lg:grid lg:grid-cols-2">
+      <!-- 画像の余白側（右）にコピーを配置 -->
+      <div class="lg:col-start-2">
         <p class="reveal font-display italic text-gold text-xl sm:text-2xl mb-4">Japanese Matcha to the World</p>
         <h1 class="reveal font-serif font-semibold leading-[1.12] text-5xl sm:text-6xl lg:text-7xl text-matcha-900">
           日本の抹茶を<br /><span class="text-matcha-500">世界へ</span>。
         </h1>
-        <p class="reveal mt-7 text-base sm:text-lg text-matcha-800/80 leading-relaxed max-w-xl">
+        <p class="reveal mt-7 text-base sm:text-lg text-matcha-800/85 leading-relaxed max-w-xl">
           宇治、静岡、鹿児島、八女 — 日本各地の茶産地から、用途に合う抹茶を選び抜いて。
           <span class="text-matcha-900 font-medium">Japanese Matcha Store 39</span> が、
           世界のカフェ・製菓メーカー・ご家庭へお届けします。
         </p>
 
         <div class="reveal mt-10 flex flex-col sm:flex-row gap-4">
-          <a href="#contact" class="inline-flex items-center justify-center gap-2 rounded-full bg-matcha-600 px-8 py-4 text-white font-medium hover:bg-matcha-700 transition-colors shadow-lg shadow-matcha-900/10">
+          <a href="#contact" class="inline-flex items-center justify-center gap-2 rounded-full bg-matcha-600 px-8 py-4 text-white font-medium hover:bg-matcha-700 transition-colors shadow-lg shadow-matcha-900/15">
             サンプル請求 <span class="font-display text-sm opacity-80">Sample Request</span>
           </a>
-          <a href="#grades" class="inline-flex items-center justify-center gap-2 rounded-full border border-matcha-900/25 px-8 py-4 font-medium text-matcha-900 hover:bg-matcha-900 hover:text-white transition-colors">
+          <a href="#grades" class="inline-flex items-center justify-center gap-2 rounded-full border border-matcha-900/30 bg-kinari/70 px-8 py-4 font-medium text-matcha-900 hover:bg-matcha-900 hover:text-white transition-colors">
             商品一覧 <span class="font-display text-sm opacity-70">Products</span>
           </a>
         </div>
 
-        <div class="reveal mt-12 flex flex-wrap gap-x-8 gap-y-3 text-xs sm:text-sm text-matcha-800/70">
+        <div class="reveal mt-12 flex flex-wrap gap-x-8 gap-y-3 text-xs sm:text-sm text-matcha-800/75">
           <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold"></span> 4産地から選べる / Multi-Region Sourcing</span>
           <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold"></span> Private Label / OEM対応</span>
           <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold"></span> Global Export / 海外発送</span>
         </div>
-      </div>
-
-      <!-- 右: メインビジュアル（縦位置のまま大きく見せる） -->
-      <div class="order-1 lg:order-2 reveal">
-        <figure class="relative mx-auto max-w-sm lg:max-w-none">
-          <div class="absolute -inset-3 rounded-[2rem] bg-matcha-300/25 blur-2xl" aria-hidden="true"></div>
-          <img id="heroMain"
-               src="assets/hero-main.jpg"
-               onerror="this.onerror=null;this.src='assets/grade-industrial.jpg';this.classList.add('aspect-[4/3]')"
-               alt="鮮やかな抹茶の粉と、刷いた一筋"
-               class="relative w-full aspect-[3/4] object-cover rounded-[1.75rem] shadow-2xl shadow-matcha-900/20 ring-1 ring-matcha-900/5" />
-          <figcaption class="relative mt-4 text-center text-xs tracking-widest2 uppercase text-matcha-800/50">Matcha, freshly milled</figcaption>
-        </figure>
       </div>
     </div>
   </div>
