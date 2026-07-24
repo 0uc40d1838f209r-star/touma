@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Japanese Matcha 39 | 職人が手掛ける、本物の宇治抹茶 — OEM・卸・海外輸出対応</title>
+  <meta name="description" content="Japanese Matcha 39（株式会社39ちゅあり）は、覆下園での栽培から石臼挽きまで一貫して手掛ける抹茶専門ブランド。Ceremonial / Cafe / Industrial の各グレード、OEM・大容量卸・オーガニック認証に対応。" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            matcha: {
+              50:  '#f4f7ee',
+              100: '#e6eed6',
+              200: '#cdddb0',
+              300: '#a9c37f',
+              400: '#86a555',
+              500: '#688539',   // primary matcha green
+              600: '#516a2b',
+              700: '#3f5224',
+              800: '#344220',
+              900: '#2c381e',
+              950: '#151e0d',
+            },
+            sumi:  '#1c1a17',   // 墨
+            kinari:'#f7f4ec',   // 生成り
+            gold:  '#b08d3e',   // 金
+          },
+          fontFamily: {
+            serif:  ['"Noto Serif JP"', 'serif'],
+            sans:   ['"Noto Sans JP"', 'sans-serif'],
+            display:['"Cormorant Garamond"', 'serif'],
+          },
+          letterSpacing: { widest2: '0.35em' },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { -webkit-font-smoothing: antialiased; }
+    ::selection { background: #688539; color: #fff; }
+
+    /* Fade-in on scroll */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .9s ease, transform .9s ease; }
+    .reveal.is-visible { opacity: 1; transform: none; }
+
+    /* Vertical Japanese accent text */
+    .vertical { writing-mode: vertical-rl; text-orientation: mixed; }
+
+    /* Hero subtle zoom */
+    @keyframes slowZoom { from { transform: scale(1.08); } to { transform: scale(1); } }
+    .hero-media { animation: slowZoom 14s ease-out forwards; }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: #f7f4ec; }
+    ::-webkit-scrollbar-thumb { background: #a9c37f; border-radius: 8px; }
+
+    .link-underline { position: relative; }
+    .link-underline::after {
+      content: ''; position: absolute; left: 0; bottom: -4px; height: 1px; width: 0;
+      background: currentColor; transition: width .35s ease;
+    }
+    .link-underline:hover::after { width: 100%; }
+  </style>
+</head>
+
+<body class="font-sans text-sumi bg-kinari antialiased">
+
+  <!-- ============================ HEADER ============================ -->
+  <header id="header" class="fixed top-0 inset-x-0 z-50 transition-all duration-500 text-white">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8">
+      <div class="flex items-center justify-between h-20">
+        <!-- Logo -->
+        <a href="#top" class="flex flex-col leading-none" aria-label="Japanese Matcha 39 ホーム">
+          <span class="font-display text-2xl sm:text-[1.7rem] tracking-wide">Japanese Matcha <span class="text-gold">39</span></span>
+          <span class="text-[10px] tracking-widest2 uppercase opacity-70 mt-0.5">Uji · Since 1948</span>
+        </a>
+
+        <!-- Desktop nav -->
+        <nav class="hidden lg:flex items-center gap-9 text-sm tracking-wide">
+          <a href="#story"    class="link-underline hover:text-gold transition">こだわり <span class="opacity-50 text-xs">Story</span></a>
+          <a href="#grades"   class="link-underline hover:text-gold transition">商品 <span class="opacity-50 text-xs">Grades</span></a>
+          <a href="#b2b"      class="link-underline hover:text-gold transition">法人のお客様 <span class="opacity-50 text-xs">B2B</span></a>
+          <a href="#contact"  class="link-underline hover:text-gold transition">お問い合わせ <span class="opacity-50 text-xs">Contact</span></a>
+          <a href="#contact" class="ml-2 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2.5 text-sumi font-medium hover:bg-white transition-colors">
+            Sample Request
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </a>
+        </nav>
+
+        <!-- Mobile toggle -->
+        <button id="menuBtn" class="lg:hidden p-2 -mr-2" aria-label="メニューを開く" aria-expanded="false">
+          <svg id="menuIcon" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="lg:hidden hidden bg-matcha-950/97 backdrop-blur border-t border-white/10">
+      <nav class="flex flex-col px-6 py-6 gap-5 text-lg">
+        <a href="#story"   class="mobile-link flex justify-between items-center border-b border-white/10 pb-4">こだわり <span class="opacity-50 text-sm font-display">Story</span></a>
+        <a href="#grades"  class="mobile-link flex justify-between items-center border-b border-white/10 pb-4">商品ラインナップ <span class="opacity-50 text-sm font-display">Grades</span></a>
+        <a href="#b2b"     class="mobile-link flex justify-between items-center border-b border-white/10 pb-4">法人のお客様 <span class="opacity-50 text-sm font-display">B2B</span></a>
+        <a href="#contact" class="mobile-link flex justify-between items-center border-b border-white/10 pb-4">お問い合わせ <span class="opacity-50 text-sm font-display">Contact</span></a>
+        <a href="#contact" class="mobile-link mt-2 text-center rounded-full bg-gold px-5 py-3 text-sumi font-medium">Sample Request（サンプル請求）</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============================ HERO ============================ -->
+  <section id="top" class="relative min-h-screen flex items-center overflow-hidden">
+    <!-- Background media placeholder (video-ready) -->
+    <video class="hero-media absolute inset-0 w-full h-full object-cover" autoplay muted loop playsinline
+           poster="https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=1920&q=80">
+      <!-- 動画背景プレースホルダー: 実際の抹茶の動画URLに差し替え可 -->
+    </video>
+    <img src="https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=1920&q=80"
+         alt="石臼で挽かれる鮮やかな抹茶" class="absolute inset-0 w-full h-full object-cover" />
+    <div class="absolute inset-0 bg-gradient-to-b from-sumi/70 via-sumi/45 to-matcha-950/85"></div>
+
+    <div class="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 w-full pt-24">
+      <div class="max-w-3xl text-white">
+        <p class="reveal font-display italic text-gold text-xl sm:text-2xl mb-4">The Art of Japanese Matcha</p>
+        <h1 class="reveal font-serif font-semibold leading-[1.15] text-4xl sm:text-6xl lg:text-7xl">
+          一碗の中に、<br class="hidden sm:block" />
+          <span class="text-matcha-200">職人の宇宙</span>を。
+        </h1>
+        <p class="reveal mt-7 text-base sm:text-lg text-white/85 leading-relaxed max-w-xl">
+          覆下園での栽培から手摘み、石臼挽きまで。荒茶から一貫して手掛ける
+          <span class="text-white font-medium">Japanese Matcha 39</span> が、
+          世界のカフェ・製菓・お茶会へ、本物の宇治抹茶をお届けします。
+        </p>
+
+        <div class="reveal mt-10 flex flex-col sm:flex-row gap-4">
+          <a href="#contact" class="inline-flex items-center justify-center gap-2 rounded-full bg-gold px-8 py-4 text-sumi font-medium hover:bg-white transition-colors">
+            サンプル請求 <span class="font-display text-sm opacity-80">Sample Request</span>
+          </a>
+          <a href="#grades" class="inline-flex items-center justify-center gap-2 rounded-full border border-white/60 px-8 py-4 font-medium hover:bg-white hover:text-sumi transition-colors">
+            商品一覧 <span class="font-display text-sm opacity-70">Products</span>
+          </a>
+        </div>
+
+        <!-- Trust badges -->
+        <div class="reveal mt-12 flex flex-wrap gap-x-8 gap-y-3 text-xs sm:text-sm text-white/70">
+          <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold"></span> Global Export / 海外輸出対応</span>
+          <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold"></span> Private Label / OEM製造</span>
+          <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold"></span> Certified Organic / 有機認証</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <a href="#story" class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-white/80 flex flex-col items-center gap-2 group">
+      <span class="text-[10px] tracking-widest2 uppercase">Scroll</span>
+      <span class="w-px h-10 bg-white/40 relative overflow-hidden">
+        <span class="absolute inset-x-0 top-0 h-4 bg-gold animate-[scrolldot_2s_ease-in-out_infinite]"></span>
+      </span>
+    </a>
+    <style>@keyframes scrolldot{0%{transform:translateY(-100%)}100%{transform:translateY(250%)}}</style>
+  </section>
+
+  <!-- ============================ STORY / CRAFTSMANSHIP ============================ -->
+  <section id="story" class="relative bg-kinari py-24 sm:py-32">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8">
+      <!-- Section head -->
+      <div class="max-w-3xl">
+        <p class="reveal font-display italic text-gold text-xl mb-3">Craftsmanship &amp; Story</p>
+        <h2 class="reveal font-serif text-3xl sm:text-5xl font-semibold text-matcha-900 leading-tight">
+          荒茶から、一貫して。<br />受け継がれる、職人の手仕事。
+        </h2>
+        <p class="reveal mt-6 text-matcha-800/80 leading-loose">
+          1948年、宇治の茶畑から始まった私たちの物語。栽培・摘採・製茶・仕上げ、そして石臼挽きまで。
+          機械任せにせず、五感で見極める職人の手仕事にこだわり続けています。一杯の抹茶に宿る
+          香り・旨み・鮮やかな緑は、この一貫体制からしか生まれません。
+        </p>
+      </div>
+
+      <!-- Process steps -->
+      <div class="mt-16 grid gap-8 md:grid-cols-3">
+        <!-- Step 1 -->
+        <article class="reveal group relative rounded-2xl overflow-hidden bg-white shadow-sm ring-1 ring-matcha-900/5">
+          <div class="relative h-64 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?auto=format&fit=crop&w=800&q=80"
+                 alt="覆下園（おおいしたえん）で日光を遮って育てられる茶葉" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+            <span class="absolute top-4 left-4 font-display text-5xl text-white/90 drop-shadow">01</span>
+          </div>
+          <div class="p-7">
+            <h3 class="font-serif text-xl font-semibold text-matcha-900">覆下園での栽培 <span class="block text-xs font-sans font-normal text-gold mt-1 tracking-wide">Shade-Grown Cultivation</span></h3>
+            <p class="mt-3 text-sm text-matcha-800/75 leading-relaxed">
+              摘採前の約20日間、藁や寒冷紗で茶園を覆い日光を遮ります。旨み成分テアニンを豊かに蓄え、
+              渋みを抑えた深い甘みと鮮やかな緑を生み出します。
+            </p>
+          </div>
+        </article>
+
+        <!-- Step 2 -->
+        <article class="reveal group relative rounded-2xl overflow-hidden bg-white shadow-sm ring-1 ring-matcha-900/5">
+          <div class="relative h-64 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?auto=format&fit=crop&w=800&q=80"
+                 alt="一芯二葉を丁寧に手摘みする様子" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+            <span class="absolute top-4 left-4 font-display text-5xl text-white/90 drop-shadow">02</span>
+          </div>
+          <div class="p-7">
+            <h3 class="font-serif text-xl font-semibold text-matcha-900">丁寧な手摘み <span class="block text-xs font-sans font-normal text-gold mt-1 tracking-wide">Hand-Picking</span></h3>
+            <p class="mt-3 text-sm text-matcha-800/75 leading-relaxed">
+              最上級の碾茶には、柔らかな新芽「一芯二葉」だけを手摘みで。熟練の摘み手が一枚ずつ見極め、
+              雑味のない澄んだ味わいの原料を選び抜きます。
+            </p>
+          </div>
+        </article>
+
+        <!-- Step 3 -->
+        <article class="reveal group relative rounded-2xl overflow-hidden bg-white shadow-sm ring-1 ring-matcha-900/5">
+          <div class="relative h-64 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1582793988951-9aed5509eb97?auto=format&fit=crop&w=800&q=80"
+                 alt="伝統的な石臼で碾茶をゆっくりと挽く工程" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+            <span class="absolute top-4 left-4 font-display text-5xl text-white/90 drop-shadow">03</span>
+          </div>
+          <div class="p-7">
+            <h3 class="font-serif text-xl font-semibold text-matcha-900">伝統の石臼挽き <span class="block text-xs font-sans font-normal text-gold mt-1 tracking-wide">Stone-Ground</span></h3>
+            <p class="mt-3 text-sm text-matcha-800/75 leading-relaxed">
+              石臼が一時間に挽けるのはわずか約40g。熱を持たせずゆっくりと挽くことで、
+              香りと栄養を損なわない、絹のように滑らかな微粉の抹茶に仕上げます。
+            </p>
+          </div>
+        </article>
+      </div>
+
+      <!-- Stats -->
+      <div class="reveal mt-20 grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-6 border-t border-matcha-900/10 pt-12 text-center">
+        <div><p class="font-display text-5xl text-matcha-600">75<span class="text-2xl">+</span></p><p class="mt-2 text-sm text-matcha-800/70">years of craft<br />創業からの歩み</p></div>
+        <div><p class="font-display text-5xl text-matcha-600">40<span class="text-2xl">g/h</span></p><p class="mt-2 text-sm text-matcha-800/70">stone-milling<br />石臼一台の生産量</p></div>
+        <div><p class="font-display text-5xl text-matcha-600">30<span class="text-2xl">+</span></p><p class="mt-2 text-sm text-matcha-800/70">countries served<br />輸出対応国</p></div>
+        <div><p class="font-display text-5xl text-matcha-600">100<span class="text-2xl">%</span></p><p class="mt-2 text-sm text-matcha-800/70">Uji origin<br />宇治産茶葉</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ GRADES & VARIETIES ============================ -->
+  <section id="grades" class="relative bg-matcha-950 text-white py-24 sm:py-32">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8">
+      <div class="max-w-3xl">
+        <p class="reveal font-display italic text-gold text-xl mb-3">Grades &amp; Varieties</p>
+        <h2 class="reveal font-serif text-3xl sm:text-5xl font-semibold leading-tight">品種の個性、用途のグレード。</h2>
+        <p class="reveal mt-6 text-white/70 leading-loose">
+          畑ごと、品種ごとに異なる個性。用途に応じた最適なグレードを、明快な基準でご提案します。
+        </p>
+      </div>
+
+      <!-- Varieties -->
+      <h3 class="reveal mt-16 mb-6 text-sm tracking-widest2 uppercase text-gold">単一品種 / Single-Cultivar</h3>
+      <div class="grid gap-6 md:grid-cols-3">
+        <div class="reveal rounded-2xl bg-white/5 ring-1 ring-white/10 p-7 hover:bg-white/10 transition">
+          <div class="flex items-baseline justify-between">
+            <h4 class="font-serif text-2xl">朝日 <span class="font-display text-base text-gold ml-1">Asahi</span></h4>
+            <span class="text-xs px-3 py-1 rounded-full bg-gold/20 text-gold">最上級</span>
+          </div>
+          <p class="mt-4 text-sm text-white/70 leading-relaxed">「抹茶の王様」と称される希少品種。とろりとした濃厚な旨みと気品ある余韻。濃茶に最適。</p>
+          <dl class="mt-5 space-y-1.5 text-xs text-white/60">
+            <div class="flex justify-between border-b border-white/10 pb-1.5"><dt>旨み Umami</dt><dd class="text-matcha-200">●●●●●</dd></div>
+            <div class="flex justify-between border-b border-white/10 pb-1.5"><dt>渋み Astringency</dt><dd class="text-matcha-200">●●○○○</dd></div>
+            <div class="flex justify-between"><dt>香り Aroma</dt><dd class="text-matcha-200">●●●●○</dd></div>
+          </dl>
+        </div>
+
+        <div class="reveal rounded-2xl bg-white/5 ring-1 ring-white/10 p-7 hover:bg-white/10 transition">
+          <div class="flex items-baseline justify-between">
+            <h4 class="font-serif text-2xl">成里乃 <span class="font-display text-base text-gold ml-1">Samidori</span></h4>
+            <span class="text-xs px-3 py-1 rounded-full bg-matcha-500/30 text-matcha-100">上級</span>
+          </div>
+          <p class="mt-4 text-sm text-white/70 leading-relaxed">澄んだ鮮緑と均整のとれた味わい。まろやかな甘みと軽やかな香りで、薄茶・飲用に幅広く。</p>
+          <dl class="mt-5 space-y-1.5 text-xs text-white/60">
+            <div class="flex justify-between border-b border-white/10 pb-1.5"><dt>旨み Umami</dt><dd class="text-matcha-200">●●●●○</dd></div>
+            <div class="flex justify-between border-b border-white/10 pb-1.5"><dt>渋み Astringency</dt><dd class="text-matcha-200">●●●○○</dd></div>
+            <div class="flex justify-between"><dt>香り Aroma</dt><dd class="text-matcha-200">●●●●●</dd></div>
+          </dl>
+        </div>
+
+        <div class="reveal rounded-2xl bg-white/5 ring-1 ring-white/10 p-7 hover:bg-white/10 transition">
+          <div class="flex items-baseline justify-between">
+            <h4 class="font-serif text-2xl">おくみどり <span class="font-display text-base text-gold ml-1">Okumidori</span></h4>
+            <span class="text-xs px-3 py-1 rounded-full bg-matcha-500/30 text-matcha-100">汎用</span>
+          </div>
+          <p class="mt-4 text-sm text-white/70 leading-relaxed">力強い色調とコク。ミルクや加熱に負けない骨格で、ラテ・製菓・加工用途に最適な万能品種。</p>
+          <dl class="mt-5 space-y-1.5 text-xs text-white/60">
+            <div class="flex justify-between border-b border-white/10 pb-1.5"><dt>旨み Umami</dt><dd class="text-matcha-200">●●●○○</dd></div>
+            <div class="flex justify-between border-b border-white/10 pb-1.5"><dt>渋み Astringency</dt><dd class="text-matcha-200">●●●●○</dd></div>
+            <div class="flex justify-between"><dt>発色 Color</dt><dd class="text-matcha-200">●●●●●</dd></div>
+          </dl>
+        </div>
+      </div>
+
+      <!-- Grade comparison table -->
+      <h3 class="reveal mt-20 mb-6 text-sm tracking-widest2 uppercase text-gold">用途別グレード / By Application</h3>
+      <div class="reveal overflow-x-auto rounded-2xl ring-1 ring-white/10">
+        <table class="w-full min-w-[720px] text-left text-sm">
+          <thead>
+            <tr class="bg-white/5 text-white/80">
+              <th class="p-5 font-medium font-serif text-base">グレード / Grade</th>
+              <th class="p-5 font-medium">用途 / Use</th>
+              <th class="p-5 font-medium">味わい / Profile</th>
+              <th class="p-5 font-medium">主な対象 / For</th>
+              <th class="p-5 font-medium text-right">形態 / Format</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/10">
+            <tr class="hover:bg-white/5 transition">
+              <td class="p-5">
+                <span class="font-serif text-lg text-matcha-100">Ceremonial</span>
+                <span class="block text-xs text-white/50 mt-0.5">セレモニアル（お茶会・上級飲用）</span>
+              </td>
+              <td class="p-5 text-white/70">濃茶・薄茶<br />ストレート飲用</td>
+              <td class="p-5 text-white/70">濃厚な旨み・上品な甘み・雑味なし</td>
+              <td class="p-5 text-white/70">茶道・高級カフェ<br />ギフト</td>
+              <td class="p-5 text-right text-white/70">20–100g 缶<br />/ 小袋</td>
+            </tr>
+            <tr class="hover:bg-white/5 transition">
+              <td class="p-5">
+                <span class="font-serif text-lg text-matcha-100">Cafe / Premium</span>
+                <span class="block text-xs text-white/50 mt-0.5">カフェ・プレミアム（ラテ用）</span>
+              </td>
+              <td class="p-5 text-white/70">抹茶ラテ<br />ドリンク・スイーツ</td>
+              <td class="p-5 text-white/70">ミルクに負けないコクと鮮やかな発色</td>
+              <td class="p-5 text-white/70">カフェ・ロースター<br />スイーツ店</td>
+              <td class="p-5 text-right text-white/70">100g–1kg<br />アルミ袋</td>
+            </tr>
+            <tr class="hover:bg-white/5 transition">
+              <td class="p-5">
+                <span class="font-serif text-lg text-matcha-100">Industrial</span>
+                <span class="block text-xs text-white/50 mt-0.5">インダストリアル（加工・製菓用）</span>
+              </td>
+              <td class="p-5 text-white/70">製菓・製パン<br />食品加工・OEM原料</td>
+              <td class="p-5 text-white/70">安定した品質・力強い色と香り・コスト最適</td>
+              <td class="p-5 text-white/70">メーカー・工場<br />大量調達</td>
+              <td class="p-5 text-right text-white/70">1–20kg<br />大容量・業務用</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Recipes / Usage -->
+      <h3 class="reveal mt-20 mb-6 text-sm tracking-widest2 uppercase text-gold">用途提案 / Recipes &amp; Uses</h3>
+      <div class="grid gap-6 sm:grid-cols-3">
+        <div class="reveal group relative rounded-2xl overflow-hidden h-56">
+          <img src="https://images.unsplash.com/photo-1515823662972-da6a2e4d3002?auto=format&fit=crop&w=800&q=80" alt="鮮やかな抹茶ラテ" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+          <div class="absolute inset-0 bg-gradient-to-t from-sumi/85 to-transparent"></div>
+          <div class="absolute bottom-0 p-6"><h4 class="font-serif text-xl">抹茶ラテ <span class="font-display text-sm text-gold">Matcha Latte</span></h4><p class="text-xs text-white/70 mt-1">Cafe グレード ×スチームミルク</p></div>
+        </div>
+        <div class="reveal group relative rounded-2xl overflow-hidden h-56">
+          <img src="https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?auto=format&fit=crop&w=800&q=80" alt="抹茶を使った焼き菓子" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+          <div class="absolute inset-0 bg-gradient-to-t from-sumi/85 to-transparent"></div>
+          <div class="absolute bottom-0 p-6"><h4 class="font-serif text-xl">製菓・スイーツ <span class="font-display text-sm text-gold">Pâtisserie</span></h4><p class="text-xs text-white/70 mt-1">Industrial グレード ×焼成・冷菓</p></div>
+        </div>
+        <div class="reveal group relative rounded-2xl overflow-hidden h-56">
+          <img src="https://images.unsplash.com/photo-1536013455962-15b0c67a2b39?auto=format&fit=crop&w=800&q=80" alt="茶筅で点てられた濃茶" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+          <div class="absolute inset-0 bg-gradient-to-t from-sumi/85 to-transparent"></div>
+          <div class="absolute bottom-0 p-6"><h4 class="font-serif text-xl">お茶会・濃茶 <span class="font-display text-sm text-gold">Ceremony</span></h4><p class="text-xs text-white/70 mt-1">Ceremonial グレード ×茶筅</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ B2B ============================ -->
+  <section id="b2b" class="relative bg-kinari py-24 sm:py-32">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div class="max-w-2xl">
+          <p class="reveal font-display italic text-gold text-xl mb-3">Global B2B &amp; Wholesale</p>
+          <h2 class="reveal font-serif text-3xl sm:text-5xl font-semibold text-matcha-900 leading-tight">法人・海外バイヤーの皆様へ</h2>
+          <p class="reveal mt-6 text-matcha-800/80 leading-loose">
+            OEM製造から大容量卸、オーガニック認証対応まで。安定供給と一貫品質で、
+            世界中のパートナーのビジネスを支えます。まずはお気軽にサンプルをご請求ください。
+          </p>
+        </div>
+        <a href="#contact" class="reveal shrink-0 inline-flex items-center gap-2 rounded-full bg-matcha-600 px-7 py-4 text-white font-medium hover:bg-matcha-700 transition">
+          お見積もり・お問い合わせ
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+      </div>
+
+      <div class="mt-14 grid gap-6 md:grid-cols-3">
+        <!-- Private Label -->
+        <a href="#contact" class="reveal group rounded-2xl overflow-hidden bg-white ring-1 ring-matcha-900/5 shadow-sm hover:shadow-xl transition">
+          <div class="h-48 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1610970881699-44a5587cabec?auto=format&fit=crop&w=800&q=80" alt="OEM・プライベートラベルのパッケージ" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+          </div>
+          <div class="p-7">
+            <span class="font-display text-sm text-gold">01 — Private Label</span>
+            <h3 class="mt-1 font-serif text-2xl text-matcha-900">OEM製造</h3>
+            <p class="mt-3 text-sm text-matcha-800/75 leading-relaxed">御社ブランドの抹茶を、小ロットから。原料選定・ブレンド設計・パッケージまで一貫サポート。</p>
+            <span class="mt-5 inline-flex items-center gap-1.5 text-sm text-matcha-600 font-medium group-hover:gap-3 transition-all">相談する <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg></span>
+          </div>
+        </a>
+
+        <!-- Bulk Wholesale -->
+        <a href="#contact" class="reveal group rounded-2xl overflow-hidden bg-white ring-1 ring-matcha-900/5 shadow-sm hover:shadow-xl transition">
+          <div class="h-48 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1524350876685-274059332603?auto=format&fit=crop&w=800&q=80" alt="大容量卸のための抹茶原料" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+          </div>
+          <div class="p-7">
+            <span class="font-display text-sm text-gold">02 — Bulk Wholesale</span>
+            <h3 class="mt-1 font-serif text-2xl text-matcha-900">大容量卸</h3>
+            <p class="mt-3 text-sm text-matcha-800/75 leading-relaxed">1kg〜業務用の大容量まで、安定した品質とロットで供給。継続契約・スポット調達の双方に対応。</p>
+            <span class="mt-5 inline-flex items-center gap-1.5 text-sm text-matcha-600 font-medium group-hover:gap-3 transition-all">相談する <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg></span>
+          </div>
+        </a>
+
+        <!-- Certified Organic -->
+        <a href="#contact" class="reveal group rounded-2xl overflow-hidden bg-white ring-1 ring-matcha-900/5 shadow-sm hover:shadow-xl transition">
+          <div class="h-48 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1497515114629-f71d768fd07c?auto=format&fit=crop&w=800&q=80" alt="有機栽培・オーガニック認証の茶園" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+          </div>
+          <div class="p-7">
+            <span class="font-display text-sm text-gold">03 — Certified Organic</span>
+            <h3 class="mt-1 font-serif text-2xl text-matcha-900">オーガニック認証</h3>
+            <p class="mt-3 text-sm text-matcha-800/75 leading-relaxed">JAS有機・USDA Organic・EU Organic に対応した製品ラインをご用意。認証書類の発行も可能です。</p>
+            <span class="mt-5 inline-flex items-center gap-1.5 text-sm text-matcha-600 font-medium group-hover:gap-3 transition-all">相談する <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg></span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Certification logos strip -->
+      <div class="reveal mt-14 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-matcha-800/50 text-sm">
+        <span class="tracking-widest2 uppercase text-xs">Certifications</span>
+        <span class="font-serif text-lg">JAS 有機</span><span class="opacity-30">/</span>
+        <span class="font-serif text-lg">USDA Organic</span><span class="opacity-30">/</span>
+        <span class="font-serif text-lg">EU Organic</span><span class="opacity-30">/</span>
+        <span class="font-serif text-lg">HALAL</span><span class="opacity-30">/</span>
+        <span class="font-serif text-lg">ISO 22000</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ CONTACT ============================ -->
+  <section id="contact" class="relative bg-matcha-900 text-white py-24 sm:py-32 overflow-hidden">
+    <img src="https://images.unsplash.com/photo-1627435601361-ec25f5b1d0e5?auto=format&fit=crop&w=1600&q=80" alt="" aria-hidden="true" class="absolute inset-0 w-full h-full object-cover opacity-10" />
+    <div class="relative mx-auto max-w-6xl px-5 sm:px-8">
+      <div class="grid gap-14 lg:grid-cols-2">
+        <!-- Left copy -->
+        <div>
+          <p class="reveal font-display italic text-gold text-xl mb-3">Contact &amp; Sample Request</p>
+          <h2 class="reveal font-serif text-3xl sm:text-5xl font-semibold leading-tight">サンプル請求・<br />お見積もりのご依頼</h2>
+          <p class="reveal mt-6 text-white/75 leading-loose max-w-md">
+            用途・数量をお知らせいただければ、最適なグレードをご提案いたします。
+            海外バイヤーの皆様からのお問い合わせも歓迎します（英語対応可）。
+          </p>
+
+          <dl class="reveal mt-10 space-y-5 text-sm">
+            <div class="flex gap-4">
+              <dt class="w-24 shrink-0 text-white/50">Email</dt>
+              <dd><a href="mailto:sales@matcha39.example" class="link-underline hover:text-gold">sales@matcha39.example</a></dd>
+            </div>
+            <div class="flex gap-4">
+              <dt class="w-24 shrink-0 text-white/50">Tel</dt>
+              <dd>+81 (0)774-00-0000</dd>
+            </div>
+            <div class="flex gap-4">
+              <dt class="w-24 shrink-0 text-white/50">Hours</dt>
+              <dd>平日 9:00–18:00 (JST)</dd>
+            </div>
+            <div class="flex gap-4">
+              <dt class="w-24 shrink-0 text-white/50">Address</dt>
+              <dd>〒611-0000 京都府宇治市〇〇町0-0<br /><span class="text-white/50">Uji, Kyoto, Japan</span></dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Form -->
+        <form id="sampleForm" class="reveal rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur p-7 sm:p-9 space-y-5">
+          <!-- Purpose toggle -->
+          <div class="flex gap-2 p-1 rounded-full bg-white/5 text-sm">
+            <label class="flex-1 text-center py-2 rounded-full cursor-pointer transition has-[:checked]:bg-gold has-[:checked]:text-sumi">
+              <input type="radio" name="type" value="B2B" class="sr-only" checked /> 法人 / B2B
+            </label>
+            <label class="flex-1 text-center py-2 rounded-full cursor-pointer transition has-[:checked]:bg-gold has-[:checked]:text-sumi">
+              <input type="radio" name="type" value="B2C" class="sr-only" /> 個人 / B2C
+            </label>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-white/60 mb-1.5" for="company">会社名 / Company</label>
+              <input id="company" name="company" type="text" placeholder="Cafe Nozomi Ltd." class="w-full rounded-lg bg-white/10 border border-white/10 px-4 py-3 text-sm placeholder-white/30 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold" />
+            </div>
+            <div>
+              <label class="block text-xs text-white/60 mb-1.5" for="name">お名前 / Name <span class="text-gold">*</span></label>
+              <input id="name" name="name" type="text" required placeholder="山田 太郎" class="w-full rounded-lg bg-white/10 border border-white/10 px-4 py-3 text-sm placeholder-white/30 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold" />
+            </div>
+            <div>
+              <label class="block text-xs text-white/60 mb-1.5" for="email">メール / Email <span class="text-gold">*</span></label>
+              <input id="email" name="email" type="email" required placeholder="you@example.com" class="w-full rounded-lg bg-white/10 border border-white/10 px-4 py-3 text-sm placeholder-white/30 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold" />
+            </div>
+            <div>
+              <label class="block text-xs text-white/60 mb-1.5" for="country">国・地域 / Country</label>
+              <input id="country" name="country" type="text" placeholder="Japan / USA / …" class="w-full rounded-lg bg-white/10 border border-white/10 px-4 py-3 text-sm placeholder-white/30 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold" />
+            </div>
+            <div>
+              <label class="block text-xs text-white/60 mb-1.5" for="grade">希望グレード / Grade</label>
+              <select id="grade" name="grade" class="w-full rounded-lg bg-white/10 border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold [&>option]:text-sumi">
+                <option>Ceremonial（お茶会・上級飲用）</option>
+                <option>Cafe / Premium（ラテ用）</option>
+                <option>Industrial（加工・製菓用）</option>
+                <option>相談したい / Not sure</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-white/60 mb-1.5" for="qty">想定数量 / Quantity</label>
+              <input id="qty" name="qty" type="text" placeholder="例: 5kg / 月, 100缶" class="w-full rounded-lg bg-white/10 border border-white/10 px-4 py-3 text-sm placeholder-white/30 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs text-white/60 mb-1.5" for="message">ご要望 / Message</label>
+            <textarea id="message" name="message" rows="3" placeholder="用途・ご希望などをご記入ください。" class="w-full rounded-lg bg-white/10 border border-white/10 px-4 py-3 text-sm placeholder-white/30 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold resize-none"></textarea>
+          </div>
+
+          <label class="flex items-start gap-3 text-xs text-white/60">
+            <input type="checkbox" required class="mt-0.5 accent-gold" />
+            <span><a href="#" class="link-underline text-white/80">プライバシーポリシー</a>に同意します / I agree to the Privacy Policy.</span>
+          </label>
+
+          <button type="submit" class="w-full rounded-full bg-gold py-4 text-sumi font-medium hover:bg-white transition-colors">
+            送信する / Send Request
+          </button>
+          <p id="formNote" class="hidden text-center text-sm text-matcha-200"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FOOTER ============================ -->
+  <footer class="bg-sumi text-white/70">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8 py-16">
+      <div class="grid gap-12 md:grid-cols-4">
+        <!-- Brand -->
+        <div class="md:col-span-2 max-w-sm">
+          <a href="#top" class="font-display text-2xl text-white">Japanese Matcha <span class="text-gold">39</span></a>
+          <p class="mt-4 text-sm leading-relaxed">
+            覆下園での栽培から石臼挽きまで一貫して手掛ける、宇治抹茶の専門ブランド。
+            世界のカフェ・製菓・お茶会へ、本物の一碗を。
+          </p>
+          <!-- Social -->
+          <div class="mt-6 flex gap-3">
+            <a href="#" aria-label="Instagram" class="w-10 h-10 grid place-items-center rounded-full bg-white/10 hover:bg-gold hover:text-sumi transition">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.3 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.1.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.1-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.3-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.1-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.3-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.1 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.7.1-1.1.1-1.7.2-2.1.4-.5.2-.9.4-1.3.8-.4.4-.6.8-.8 1.3-.2.4-.3 1-.4 2.1C2.6 8.5 2.6 8.9 2.6 12s0 3.5.1 4.7c.1 1.1.2 1.7.4 2.1.2.5.4.9.8 1.3.4.4.8.6 1.3.8.4.2 1 .3 2.1.4 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1.1-.1 1.7-.2 2.1-.4.5-.2.9-.4 1.3-.8.4-.4.6-.8.8-1.3.2-.4.3-1 .4-2.1.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c-.1-1.1-.2-1.7-.4-2.1-.2-.5-.4-.9-.8-1.3-.4-.4-.8-.6-1.3-.8-.4-.2-1-.3-2.1-.4-1.2-.1-1.6-.1-4.7-.1zm0 3.1a4.9 4.9 0 110 9.8 4.9 4.9 0 010-9.8zm0 8.1a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4zm6.3-8.3a1.15 1.15 0 11-2.3 0 1.15 1.15 0 012.3 0z"/></svg>
+            </a>
+            <a href="#" aria-label="X (Twitter)" class="w-10 h-10 grid place-items-center rounded-full bg-white/10 hover:bg-gold hover:text-sumi transition">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.9 1.5h3.6l-7.9 9 9.3 12.3h-7.3l-5.7-7.5-6.6 7.5H.7l8.5-9.7L0 1.5h7.5l5.2 6.9 6.2-6.9zm-1.3 19h2L6.5 3.4H4.4l13.2 17.1z"/></svg>
+            </a>
+            <a href="#" aria-label="LinkedIn" class="w-10 h-10 grid place-items-center rounded-full bg-white/10 hover:bg-gold hover:text-sumi transition">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3v9zM6.5 8.3a1.7 1.7 0 110-3.4 1.7 1.7 0 010 3.4zM19 19h-3v-4.7c0-1.1 0-2.5-1.5-2.5s-1.8 1.2-1.8 2.4V19h-3v-9h2.9v1.2h.1c.4-.8 1.4-1.5 2.8-1.5 3 0 3.5 2 3.5 4.5V19z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Nav -->
+        <div>
+          <h4 class="text-white text-sm font-medium tracking-wide mb-4">Navigation</h4>
+          <ul class="space-y-3 text-sm">
+            <li><a href="#story"   class="link-underline hover:text-white">こだわり / Story</a></li>
+            <li><a href="#grades"  class="link-underline hover:text-white">商品 / Grades</a></li>
+            <li><a href="#b2b"     class="link-underline hover:text-white">法人のお客様 / B2B</a></li>
+            <li><a href="#contact" class="link-underline hover:text-white">お問い合わせ / Contact</a></li>
+          </ul>
+        </div>
+
+        <!-- Company -->
+        <div>
+          <h4 class="text-white text-sm font-medium tracking-wide mb-4">会社概要 / Company</h4>
+          <ul class="space-y-2.5 text-sm">
+            <li><span class="text-white/40">運営会社</span><br />株式会社39ちゅあり</li>
+            <li><span class="text-white/40">所在地</span><br />京都府宇治市</li>
+            <li><span class="text-white/40">事業内容</span><br />抹茶の製造・卸・OEM・輸出</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="mt-14 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4 items-center justify-between text-xs text-white/40">
+        <p>© 2026 株式会社39ちゅあり — Japanese Matcha 39. All rights reserved.</p>
+        <div class="flex flex-wrap gap-x-6 gap-y-2">
+          <a href="#" class="hover:text-white">プライバシーポリシー</a>
+          <a href="#" class="hover:text-white">特定商取引法</a>
+          <a href="#" class="hover:text-white">Terms</a>
+          <a href="#" class="hover:text-white">Cookie Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================ SCRIPTS ============================ -->
+  <script>
+    // Header background on scroll
+    const header = document.getElementById('header');
+    const onScroll = () => {
+      if (window.scrollY > 40) {
+        header.classList.add('bg-matcha-950/90', 'backdrop-blur', 'shadow-lg', 'h-auto');
+      } else {
+        header.classList.remove('bg-matcha-950/90', 'backdrop-blur', 'shadow-lg');
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // Mobile menu
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const menuIcon = document.getElementById('menuIcon');
+    const openPath = '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"/>';
+    const closePath = '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>';
+    let menuOpen = false;
+    const toggleMenu = (state) => {
+      menuOpen = state ?? !menuOpen;
+      mobileMenu.classList.toggle('hidden', !menuOpen);
+      menuIcon.innerHTML = menuOpen ? closePath : openPath;
+      menuBtn.setAttribute('aria-expanded', String(menuOpen));
+    };
+    menuBtn.addEventListener('click', () => toggleMenu());
+    document.querySelectorAll('.mobile-link').forEach(a => a.addEventListener('click', () => toggleMenu(false)));
+
+    // Reveal on scroll
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Form dummy submit
+    const form = document.getElementById('sampleForm');
+    const note = document.getElementById('formNote');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = form.querySelector('#name').value || 'お客様';
+      note.textContent = `${name} 様、ありがとうございます。サンプル請求を受け付けました（デモ）。担当者よりご連絡いたします。`;
+      note.classList.remove('hidden');
+      form.querySelector('button[type="submit"]').textContent = '送信済み / Sent ✓';
+      form.reset();
+    });
+  </script>
+</body>
+</html>
