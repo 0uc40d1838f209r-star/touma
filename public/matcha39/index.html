@@ -44,26 +44,7 @@
     .reveal { opacity:0; transform:translateY(28px); transition:opacity .9s ease, transform .9s ease; }
     .reveal.is-visible { opacity:1; transform:none; }
 
-    /* ---- Hero: Ken Burns crossfade slideshow ---- */
-    .slide {
-      position:absolute; inset:0; background-size:cover; background-position:center;
-      opacity:0; will-change:opacity,transform;
-      animation: kenburns 36s linear infinite;
-    }
-    .slide:nth-child(1){ animation-delay:0s }
-    .slide:nth-child(2){ animation-delay:9s }
-    .slide:nth-child(3){ animation-delay:18s }
-    .slide:nth-child(4){ animation-delay:27s }
-    @keyframes kenburns {
-      0%   { opacity:0; transform:scale(1.00); }
-      3%   { opacity:1; }
-      22%  { opacity:1; }
-      27%  { opacity:0; transform:scale(1.10); }
-      100% { opacity:0; transform:scale(1.10); }
-    }
     @media (prefers-reduced-motion: reduce) {
-      .slide { animation:none; opacity:0; }
-      .slide:nth-child(1){ opacity:1; }
       .reveal { opacity:1; transform:none; transition:none; }
     }
 
@@ -80,7 +61,7 @@
 <body class="font-sans text-sumi bg-kinari antialiased">
 
 <!-- ============================ HEADER ============================ -->
-<header id="header" class="fixed top-0 inset-x-0 z-50 transition-all duration-500 text-white">
+<header id="header" class="fixed top-0 inset-x-0 z-50 transition-all duration-500 text-matcha-900">
   <div class="mx-auto max-w-7xl px-5 sm:px-8">
     <div class="flex items-center justify-between h-20">
       <a href="#top" class="flex flex-col leading-none" aria-label="Japanese Matcha Store 39 ホーム">
@@ -117,48 +98,60 @@
 </header>
 
 <!-- ============================ HERO ============================ -->
-<section id="top" class="relative min-h-screen flex items-center overflow-hidden bg-matcha-950">
-  <!-- 4枚の実写がゆっくりズームしながらクロスフェード -->
-  <div class="absolute inset-0" aria-hidden="true">
-    <div class="slide" style="background-image:url('assets/hero-1-fuji.jpg')"></div>
-    <div class="slide" style="background-image:url('assets/hero-4-kagoshima.jpg')"></div>
-    <div class="slide" style="background-image:url('assets/hero-3-bowl.jpg')"></div>
-    <div class="slide" style="background-image:url('assets/hero-2-field.jpg')"></div>
-  </div>
-  <div class="absolute inset-0 bg-gradient-to-b from-sumi/70 via-sumi/45 to-matcha-950/90"></div>
+<section id="top" class="relative min-h-screen flex items-center overflow-hidden bg-kinari">
+  <!-- 和紙のような淡い地の質感 -->
+  <div class="absolute inset-0 bg-gradient-to-br from-matcha-50 via-kinari to-matcha-100/60" aria-hidden="true"></div>
+  <div class="absolute -top-32 -left-32 w-[32rem] h-[32rem] rounded-full bg-matcha-200/30 blur-3xl" aria-hidden="true"></div>
 
-  <div class="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 w-full pt-24">
-    <div class="max-w-3xl text-white">
-      <p class="reveal font-display italic text-gold text-xl sm:text-2xl mb-4">Japanese Matcha to the World</p>
-      <h1 class="reveal font-serif font-semibold leading-[1.15] text-5xl sm:text-6xl lg:text-7xl">
-        日本の抹茶を<br /><span class="text-matcha-200">世界へ</span>。
-      </h1>
-      <p class="reveal mt-7 text-base sm:text-lg text-white/85 leading-relaxed max-w-xl">
-        宇治、静岡、鹿児島、八女 — 日本各地の茶産地から、用途に合う抹茶を選び抜いて。
-        <span class="text-white font-medium">Japanese Matcha Store 39</span> が、
-        世界のカフェ・製菓メーカー・ご家庭へお届けします。
-      </p>
+  <div class="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 w-full pt-28 pb-16 lg:py-32">
+    <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-center">
 
-      <div class="reveal mt-10 flex flex-col sm:flex-row gap-4">
-        <a href="#contact" class="inline-flex items-center justify-center gap-2 rounded-full bg-gold px-8 py-4 text-sumi font-medium hover:bg-white transition-colors">
-          サンプル請求 <span class="font-display text-sm opacity-80">Sample Request</span>
-        </a>
-        <a href="#grades" class="inline-flex items-center justify-center gap-2 rounded-full border border-white/60 px-8 py-4 font-medium hover:bg-white hover:text-sumi transition-colors">
-          商品一覧 <span class="font-display text-sm opacity-70">Products</span>
-        </a>
+      <!-- 左: コピー -->
+      <div class="order-2 lg:order-1">
+        <p class="reveal font-display italic text-gold text-xl sm:text-2xl mb-4">Japanese Matcha to the World</p>
+        <h1 class="reveal font-serif font-semibold leading-[1.12] text-5xl sm:text-6xl lg:text-7xl text-matcha-900">
+          日本の抹茶を<br /><span class="text-matcha-500">世界へ</span>。
+        </h1>
+        <p class="reveal mt-7 text-base sm:text-lg text-matcha-800/80 leading-relaxed max-w-xl">
+          宇治、静岡、鹿児島、八女 — 日本各地の茶産地から、用途に合う抹茶を選び抜いて。
+          <span class="text-matcha-900 font-medium">Japanese Matcha Store 39</span> が、
+          世界のカフェ・製菓メーカー・ご家庭へお届けします。
+        </p>
+
+        <div class="reveal mt-10 flex flex-col sm:flex-row gap-4">
+          <a href="#contact" class="inline-flex items-center justify-center gap-2 rounded-full bg-matcha-600 px-8 py-4 text-white font-medium hover:bg-matcha-700 transition-colors shadow-lg shadow-matcha-900/10">
+            サンプル請求 <span class="font-display text-sm opacity-80">Sample Request</span>
+          </a>
+          <a href="#grades" class="inline-flex items-center justify-center gap-2 rounded-full border border-matcha-900/25 px-8 py-4 font-medium text-matcha-900 hover:bg-matcha-900 hover:text-white transition-colors">
+            商品一覧 <span class="font-display text-sm opacity-70">Products</span>
+          </a>
+        </div>
+
+        <div class="reveal mt-12 flex flex-wrap gap-x-8 gap-y-3 text-xs sm:text-sm text-matcha-800/70">
+          <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold"></span> 4産地から選べる / Multi-Region Sourcing</span>
+          <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold"></span> Private Label / OEM対応</span>
+          <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold"></span> Global Export / 海外発送</span>
+        </div>
       </div>
 
-      <div class="reveal mt-12 flex flex-wrap gap-x-8 gap-y-3 text-xs sm:text-sm text-white/70">
-        <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold"></span> 4産地から選べる / Multi-Region Sourcing</span>
-        <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold"></span> Private Label / OEM対応</span>
-        <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold"></span> Global Export / 海外発送</span>
+      <!-- 右: メインビジュアル（縦位置のまま大きく見せる） -->
+      <div class="order-1 lg:order-2 reveal">
+        <figure class="relative mx-auto max-w-sm lg:max-w-none">
+          <div class="absolute -inset-3 rounded-[2rem] bg-matcha-300/25 blur-2xl" aria-hidden="true"></div>
+          <img id="heroMain"
+               src="assets/hero-main.jpg"
+               onerror="this.onerror=null;this.src='assets/grade-industrial.jpg';this.classList.add('aspect-[4/3]')"
+               alt="鮮やかな抹茶の粉と、刷いた一筋"
+               class="relative w-full aspect-[3/4] object-cover rounded-[1.75rem] shadow-2xl shadow-matcha-900/20 ring-1 ring-matcha-900/5" />
+          <figcaption class="relative mt-4 text-center text-xs tracking-widest2 uppercase text-matcha-800/50">Matcha, freshly milled</figcaption>
+        </figure>
       </div>
     </div>
   </div>
 
-  <a href="#regions" class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-white/80 flex flex-col items-center gap-2">
+  <a href="#regions" class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-matcha-800/60 hidden sm:flex flex-col items-center gap-2">
     <span class="text-[10px] tracking-widest2 uppercase">Scroll</span>
-    <span class="w-px h-10 bg-white/40 relative overflow-hidden">
+    <span class="w-px h-10 bg-matcha-900/20 relative overflow-hidden">
       <span class="absolute inset-x-0 top-0 h-4 bg-gold" style="animation:scrolldot 2s ease-in-out infinite"></span>
     </span>
   </a>
@@ -592,22 +585,21 @@
     <!-- Photo credits (CC ライセンスの表示義務に対応) -->
     <details class="mt-12 text-xs text-white/40">
       <summary class="cursor-pointer hover:text-white/70 transition">写真クレジット / Photo Credits</summary>
-      <div class="mt-4 space-y-1.5 leading-relaxed"><p>“Iioka tea plantation 02” by Indiana jo — CC BY-SA 4.0 / via <a href="https://commons.wikimedia.org/wiki/File:Iioka_tea_plantation_02.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
+      <div class="mt-4 space-y-1.5 leading-relaxed">
+        <p>“Iioka tea plantation 02” by Indiana jo — CC BY-SA 4.0 / via <a href="https://commons.wikimedia.org/wiki/File:Iioka_tea_plantation_02.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
         <p>“Chasen-side-fs PNr°0499” by D-Kuru — CC BY-SA 4.0 / via <a href="https://commons.wikimedia.org/wiki/File:Chasen-side-fs_PNr%C2%B00499.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
         <p>“桜と茶畑の小道(静岡県雁公園付近) - panoramio” by vault006 — CC BY 3.0 / via <a href="https://commons.wikimedia.org/wiki/File:%E6%A1%9C%E3%81%A8%E8%8C%B6%E7%95%91%E3%81%AE%E5%B0%8F%E9%81%93(%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9B%81%E5%85%AC%E5%9C%92%E4%BB%98%E8%BF%91)_-_panoramio.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
         <p>“銭司(ぜず)茶畑（鋳銭司跡）” by シン日本紀行 — CC0 / via <a href="https://commons.wikimedia.org/wiki/File:%E9%8A%AD%E5%8F%B8(%E3%81%9C%E3%81%9A)%E8%8C%B6%E7%95%91%EF%BC%88%E9%8B%B3%E9%8A%AD%E5%8F%B8%E8%B7%A1%EF%BC%89.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
         <p>“Matcha tea latte with rosetta latte art” by Irvan Ary Maulana — CC BY-SA 4.0 / via <a href="https://commons.wikimedia.org/wiki/File:Matcha_tea_latte_with_rosetta_latte_art.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
         <p>“Ceremonial matcha” by Matchalover99 — CC BY-SA 4.0 / via <a href="https://commons.wikimedia.org/wiki/File:Ceremonial_matcha.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
         <p>“Matcha Scoop” by Evanhoever — CC BY-SA 4.0 / via <a href="https://commons.wikimedia.org/wiki/File:Matcha_Scoop.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
-        <p>“神戸の茶畑 - panoramio” by くろふね — CC BY 3.0 / via <a href="https://commons.wikimedia.org/wiki/File:%E7%A5%9E%E6%88%B8%E3%81%AE%E8%8C%B6%E7%95%91_-_panoramio.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
-        <p>“今宮の茶畑 - panoramio” by くろふね — CC BY 3.0 / via <a href="https://commons.wikimedia.org/wiki/File:%E4%BB%8A%E5%AE%AE%E3%81%AE%E8%8C%B6%E7%95%91_-_panoramio.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
         <p>“Matcha (6328677556)” by cyclonebill from Copenhagen, Denmark — CC BY-SA 2.0 / via <a href="https://commons.wikimedia.org/wiki/File:Matcha_(6328677556).jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
-        <p>“Tea Plantation in Jusanzukabaru” by Ray_go — CC BY-SA 3.0 / via <a href="https://commons.wikimedia.org/wiki/File:Tea_Plantation_in_Jusanzukabaru.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
         <p>“Tea Plantation in Nansatsu Plateau” by Ray_go — CC BY-SA 3.0 / via <a href="https://commons.wikimedia.org/wiki/File:Tea_Plantation_in_Nansatsu_Plateau.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
         <p>“Tea-plantation Shizuoka-Fukuroi” by MaedaAkihiko — CC BY-SA 4.0 / via <a href="https://commons.wikimedia.org/wiki/File:Tea-plantation_Shizuoka-Fukuroi.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
         <p>“宇治白川の茶畑 02” by おいでやす千年の都 — CC0 / via <a href="https://commons.wikimedia.org/wiki/File:%E5%AE%87%E6%B2%BB%E7%99%BD%E5%B7%9D%E3%81%AE%E8%8C%B6%E7%95%91_02.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
         <p>“八女伝統本玉露 茶畑の様子” by 高山朱美 — CC BY-SA 4.0 / via <a href="https://commons.wikimedia.org/wiki/File:%E5%85%AB%E5%A5%B3%E4%BC%9D%E7%B5%B1%E6%9C%AC%E7%8E%89%E9%9C%B2_%E8%8C%B6%E7%95%91%E3%81%AE%E6%A7%98%E5%AD%90.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
-        <p>“Matcha Espuma Shaved IIe 01” by Naokijp — CC BY-SA 4.0 / via <a href="https://commons.wikimedia.org/wiki/File:Matcha_Espuma_Shaved_IIe_01.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p></div>
+        <p>“Matcha Espuma Shaved IIe 01” by Naokijp — CC BY-SA 4.0 / via <a href="https://commons.wikimedia.org/wiki/File:Matcha_Espuma_Shaved_IIe_01.jpg" target="_blank" rel="noopener" class="underline hover:text-white/70">Wikimedia Commons</a></p>
+      </div>
     </details>
 
     <div class="mt-10 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4 items-center justify-between text-xs text-white/40">
@@ -629,6 +621,9 @@
     header.classList.toggle('bg-matcha-950/90', s);
     header.classList.toggle('backdrop-blur', s);
     header.classList.toggle('shadow-lg', s);
+    // ヒーローが明るいため、最上部では濃い文字色・スクロール後は白に切り替える
+    header.classList.toggle('text-white', s);
+    header.classList.toggle('text-matcha-900', !s);
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
