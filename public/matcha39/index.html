@@ -121,13 +121,16 @@
 
   <!-- ============================ HERO ============================ -->
   <section id="top" class="relative min-h-screen flex items-center overflow-hidden">
-    <!-- Background media placeholder (video-ready) -->
-    <video class="hero-media absolute inset-0 w-full h-full object-cover" autoplay muted loop playsinline
-           poster="https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=1920&q=80">
-      <!-- 動画背景プレースホルダー: 実際の抹茶の動画URLに差し替え可 -->
+    <!-- 背景メディア: assets/ に置いたファイルを優先し、無ければプレースホルダーへ自動フォールバック -->
+    <img id="heroFallback"
+         src="assets/hero-poster.jpg"
+         onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=1920&q=80'"
+         alt="石臼で挽かれる鮮やかな抹茶" class="hero-media absolute inset-0 w-full h-full object-cover" />
+    <video id="heroVideo" class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000"
+           autoplay muted loop playsinline preload="metadata">
+      <source src="assets/hero.mp4" type="video/mp4" />
+      <source src="assets/hero.webm" type="video/webm" />
     </video>
-    <img src="https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=1920&q=80"
-         alt="石臼で挽かれる鮮やかな抹茶" class="absolute inset-0 w-full h-full object-cover" />
     <div class="absolute inset-0 bg-gradient-to-b from-sumi/70 via-sumi/45 to-matcha-950/85"></div>
 
     <div class="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 w-full pt-24">
@@ -192,7 +195,7 @@
         <!-- Step 1 -->
         <article class="reveal group relative rounded-2xl overflow-hidden bg-white shadow-sm ring-1 ring-matcha-900/5">
           <div class="relative h-64 overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?auto=format&fit=crop&w=800&q=80"
+            <img src="assets/story-1-cultivation.jpg" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1523920290228-4f321a939b4c?auto=format&fit=crop&w=800&q=80'"
                  alt="覆下園（おおいしたえん）で日光を遮って育てられる茶葉" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
             <span class="absolute top-4 left-4 font-display text-5xl text-white/90 drop-shadow">01</span>
           </div>
@@ -208,7 +211,7 @@
         <!-- Step 2 -->
         <article class="reveal group relative rounded-2xl overflow-hidden bg-white shadow-sm ring-1 ring-matcha-900/5">
           <div class="relative h-64 overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?auto=format&fit=crop&w=800&q=80"
+            <img src="assets/story-2-handpicking.jpg" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?auto=format&fit=crop&w=800&q=80'"
                  alt="一芯二葉を丁寧に手摘みする様子" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
             <span class="absolute top-4 left-4 font-display text-5xl text-white/90 drop-shadow">02</span>
           </div>
@@ -224,7 +227,7 @@
         <!-- Step 3 -->
         <article class="reveal group relative rounded-2xl overflow-hidden bg-white shadow-sm ring-1 ring-matcha-900/5">
           <div class="relative h-64 overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1582793988951-9aed5509eb97?auto=format&fit=crop&w=800&q=80"
+            <img src="assets/story-3-stonemill.jpg" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1582793988951-9aed5509eb97?auto=format&fit=crop&w=800&q=80'"
                  alt="伝統的な石臼で碾茶をゆっくりと挽く工程" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
             <span class="absolute top-4 left-4 font-display text-5xl text-white/90 drop-shadow">03</span>
           </div>
@@ -354,17 +357,17 @@
       <h3 class="reveal mt-20 mb-6 text-sm tracking-widest2 uppercase text-gold">用途提案 / Recipes &amp; Uses</h3>
       <div class="grid gap-6 sm:grid-cols-3">
         <div class="reveal group relative rounded-2xl overflow-hidden h-56">
-          <img src="https://images.unsplash.com/photo-1515823662972-da6a2e4d3002?auto=format&fit=crop&w=800&q=80" alt="鮮やかな抹茶ラテ" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+          <img src="assets/use-latte.jpg" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1515823662972-da6a2e4d3002?auto=format&fit=crop&w=800&q=80'" alt="鮮やかな抹茶ラテ" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105" />
           <div class="absolute inset-0 bg-gradient-to-t from-sumi/85 to-transparent"></div>
           <div class="absolute bottom-0 p-6"><h4 class="font-serif text-xl">抹茶ラテ <span class="font-display text-sm text-gold">Matcha Latte</span></h4><p class="text-xs text-white/70 mt-1">Cafe グレード ×スチームミルク</p></div>
         </div>
         <div class="reveal group relative rounded-2xl overflow-hidden h-56">
-          <img src="https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?auto=format&fit=crop&w=800&q=80" alt="抹茶を使った焼き菓子" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+          <img src="assets/use-sweets.jpg" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?auto=format&fit=crop&w=800&q=80'" alt="抹茶を使った焼き菓子" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105" />
           <div class="absolute inset-0 bg-gradient-to-t from-sumi/85 to-transparent"></div>
           <div class="absolute bottom-0 p-6"><h4 class="font-serif text-xl">製菓・スイーツ <span class="font-display text-sm text-gold">Pâtisserie</span></h4><p class="text-xs text-white/70 mt-1">Industrial グレード ×焼成・冷菓</p></div>
         </div>
         <div class="reveal group relative rounded-2xl overflow-hidden h-56">
-          <img src="https://images.unsplash.com/photo-1536013455962-15b0c67a2b39?auto=format&fit=crop&w=800&q=80" alt="茶筅で点てられた濃茶" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+          <img src="assets/use-ceremony.jpg" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1536013455962-15b0c67a2b39?auto=format&fit=crop&w=800&q=80'" alt="茶筅で点てられた濃茶" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105" />
           <div class="absolute inset-0 bg-gradient-to-t from-sumi/85 to-transparent"></div>
           <div class="absolute bottom-0 p-6"><h4 class="font-serif text-xl">お茶会・濃茶 <span class="font-display text-sm text-gold">Ceremony</span></h4><p class="text-xs text-white/70 mt-1">Ceremonial グレード ×茶筅</p></div>
         </div>
@@ -394,7 +397,7 @@
         <!-- Private Label -->
         <a href="#contact" class="reveal group rounded-2xl overflow-hidden bg-white ring-1 ring-matcha-900/5 shadow-sm hover:shadow-xl transition">
           <div class="h-48 overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1610970881699-44a5587cabec?auto=format&fit=crop&w=800&q=80" alt="OEM・プライベートラベルのパッケージ" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+            <img src="assets/b2b-oem.jpg" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1610970881699-44a5587cabec?auto=format&fit=crop&w=800&q=80'" alt="OEM・プライベートラベルのパッケージ" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
           </div>
           <div class="p-7">
             <span class="font-display text-sm text-gold">01 — Private Label</span>
@@ -407,7 +410,7 @@
         <!-- Bulk Wholesale -->
         <a href="#contact" class="reveal group rounded-2xl overflow-hidden bg-white ring-1 ring-matcha-900/5 shadow-sm hover:shadow-xl transition">
           <div class="h-48 overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1524350876685-274059332603?auto=format&fit=crop&w=800&q=80" alt="大容量卸のための抹茶原料" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+            <img src="assets/b2b-bulk.jpg" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1524350876685-274059332603?auto=format&fit=crop&w=800&q=80'" alt="大容量卸のための抹茶原料" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
           </div>
           <div class="p-7">
             <span class="font-display text-sm text-gold">02 — Bulk Wholesale</span>
@@ -420,7 +423,7 @@
         <!-- Certified Organic -->
         <a href="#contact" class="reveal group rounded-2xl overflow-hidden bg-white ring-1 ring-matcha-900/5 shadow-sm hover:shadow-xl transition">
           <div class="h-48 overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1497515114629-f71d768fd07c?auto=format&fit=crop&w=800&q=80" alt="有機栽培・オーガニック認証の茶園" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+            <img src="assets/b2b-organic.jpg" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1497515114629-f71d768fd07c?auto=format&fit=crop&w=800&q=80'" alt="有機栽培・オーガニック認証の茶園" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
           </div>
           <div class="p-7">
             <span class="font-display text-sm text-gold">03 — Certified Organic</span>
@@ -445,7 +448,7 @@
 
   <!-- ============================ CONTACT ============================ -->
   <section id="contact" class="relative bg-matcha-900 text-white py-24 sm:py-32 overflow-hidden">
-    <img src="https://images.unsplash.com/photo-1627435601361-ec25f5b1d0e5?auto=format&fit=crop&w=1600&q=80" alt="" aria-hidden="true" class="absolute inset-0 w-full h-full object-cover opacity-10" />
+    <img src="assets/contact-bg.jpg" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1627435601361-ec25f5b1d0e5?auto=format&fit=crop&w=1600&q=80'" alt="" aria-hidden="true" class="absolute inset-0 w-full h-full object-cover opacity-10" />
     <div class="relative mx-auto max-w-6xl px-5 sm:px-8">
       <div class="grid gap-14 lg:grid-cols-2">
         <!-- Left copy -->
@@ -635,6 +638,20 @@
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
     }, { threshold: 0.12 });
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Hero video: assets/hero.mp4 が存在すれば再生し、無ければ画像のまま
+    const heroVideo = document.getElementById('heroVideo');
+    if (heroVideo) {
+      const showVideo = () => heroVideo.classList.replace('opacity-0', 'opacity-100');
+      heroVideo.addEventListener('loadeddata', showVideo);
+      heroVideo.addEventListener('error', () => heroVideo.remove(), true);
+      // source 要素が全滅した場合も動画は表示しない
+      heroVideo.querySelectorAll('source').forEach(s =>
+        s.addEventListener('error', () => {
+          if (heroVideo.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) heroVideo.remove();
+        })
+      );
+    }
 
     // Form dummy submit
     const form = document.getElementById('sampleForm');
