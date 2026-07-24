@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Facility, Visit, VisitOutcome } from "../types";
-import { OUTCOMES, REACTIONS } from "../types";
+import { OUTCOMES, REACTIONS, splitStaff } from "../types";
 import { store } from "../lib/store";
 
 // 月次の営業実績: 拠点別の訪問件数・成果の内訳・スタッフ別件数
@@ -34,11 +34,15 @@ export default function Dashboard({ facilities }: { facilities: Facility[] }) {
     return m;
   }, [monthVisits]);
 
+  // 複数人で行った訪問は、各人に1件ずつ計上する
   const byStaff = useMemo(() => {
     const m = new Map<string, number>();
     for (const v of monthVisits) {
-      const key = `${v.station_name || "(拠点未入力)"}|${v.staff_name || "(名前未入力)"}`;
-      m.set(key, (m.get(key) ?? 0) + 1);
+      const names = splitStaff(v.staff_name);
+      for (const name of names.length > 0 ? names : ["(名前未入力)"]) {
+        const key = `${v.station_name || "(拠点未入力)"}|${name}`;
+        m.set(key, (m.get(key) ?? 0) + 1);
+      }
     }
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [monthVisits]);

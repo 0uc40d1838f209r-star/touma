@@ -38,13 +38,26 @@ export interface Visit {
   id: string;
   facility_id: string;
   visited_on: string;
-  staff_name: string;
+  staff_name: string; // 訪問者。複数人で行った場合は「、」区切りで連結
   station_name: string;
   outcome: VisitOutcome;
   met: string; // 面談相手 (空 = 未選択)
+  met_person: string; // 対応してくれた方の名前 (空 = 未入力)
   reaction: string; // 先方の反応 hot/warm/cold (空 = 未選択)
   memo: string;
   created_at: string;
+}
+
+// 訪問者は複数人を「、」で連結して1つの文字列に保存する
+export const STAFF_SEPARATOR = "、";
+export function splitStaff(staffName: string): string[] {
+  return (staffName ?? "")
+    .split(/[、,]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+export function joinStaff(names: string[]): string {
+  return names.filter(Boolean).join(STAFF_SEPARATOR);
 }
 
 export interface Staff {

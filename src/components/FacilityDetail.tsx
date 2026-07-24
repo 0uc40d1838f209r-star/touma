@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Contact, Facility, FacilityStatus, NewFacility, Staff, Visit, VisitOutcome } from "../types";
-import { FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS } from "../types";
+import { FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS, joinStaff, splitStaff } from "../types";
 import { store } from "../lib/store";
 import { supabase } from "../lib/supabaseStore";
 
@@ -338,24 +338,37 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
   const [editingId, setEditingId] = useState<string | null>(null); // "new" = 新規追加
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(today);
-  const [staff, setStaff] = useState(() => localStorage.getItem("touma-staff-name") ?? "");
+  const [staffList, setStaffList] = useState<string[]>(() =>
+    splitStaff(localStorage.getItem("touma-staff-name") ?? ""),
+  );
+  const [extraStaff, setExtraStaff] = useState(""); // 名簿に無い人の手入力
   const [station, setStation] = useState(() => localStorage.getItem("touma-station-name") ?? "");
   const [outcome, setOutcome] = useState<VisitOutcome>("greeting");
   const [met, setMet] = useState("");
+  const [metPerson, setMetPerson] = useState("");
   const [reaction, setReaction] = useState("");
   const [memo, setMemo] = useState("");
   const [roster, setRoster] = useState<Staff[]>([]);
+
+  const toggleStaff = (name: string) =>
+    setStaffList((prev) => (prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]));
+  const addExtraStaff = () => {
+    const name = extraStaff.trim();
+    if (!name) return;
+    setStaffList((prev) => (prev.includes(name) ? prev : [...prev, name]));
+    setExtraStaff("");
+  };
 
   useEffect(() => {
     store.listStaff().then(setRoster);
   }, []);
 
-  // 初回のみ: 訪問者名が未設定ならログイン ID を初期値にする
+  // 初回のみ: 訪問者が未設定ならログイン ID を初期値にする
   useEffect(() => {
     if (!supabase) return;
     supabase.auth.getUser().then(({ data }) => {
       const id = data.user?.email?.split("@")[0];
-      if (id) setStaff((prev) => prev || id);
+      if (id) setStaffList((prev) => (prev.length > 0 ? prev : [id]));
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -368,6 +381,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     setDate(today);
     setOutcome("greeting");
     setMet("");
+    setMetPerson("");
     setReaction("");
     setMemo("");
   };
@@ -375,24 +389,27 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     setEditingId(v.id);
     setDate(v.visited_on);
     setStation(v.station_name);
-    setStaff(v.staff_name);
+    setStaffList(splitStaff(v.staff_name));
     setOutcome(v.outcome ?? "greeting");
     setMet(v.met ?? "");
+    setMetPerson(v.met_person ?? "");
     setReaction(v.reaction ?? "");
     setMemo(v.memo);
   };
 
   const submit = async () => {
     if (!date || !editingId) return;
-    localStorage.setItem("touma-staff-name", staff);
+    const staffName = joinStaff(staffList);
+    localStorage.setItem("touma-staff-name", staffName);
     localStorage.setItem("touma-station-name", station);
     const data = {
       facility_id: facilityId,
       visited_on: date,
-      staff_name: staff,
+      staff_name: staffName,
       station_name: station,
       outcome,
       met,
+      met_person: metPerson.trim(),
       reaction,
       memo,
     };
@@ -441,18 +458,80 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     <div className="space-y-3">
       {editingId ? (
         <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
-          {selectOrInput(
-            station,
-            (v) => {
-              setStation(v);
-              // 拠点を変えたら訪問者の選択をリセット (前の拠点のスタッフが残らないように)
-              if (v !== station) setStaff("");
-            },
-            stations,
-            "拠点",
-          )}
-          {selectOrInput(staff, setStaff, members, "訪問者")}
+          <div>
+            <div className="mb-1 text-xs font-medium text-gray-500">訪問日 (タップで変更できます)</div>
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
+          </div>
+          <div>
+            <div className="mb-1 text-xs font-medium text-gray-500">拠点</div>
+            {selectOrInput(
+              station,
+              (v) => {
+                setStation(v);
+                // 拠点を変えたら訪問者の選択をリセット (前の拠点のスタッフが残らないように)
+                if (v !== station) setStaffList([]);
+              },
+              stations,
+              "拠点",
+            )}
+          </div>
+          <div>
+            <div className="mb-1 text-xs font-medium text-gray-500">
+              訪問者 (複数選べます{staffList.length > 0 ? ` ・ ${staffList.length}名選択中` : ""})
+            </div>
+            {members.length > 0 && (
+              <div className="mb-1.5 flex flex-wrap gap-1.5">
+                {members.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => toggleStaff(m)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+                      staffList.includes(m)
+                        ? "bg-blue-100 text-blue-800 ring-2 ring-blue-500"
+                        : "bg-white text-gray-500 border border-gray-300"
+                    }`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* 名簿に載っていない人 (他拠点の応援など) を選択済みとして表示・解除 */}
+            {staffList.filter((n) => !members.includes(n)).length > 0 && (
+              <div className="mb-1.5 flex flex-wrap gap-1.5">
+                {staffList
+                  .filter((n) => !members.includes(n))
+                  .map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => toggleStaff(n)}
+                      className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-800 ring-2 ring-blue-500"
+                    >
+                      {n} ✕
+                    </button>
+                  ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <input
+                value={extraStaff}
+                onChange={(e) => setExtraStaff(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addExtraStaff();
+                  }
+                }}
+                placeholder={members.length > 0 ? "名簿に無い人を追加" : "訪問者の名前"}
+                className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2.5 py-2 text-sm"
+              />
+              <button type="button" onClick={addExtraStaff} disabled={!extraStaff.trim()} className="shrink-0 rounded border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-600 disabled:opacity-40">
+                追加
+              </button>
+            </div>
+          </div>
           <div>
             <div className="mb-1 text-xs font-medium text-gray-500">成果</div>
             <div className="flex flex-wrap gap-1.5">
@@ -486,6 +565,15 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
                 </button>
               ))}
             </div>
+          </div>
+          <div>
+            <div className="mb-1 text-xs font-medium text-gray-500">対応してくれた方のお名前 (任意)</div>
+            <input
+              value={metPerson}
+              onChange={(e) => setMetPerson(e.target.value)}
+              placeholder="例: 田中ケアマネ"
+              className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm"
+            />
           </div>
           <div>
             <div className="mb-1 text-xs font-medium text-gray-500">先方の反応 (任意)</div>
@@ -566,9 +654,14 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
                   </button>
                 </div>
               </div>
-              {(v.station_name || v.staff_name || v.met) && (
+              {(v.station_name || v.staff_name || v.met || v.met_person) && (
                 <div className="text-xs text-gray-500">
-                  {[v.station_name, v.staff_name && `訪問者: ${v.staff_name}`, v.met && `面談: ${v.met}`]
+                  {[
+                    v.station_name,
+                    v.staff_name && `訪問者: ${v.staff_name}`,
+                    v.met && `面談: ${v.met}`,
+                    v.met_person && `対応: ${v.met_person}`,
+                  ]
                     .filter(Boolean)
                     .join(" / ")}
                 </div>
