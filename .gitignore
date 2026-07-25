@@ -4,3 +4,6 @@ dist
 .env
 .env.local
 *.local
+
+# 海外卸先リサーチ（第三者の連絡先を含むため公開リポジトリにコミットしない）
+outreach/
