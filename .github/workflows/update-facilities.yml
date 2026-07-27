@@ -21,8 +21,10 @@ jobs:
           set -euo pipefail
           mkdir -p data
 
-          # 居宅介護支援 (URL は固定で中身が更新される)
+          # 居宅介護支援・小規模多機能型・看護小規模多機能型 (URL は固定で中身が更新される)
           curl -sSL -o data/jigyosho_430.csv "https://www.mhlw.go.jp/content/12300000/jigyosho_430.csv"
+          curl -sSL -o data/jigyosho_730.csv "https://www.mhlw.go.jp/content/12300000/jigyosho_730.csv"
+          curl -sSL -o data/jigyosho_770.csv "https://www.mhlw.go.jp/content/12300000/jigyosho_770.csv"
 
           # 病院・診療所: 掲載ページから最新の zip URL を探す (ファイル名に日付が入るため)
           page=$(curl -sSL "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/newpage_43373.html")

@@ -3,6 +3,8 @@
 // 使い方:
 //   1. データを用意 (UTF-8 CSV。ファイル名は以下に揃える):
 //        jigyosho_430.csv … 居宅介護支援: https://www.mhlw.go.jp/content/12300000/jigyosho_430.csv
+//        jigyosho_730.csv … 小規模多機能型居宅介護: https://www.mhlw.go.jp/content/12300000/jigyosho_730.csv
+//        jigyosho_770.csv … 看護小規模多機能型居宅介護: https://www.mhlw.go.jp/content/12300000/jigyosho_770.csv
 //        hospital.csv     … 病院 施設票 (医療情報ネット オープンデータの zip を解凍してリネーム)
 //        clinic.csv       … 診療所 施設票 (同上)
 //        最新の zip URL は https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/newpage_43373.html に掲載
@@ -96,8 +98,9 @@ function loadCsv(file) {
 }
 
 // ---- 各データソースの抽出 ----
-function extractKyotaku() {
-  const { rows, col } = loadCsv("jigyosho_430.csv");
+// 介護サービス情報公表システムの事業所ファイル (居宅・小多機・看多機で列構成が同じ)
+function extractKaigo(file, type) {
+  const { rows, col } = loadCsv(file);
   const cCity = col("市区町村名");
   const cName = col("事業所名");
   const cAddr = col("住所");
@@ -109,7 +112,7 @@ function extractKyotaku() {
     if (!CITIES.some((c) => (r[cCity] ?? "").startsWith(c.city))) continue;
     out.push({
       name: r[cName],
-      type: "kyotaku",
+      type,
       address: r[cAddr],
       lat: Number(r[cLat]),
       lng: Number(r[cLng]),
@@ -183,7 +186,9 @@ async function insertBatch(token, records) {
 
 // ---- main ----
 const candidates = [
-  ...extractKyotaku(),
+  ...extractKaigo("jigyosho_430.csv", "kyotaku"),
+  ...extractKaigo("jigyosho_730.csv", "takino"), // 小規模多機能型居宅介護
+  ...extractKaigo("jigyosho_770.csv", "takino"), // 看護小規模多機能型居宅介護
   ...extractMedical("hospital.csv", "hospital"),
   ...extractMedical("clinic.csv", "clinic"),
 ];
@@ -203,7 +208,7 @@ for (const c of candidates) {
 }
 
 const byType = valid.reduce((m, f) => ((m[f.type] = (m[f.type] ?? 0) + 1), m), {});
-console.log(`抽出: ${valid.length} 件 (居宅 ${byType.kyotaku ?? 0} / 病院 ${byType.hospital ?? 0} / 診療所 ${byType.clinic ?? 0})、座標なし等スキップ: ${skippedNoCoord}`);
+console.log(`抽出: ${valid.length} 件 (居宅 ${byType.kyotaku ?? 0} / 小多機看多機 ${byType.takino ?? 0} / 病院 ${byType.hospital ?? 0} / 診療所 ${byType.clinic ?? 0})、座標なし等スキップ: ${skippedNoCoord}`);
 
 if (DRY_RUN) {
   console.log("dry-run のため書き込みしません。サンプル3件:");

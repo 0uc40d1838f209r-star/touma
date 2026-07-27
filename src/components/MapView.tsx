@@ -27,9 +27,9 @@ function pinIcon(facility: Facility, selected: boolean): L.DivIcon {
   // 紹介実績あり: 涙型を金の縁取りで強調
   const stroke = refs > 0 ? gold : "white";
   const strokeW = refs > 0 ? 3 : 2;
-  // 中央の白丸: 居宅ならケアマネ人数を数字で表示
+  // 中央の白丸: 居宅・小多機ならケアマネ人数を数字で表示
   const center =
-    facility.type === "kyotaku" && cm > 0
+    (facility.type === "kyotaku" || facility.type === "takino") && cm > 0
       ? `<circle cx="17" cy="15" r="6.5" fill="white"/><text x="17" y="15" text-anchor="middle" dominant-baseline="central" font-size="${cm >= 10 ? 7 : 9}" font-weight="bold" fill="#374151">${cm}</text>`
       : `<circle cx="17" cy="15" r="5.5" fill="white"/>`;
   // 左上の金バッジ: ★+紹介件数

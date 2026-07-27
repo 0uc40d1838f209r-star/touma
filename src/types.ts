@@ -1,4 +1,4 @@
-export type FacilityType = "kyotaku" | "hospital" | "clinic" | "other";
+export type FacilityType = "kyotaku" | "takino" | "hospital" | "clinic" | "other";
 
 export type FacilityStatus = "not_visited" | "visited" | "regular" | "referral";
 
@@ -101,6 +101,7 @@ export const MEMO_TEMPLATES = [
 
 export const FACILITY_TYPES: Record<FacilityType, { label: string; color: string }> = {
   kyotaku: { label: "居宅介護支援", color: "#e05d44" },
+  takino: { label: "小多機・看多機", color: "#0d9488" },
   hospital: { label: "病院", color: "#2f6fdb" },
   clinic: { label: "クリニック", color: "#1f9d63" },
   other: { label: "その他", color: "#8b6bd1" },

@@ -4,7 +4,7 @@
 create table facilities (
   id uuid primary key default gen_random_uuid(),
   name text not null,
-  type text not null default 'other' check (type in ('kyotaku', 'hospital', 'clinic', 'other')),
+  type text not null default 'other' check (type in ('kyotaku', 'takino', 'hospital', 'clinic', 'other')),
   address text not null default '',
   lat double precision not null,
   lng double precision not null,
