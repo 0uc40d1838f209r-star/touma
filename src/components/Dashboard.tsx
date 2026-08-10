@@ -205,7 +205,7 @@ export default function Dashboard({
                     {[v.station_name, v.staff_name].filter(Boolean).length > 0 &&
                       " ・ " + [v.station_name, v.staff_name].filter(Boolean).join(" / ")}
                   </div>
-                  {v.memo && <p className="mt-0.5 truncate text-xs text-gray-600">{v.memo}</p>}
+                  {v.memo && <p className="mt-0.5 whitespace-pre-wrap text-xs text-gray-600">{v.memo}</p>}
                 </li>
               ))}
               {monthVisits.length > 50 && (
