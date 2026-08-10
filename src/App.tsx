@@ -11,6 +11,8 @@ import FacilityList from "./components/FacilityList";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import StaffManager from "./components/StaffManager";
+import IdentityPicker from "./components/IdentityPicker";
+import { getIdentity, type Identity } from "./lib/identity";
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -45,6 +47,9 @@ function MainScreen() {
   const [activeStatuses, setActiveStatuses] = useState<Set<FacilityStatus>>(new Set());
   const [view, setView] = useState<"map" | "list" | "stats">("map");
   const [showStaff, setShowStaff] = useState(false);
+  const [identity, setIdentityState] = useState<Identity | null>(() => getIdentity());
+  // 起動時に本人が未選択なら選択を促す (スキップ可)
+  const [showIdentity, setShowIdentity] = useState(() => getIdentity() === null);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Facility | null>(null);
@@ -162,15 +167,23 @@ function MainScreen() {
             </span>
           )}
         </h1>
-        <div className="flex items-center gap-3">
-          <span className="hidden text-xs text-gray-400 sm:inline">{filtered.length} / {facilities.length} 件</span>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setShowIdentity(true)}
+            className="flex items-center gap-1 rounded-full border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700"
+            title="担当者を選択"
+          >
+            👤 <span className="max-w-[6rem] truncate">{identity?.name ?? "担当者を選択"}</span>
+          </button>
           <button
             onClick={() => setView(view === "stats" ? "map" : "stats")}
-            className={`hidden text-xs md:inline ${view === "stats" ? "font-bold text-blue-600" : "text-gray-500 underline"}`}
+            className={`hidden rounded-full px-3 py-1 text-xs font-bold md:inline ${
+              view === "stats" ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-700"
+            }`}
           >
-            📊 実績
+            📊 実績・分析
           </button>
-          <button onClick={() => setShowStaff(true)} className="text-xs text-gray-500 underline">
+          <button onClick={() => setShowStaff(true)} className="hidden text-xs text-gray-500 underline sm:inline">
             ⚙ 名簿
           </button>
           {isSupabaseMode && (
@@ -192,7 +205,7 @@ function MainScreen() {
 
       <div className="relative min-h-0 flex-1">
         {view === "stats" ? (
-          <Dashboard facilities={facilities} />
+          <Dashboard facilities={facilities} visits={allVisits} onSelectFacility={selectFacility} />
         ) : (
         <div className="flex h-full">
           {/* PC: サイドバー一覧 */}
@@ -279,6 +292,16 @@ function MainScreen() {
       </nav>
 
       {showStaff && <StaffManager onClose={() => setShowStaff(false)} />}
+
+      {showIdentity && (
+        <IdentityPicker
+          onClose={() => setShowIdentity(false)}
+          onDone={(id) => {
+            setIdentityState(id ?? getIdentity());
+            setShowIdentity(false);
+          }}
+        />
+      )}
 
       {formOpen && (
         <FacilityForm

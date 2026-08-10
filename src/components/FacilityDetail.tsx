@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { Contact, Facility, FacilityStatus, NewFacility, Staff, Visit, VisitOutcome } from "../types";
 import { FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS, joinStaff, splitStaff } from "../types";
 import { store } from "../lib/store";
-import { supabase } from "../lib/supabaseStore";
+import { getIdentity } from "../lib/identity";
 
 interface Props {
   facility: Facility;
@@ -363,13 +363,12 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     store.listStaff().then(setRoster);
   }, []);
 
-  // 初回のみ: 訪問者が未設定ならログイン ID を初期値にする
+  // 初回のみ: 未設定なら選択中の本人(identity)を初期値にする
   useEffect(() => {
-    if (!supabase) return;
-    supabase.auth.getUser().then(({ data }) => {
-      const id = data.user?.email?.split("@")[0];
-      if (id) setStaffList((prev) => (prev.length > 0 ? prev : [id]));
-    });
+    const me = getIdentity();
+    if (!me) return;
+    setStaffList((prev) => (prev.length > 0 ? prev : [me.name]));
+    setStation((prev) => prev || me.station);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

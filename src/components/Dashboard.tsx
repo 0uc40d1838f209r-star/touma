@@ -1,16 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Facility, Visit, VisitOutcome } from "../types";
 import { OUTCOMES, REACTIONS, splitStaff } from "../types";
-import { store } from "../lib/store";
+import FacilityAnalysis from "./FacilityAnalysis";
 
-// 月次の営業実績: 拠点別の訪問件数・成果の内訳・スタッフ別件数
-export default function Dashboard({ facilities }: { facilities: Facility[] }) {
-  const [visits, setVisits] = useState<Visit[]>([]);
+// 営業実績: 月次サマリー と 施設別の効果分析
+export default function Dashboard({
+  facilities,
+  visits,
+  onSelectFacility,
+}: {
+  facilities: Facility[];
+  visits: Visit[];
+  onSelectFacility?: (id: string) => void;
+}) {
+  const [tab, setTab] = useState<"monthly" | "analysis">("monthly");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
-
-  useEffect(() => {
-    store.listAllVisits().then(setVisits);
-  }, []);
 
   const facilityName = useMemo(() => new Map(facilities.map((f) => [f.id, f.name])), [facilities]);
 
@@ -69,6 +73,28 @@ export default function Dashboard({ facilities }: { facilities: Facility[] }) {
   return (
     <div className="h-full overflow-y-auto bg-gray-50 p-4">
       <div className="mx-auto max-w-2xl space-y-4">
+        {/* サブタブ: 月次実績 / 施設別分析 */}
+        <div className="flex gap-1 rounded-full bg-gray-200 p-1 text-sm">
+          {(
+            [
+              ["monthly", "📅 月次実績"],
+              ["analysis", "📈 施設別分析"],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`flex-1 rounded-full py-1.5 font-medium ${tab === key ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {tab === "analysis" ? (
+          <FacilityAnalysis facilities={facilities} visits={visits} onSelectFacility={onSelectFacility} />
+        ) : (
+        <div className="space-y-4">
         {/* 月の切替 */}
         <div className="flex items-center justify-center gap-4">
           <button onClick={() => shiftMonth(-1)} className="rounded-full bg-white px-3 py-1.5 text-sm shadow-sm" aria-label="前の月">
@@ -218,6 +244,8 @@ export default function Dashboard({ facilities }: { facilities: Facility[] }) {
             </table>
           )}
         </div>
+        </div>
+        )}
       </div>
     </div>
   );
