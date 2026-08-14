@@ -15,21 +15,38 @@ export default function Dashboard({
 }) {
   const [tab, setTab] = useState<"monthly" | "analysis">("monthly");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [station, setStation] = useState(""); // "" = 全拠点
 
   const facilityName = useMemo(() => new Map(facilities.map((f) => [f.id, f.name])), [facilities]);
 
-  const monthVisits = useMemo(
-    () => visits.filter((v) => v.visited_on.startsWith(month)),
-    [visits, month],
+  // 記録に出てくる拠点(店舗)の一覧
+  const stations = useMemo(
+    () => [...new Set(visits.map((v) => v.station_name).filter(Boolean))].sort(),
+    [visits],
   );
 
+  // 選んだ拠点だけに絞った訪問(全拠点なら全件)
+  const scopedVisits = useMemo(
+    () => (station ? visits.filter((v) => v.station_name === station) : visits),
+    [visits, station],
+  );
+
+  const monthVisits = useMemo(
+    () => scopedVisits.filter((v) => v.visited_on.startsWith(month)),
+    [scopedVisits, month],
+  );
+
+  // 拠点別の 訪問件数 と 新規獲得数 (全拠点表示のときの店舗比較用)
   const byStation = useMemo(() => {
-    const m = new Map<string, number>();
+    const m = new Map<string, { visits: number; newClients: number }>();
     for (const v of monthVisits) {
       const key = v.station_name || "(拠点未入力)";
-      m.set(key, (m.get(key) ?? 0) + 1);
+      const a = m.get(key) ?? { visits: 0, newClients: 0 };
+      a.visits++;
+      if (v.outcome === "new_client") a.newClients++;
+      m.set(key, a);
     }
-    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+    return [...m.entries()].sort((a, b) => b[1].visits - a[1].visits);
   }, [monthVisits]);
 
   const byOutcome = useMemo(() => {
@@ -67,7 +84,7 @@ export default function Dashboard({
     setMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
   };
 
-  const maxCount = Math.max(1, ...byStation.map(([, n]) => n));
+  const maxCount = Math.max(1, ...byStation.map(([, n]) => n.visits));
   const [y, m] = month.split("-");
 
   return (
@@ -91,8 +108,27 @@ export default function Dashboard({
           ))}
         </div>
 
+        {/* 拠点(店舗)の絞り込み — 実績・分析の両方に効く */}
+        {stations.length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="shrink-0 text-xs font-medium text-gray-500">店舗</span>
+            <select
+              value={station}
+              onChange={(e) => setStation(e.target.value)}
+              className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm"
+            >
+              <option value="">全拠点</option>
+              {stations.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {tab === "analysis" ? (
-          <FacilityAnalysis facilities={facilities} visits={visits} onSelectFacility={onSelectFacility} />
+          <FacilityAnalysis facilities={facilities} visits={scopedVisits} station={station} onSelectFacility={onSelectFacility} />
         ) : (
         <div className="space-y-4">
         {/* 月の切替 */}
@@ -100,8 +136,9 @@ export default function Dashboard({
           <button onClick={() => shiftMonth(-1)} className="rounded-full bg-white px-3 py-1.5 text-sm shadow-sm" aria-label="前の月">
             ◀
           </button>
-          <h2 className="text-lg font-bold">
+          <h2 className="text-center text-lg font-bold">
             {y}年{Number(m)}月の営業実績
+            {station && <span className="block text-xs font-normal text-blue-600">{station}</span>}
           </h2>
           <button onClick={() => shiftMonth(1)} className="rounded-full bg-white px-3 py-1.5 text-sm shadow-sm" aria-label="次の月">
             ▶
@@ -145,23 +182,26 @@ export default function Dashboard({
           </div>
         )}
 
-        {/* 拠点別の訪問件数 (横棒) */}
+        {/* 拠点別の訪問件数・新規獲得 (横棒。店舗ごとの結果比較) */}
         <div className="rounded-xl bg-white p-4 shadow-sm">
-          <h3 className="mb-3 text-sm font-bold">拠点別の訪問件数</h3>
+          <h3 className="mb-3 text-sm font-bold">拠点別の訪問件数・新規</h3>
           {byStation.length === 0 ? (
             <p className="text-sm text-gray-500">この月の訪問記録はまだありません。</p>
           ) : (
             <div className="space-y-2.5">
-              {byStation.map(([station, count]) => (
-                <div key={station}>
+              {byStation.map(([st, a]) => (
+                <div key={st}>
                   <div className="mb-0.5 flex items-baseline justify-between gap-2">
-                    <span className="truncate text-sm">{station}</span>
-                    <span className="shrink-0 text-sm font-medium">{count}件</span>
+                    <span className="truncate text-sm">{st}</span>
+                    <span className="shrink-0 text-sm font-medium">
+                      {a.visits}件
+                      {a.newClients > 0 && <span className="ml-1.5 text-xs font-bold text-amber-700">新規{a.newClients}</span>}
+                    </span>
                   </div>
                   <div className="h-3 w-full rounded-sm bg-gray-100">
                     <div
                       className="h-3 rounded-sm bg-blue-600"
-                      style={{ width: `${(count / maxCount) * 100}%` }}
+                      style={{ width: `${(a.visits / maxCount) * 100}%` }}
                     />
                   </div>
                 </div>

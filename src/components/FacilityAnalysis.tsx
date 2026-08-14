@@ -31,10 +31,12 @@ const MIN_OPTIONS = [1, 2, 3, 5];
 export default function FacilityAnalysis({
   facilities,
   visits,
+  station,
   onSelectFacility,
 }: {
   facilities: Facility[];
   visits: Visit[];
+  station?: string; // 選択中の拠点。指定時は紹介件数もその拠点ぶんに絞る
   onSelectFacility?: (id: string) => void;
 }) {
   const [types, setTypes] = useState<Set<FacilityType>>(new Set(DEFAULT_TYPES));
@@ -58,7 +60,8 @@ export default function FacilityAnalysis({
     const out: Row[] = [];
     for (const [id, a] of agg) {
       const f = facilityById.get(id)!;
-      const referrals = totalReferrals(f);
+      // 拠点を選んでいればその拠点への紹介件数、全拠点なら合計
+      const referrals = station ? (f.referrals?.[station] ?? 0) : totalReferrals(f);
       out.push({
         facility: f,
         visits: a.visits,
@@ -71,7 +74,7 @@ export default function FacilityAnalysis({
       });
     }
     return out;
-  }, [visits, facilityById]);
+  }, [visits, facilityById, station]);
 
   const shown = useMemo(() => {
     return rows
