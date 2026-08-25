@@ -7,3 +7,6 @@ dist
 
 # 海外卸先リサーチ（第三者の連絡先を含むため公開リポジトリにコミットしない）
 outreach/
+
+# note 連載の下書きのうち、実名・実事例を含むもの（guardrails.md 8）
+note/private/
