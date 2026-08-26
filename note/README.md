@@ -9,6 +9,7 @@
 | `guardrails.md` | **公開前に必ず読む。** 書いてはいけないことの一覧 |
 | `series-plan.md` | 第1シーズン全12本の企画表 |
 | `article-template.md` | ケーススタディ型テンプレート。コピーして使う |
+| `writing-style.md` | **ミステリーとして書く型と、AI感の消し方。書き上げたら必ず通す** |
 | `failure-inventory.md` | ネタを枯らさないための失敗棚卸しシート |
 | `swipe-file.md` | 参考記事の分析。**輸入する型と、輸入しないもの** |
 | `drafts/` | 下書き。**実名・実事例を含むものは `note/private/`（gitignore済）へ** |
