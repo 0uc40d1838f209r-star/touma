@@ -12,6 +12,8 @@
 | `writing-style.md` | **ミステリーとして書く型と、AI感の消し方。書き上げたら必ず通す** |
 | `failure-inventory.md` | ネタを枯らさないための失敗棚卸しシート |
 | `swipe-file.md` | 参考記事の分析。**輸入する型と、輸入しないもの** |
+| `drafts/01-kanrisha.md` | 第1回の原案（実話版）。**公開前に決めることが末尾にある** |
+| `drafts/sample-kyujinhyou.md` | 求人票の回の構成見本。実話が出たら書ける |
 | `drafts/` | 下書き。**実名・実事例を含むものは `note/private/`（gitignore済）へ** |
 
 ---
