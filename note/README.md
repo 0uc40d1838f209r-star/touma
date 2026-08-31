@@ -12,13 +12,13 @@
 | --- | --- |
 | `README.md` | 連載の目的・型・運用ルール（この文書） |
 | `guardrails.md` | **公開前に必ず読む。** 書いてはいけないことの一覧 |
-| `series-plan.md` | 第1シーズン全12本の企画表 |
+| `series-plan.md` | 企画表。**原案あり7本＋素材待ち** |
 | `article-template.md` | 短編コラムのテンプレート。コピーして使う |
 | `writing-style.md` | **ミステリーとして書く型と、AI感の消し方。書き上げたら必ず通す** |
 | `failure-inventory.md` | ネタを枯らさないための失敗棚卸しシート |
 | `swipe-file.md` | 参考記事の分析。**輸入する型と、輸入しないもの** |
 | `distribution.md` | **note / X / Threads / Instagram の配信設計**。Buffer の運用と、媒体別の原稿 |
-| `drafts/01〜06` | 原案6本（短編コラム）。**判断が必要なことが各ファイルの末尾にある** |
+| `drafts/00〜06` | 原案7本（短編コラム）。**判断が必要なことが各ファイルの末尾にある** |
 | `drafts/sample-kyujinhyou.md` | 求人票の回の構成見本（旧・長い型） |
 | `drafts/` | 下書き。**実名・実事例を含むものは `note/private/`（gitignore済）へ** |
 
