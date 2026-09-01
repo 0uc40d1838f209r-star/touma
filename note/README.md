@@ -11,6 +11,7 @@
 | ファイル | 用途 |
 | --- | --- |
 | `README.md` | 連載の目的・型・運用ルール（この文書） |
+| `operations.md` | **毎週の運用手順書。** note への貼り方から各SNSへの連結まで |
 | `guardrails.md` | **公開前に必ず読む。** 書いてはいけないことの一覧 |
 | `series-plan.md` | 企画表。**原案あり7本＋素材待ち** |
 | `article-template.md` | 短編コラムのテンプレート。コピーして使う |
@@ -18,7 +19,9 @@
 | `failure-inventory.md` | ネタを枯らさないための失敗棚卸しシート |
 | `swipe-file.md` | 参考記事の分析。**輸入する型と、輸入しないもの** |
 | `distribution.md` | **note / X / Threads / Instagram の配信設計**。Buffer の運用と、媒体別の原稿 |
-| `instagram/` | カルーセル画像の生成スクリプトと原稿。`make_carousel.py` で PNG を書き出す |
+| `instagram/` | カルーセル画像と note 見出し画像の生成。`make_carousel.py` |
+| `make_note_text.py` | 原案を **note 貼り付け用のプレーンテキスト**に変換する |
+| `note-paste/` | 生成された貼り付け用テキストと、整形メモ |
 | `drafts/00〜06` | 原案7本（短編コラム）。**判断が必要なことが各ファイルの末尾にある** |
 | `drafts/sample-kyujinhyou.md` | 求人票の回の構成見本（旧・長い型） |
 | `drafts/` | 下書き。**実名・実事例を含むものは `note/private/`（gitignore済）へ** |

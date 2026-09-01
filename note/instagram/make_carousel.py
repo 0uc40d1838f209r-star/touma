@@ -221,6 +221,44 @@ def parse(path):
     return slides
 
 
+HW, HH = 1280, 670
+
+
+def render_header(lines):
+    """note の見出し画像（1280×670）"""
+    img = Image.new("RGB", (HW, HH), PAPER)
+    d = ImageDraw.Draw(img)
+    m = 72
+
+    logo_bottom = m
+    if os.path.exists(LOGO):
+        logo = Image.open(LOGO).convert("RGB")
+        px = logo.load()
+        for yy in range(logo.height):
+            for xx in range(logo.width):
+                r, g, b = px[xx, yy]
+                if r > 232 and g > 232 and b > 232:
+                    px[xx, yy] = PAPER
+        lw = 440
+        lh = int(logo.height * lw / logo.width)
+        logo = logo.resize((lw, lh), Image.LANCZOS)
+        img.paste(logo, (m - 6, m - 10))
+        logo_bottom = m - 10 + lh
+
+    top = logo_bottom + 34
+    avail_h = (HH - m - 40) - top
+    size = fit_size(d, lines, MINCHO, HW - m * 2, avail_h, start=76, floor=32, lead=1.6)
+    f = font(MINCHO, size)
+    lh2 = size * 1.6
+    y = top + (avail_h - lh2 * units(lines)) / 2
+    draw_lines(d, lines, f, m, y, lh2, INK, SHU)
+
+    d.line([(m, HH - m + 6), (HW - m, HH - m + 6)], fill=RULE, width=1)
+    fg = font(GOTHIC, 24)
+    d.text((m, HH - m + 20), f"{SERIES}　／　{BYLINE}", font=fg, fill=MUTED)
+    return img
+
+
 def main():
     if len(sys.argv) < 2:
         print(__doc__)
@@ -231,6 +269,14 @@ def main():
     os.makedirs(outdir, exist_ok=True)
 
     slides = parse(src)
+
+    # note の見出し画像（[cover] の文言を使う）
+    cover = next((ls for k, ls in slides if k == "cover"), None)
+    if cover:
+        hp = os.path.join(outdir, "note-header.png")
+        render_header(cover).save(hp, quality=95)
+        print(f"  {hp}  [note見出し 1280x670]")
+
     total = len(slides)
     for i, (kind, lines) in enumerate(slides, 1):
         if kind == "cover":
