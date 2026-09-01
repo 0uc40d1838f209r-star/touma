@@ -23,6 +23,7 @@
 | `instagram/` | カルーセル画像と note 見出し画像の生成。`make_carousel.py` |
 | `make_note_text.py` | 原案を **note 貼り付け用のプレーンテキスト**に変換する |
 | `note-paste/` | 生成された貼り付け用テキストと、整形メモ |
+| `profile-texts.md` | **各SNSのプロフィール欄の文**（note 140字 / X / IG / Threads） |
 | `drafts/profile.md` | **自己紹介記事の原案。** プロフィールに固定する常設ページ |
 | `drafts/00〜06` | 原案7本（短編コラム）。**判断が必要なことが各ファイルの末尾にある** |
 | `drafts/sample-kyujinhyou.md` | 求人票の回の構成見本（旧・長い型） |
