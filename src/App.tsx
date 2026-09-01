@@ -183,7 +183,7 @@ function MainScreen() {
           >
             📊 実績・分析
           </button>
-          <button onClick={() => setShowStaff(true)} className="hidden text-xs text-gray-500 underline sm:inline">
+          <button onClick={() => setShowStaff(true)} className="text-xs text-gray-500 underline">
             ⚙ 名簿
           </button>
           {isSupabaseMode && (

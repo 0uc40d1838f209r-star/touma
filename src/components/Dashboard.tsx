@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import type { Facility, Visit, VisitOutcome } from "../types";
 import { OUTCOMES, REACTIONS, splitStaff } from "../types";
 import FacilityAnalysis from "./FacilityAnalysis";
+import StoreCharts from "./StoreCharts";
 
 // 営業実績: 月次サマリー と 施設別の効果分析
 export default function Dashboard({
@@ -13,7 +14,7 @@ export default function Dashboard({
   visits: Visit[];
   onSelectFacility?: (id: string) => void;
 }) {
-  const [tab, setTab] = useState<"monthly" | "analysis">("monthly");
+  const [tab, setTab] = useState<"monthly" | "stores" | "analysis">("monthly");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [station, setStation] = useState(""); // "" = 全拠点
 
@@ -34,6 +35,12 @@ export default function Dashboard({
   const monthVisits = useMemo(
     () => scopedVisits.filter((v) => v.visited_on.startsWith(month)),
     [scopedVisits, month],
+  );
+
+  // 店舗比較グラフは全店舗の当月データで見る(店舗フィルタは強調表示に使う)
+  const monthVisitsAll = useMemo(
+    () => visits.filter((v) => v.visited_on.startsWith(month)),
+    [visits, month],
   );
 
   // 拠点別の 訪問件数 と 新規獲得数 (全拠点表示のときの店舗比較用)
@@ -94,8 +101,9 @@ export default function Dashboard({
         <div className="flex gap-1 rounded-full bg-gray-200 p-1 text-sm">
           {(
             [
-              ["monthly", "📅 月次実績"],
-              ["analysis", "📈 施設別分析"],
+              ["monthly", "📅 月次"],
+              ["stores", "🏢 店舗比較"],
+              ["analysis", "📈 施設別"],
             ] as const
           ).map(([key, label]) => (
             <button
@@ -129,6 +137,15 @@ export default function Dashboard({
 
         {tab === "analysis" ? (
           <FacilityAnalysis facilities={facilities} visits={scopedVisits} station={station} onSelectFacility={onSelectFacility} />
+        ) : tab === "stores" ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-4">
+              <button onClick={() => shiftMonth(-1)} className="rounded-full bg-white px-3 py-1.5 text-sm shadow-sm" aria-label="前の月">◀</button>
+              <h2 className="text-lg font-bold">{y}年{Number(m)}月の店舗比較</h2>
+              <button onClick={() => shiftMonth(1)} className="rounded-full bg-white px-3 py-1.5 text-sm shadow-sm" aria-label="次の月">▶</button>
+            </div>
+            <StoreCharts visits={monthVisitsAll} highlight={station} />
+          </div>
         ) : (
         <div className="space-y-4">
         {/* 月の切替 */}
