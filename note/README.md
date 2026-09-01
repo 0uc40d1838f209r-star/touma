@@ -8,6 +8,11 @@
 （管理者を経験した人間が、人事として管理者の失敗を語る）ので、名義には必ず入れる。
 マガジンのロゴは `assets/logo.jpg`。
 
+> **ファイルの場所**
+> すべて GitHub の `touma` リポジトリ、ブランチ `claude/mitsui-toshima-failure-hr-v39oyx` の `note/` 以下にあります。
+> https://github.com/0uc40d1838f209r-star/touma/tree/claude/mitsui-toshima-failure-hr-v39oyx/note
+> 主要なものはチャットにも個別に送っています。見当たらないファイルは言ってください、送ります。
+
 | ファイル | 用途 |
 | --- | --- |
 | `README.md` | 連載の目的・型・運用ルール（この文書） |
