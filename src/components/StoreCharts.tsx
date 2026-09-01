@@ -36,12 +36,18 @@ export default function StoreCharts({ visits, highlight }: { visits: Visit[]; hi
     );
   }
 
+  const untagged = rows.find((r) => r.station === "(拠点未入力)")?.visits ?? 0;
   const byShare = [...rows].sort((a, b) => b.visits - a.visits);
   const bySuccess = [...rows].sort((a, b) => b.positives / b.visits - a.positives / a.visits);
   const isHi = (s: string) => highlight && s === highlight;
 
   return (
     <div className="space-y-4">
+      {untagged > 0 && (
+        <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
+          この月は <span className="font-bold">{untagged}件</span> の訪問が「店舗未選択」です。訪問を記録するときに拠点を選ぶ(またはヘッダーの 👤 で自分を選んでおく)と、店舗ごとに集計されます。
+        </div>
+      )}
       {/* 営業割合(訪問のシェア) */}
       <div className="rounded-xl bg-white p-4 shadow-sm">
         <h3 className="text-sm font-bold">店舗別の営業割合</h3>

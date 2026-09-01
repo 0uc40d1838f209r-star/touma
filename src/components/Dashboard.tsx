@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Facility, Visit, VisitOutcome } from "../types";
 import { OUTCOMES, REACTIONS, splitStaff } from "../types";
 import FacilityAnalysis from "./FacilityAnalysis";
@@ -17,6 +17,16 @@ export default function Dashboard({
   const [tab, setTab] = useState<"monthly" | "stores" | "analysis">("monthly");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [station, setStation] = useState(""); // "" = 全拠点
+
+  // 初回のみ: 記録のある最新の月を初期表示にする(当月がまだ空でも実績が見える)
+  const jumped = useRef(false);
+  useEffect(() => {
+    if (jumped.current || visits.length === 0) return;
+    jumped.current = true;
+    let mx = "";
+    for (const v of visits) if (v.visited_on > mx) mx = v.visited_on;
+    if (mx) setMonth(mx.slice(0, 7));
+  }, [visits]);
 
   const facilityName = useMemo(() => new Map(facilities.map((f) => [f.id, f.name])), [facilities]);
 
