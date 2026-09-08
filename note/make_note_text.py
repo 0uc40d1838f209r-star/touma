@@ -105,6 +105,20 @@ def main():
     fmt_path = os.path.join(OUT, f"{name}-整形メモ.txt")
     with open(fmt_path, "w", encoding="utf-8") as f:
         f.write(f"■ タイトル欄に入れる\n{title}\n\n")
+
+        f.write("■ 公開設定（毎回これ）\n")
+        if name == "profile":
+            f.write("  マガジン    追加しない（自己紹介は連載の記事ではないため）\n")
+            f.write("  ハッシュタグ #自己紹介 #訪問看護 #看護師 #人事\n")
+            f.write("  価格        無料\n")
+            f.write("  固定表示    する（プロフィールの先頭に固定）\n\n")
+        else:
+            f.write("  マガジン    人事の失敗図鑑  ★忘れやすい\n")
+            f.write("  ハッシュタグ #訪問看護 #看護師 #人事 #採用\n")
+            f.write("              ＋その回の内容タグを1つ（例: #育成 #マネジメント #組織づくり）\n")
+            f.write("  価格        無料\n")
+            f.write("  固定表示    しない\n\n")
+
         f.write("■ 本文を貼ったあと、この順で整形してください\n")
         f.write("  （note のツールバー、または行頭で見出しボタンを押す）\n\n")
         order = {"大見出し": 1, "小見出し": 2, "引用": 3, "区切り線": 4, "太字": 5}
