@@ -189,6 +189,36 @@ export default function Dashboard({
           ))}
         </div>
 
+        {/* スタッフ別 (上部に表示) */}
+        <div className="rounded-xl bg-white p-4 shadow-sm">
+          <h3 className="mb-2 text-sm font-bold">スタッフ別の訪問件数</h3>
+          {byStaff.length === 0 ? (
+            <p className="text-sm text-gray-500">この月の訪問記録はまだありません。</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 text-left text-xs text-gray-500">
+                  <th className="py-1.5 font-medium">拠点</th>
+                  <th className="py-1.5 font-medium">スタッフ</th>
+                  <th className="py-1.5 text-right font-medium">件数</th>
+                </tr>
+              </thead>
+              <tbody>
+                {byStaff.map(([key, count]) => {
+                  const [station, name] = key.split("|");
+                  return (
+                    <tr key={key} className="border-b border-gray-100">
+                      <td className="py-1.5 text-gray-500">{station}</td>
+                      <td className="py-1.5">{name}</td>
+                      <td className="py-1.5 text-right font-medium">{count}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+
         {/* 先方の反応・不在 */}
         {monthVisits.length > 0 && (
           <div className="rounded-xl bg-white p-4 shadow-sm">
@@ -282,35 +312,6 @@ export default function Dashboard({
           </div>
         )}
 
-        {/* スタッフ別 */}
-        <div className="rounded-xl bg-white p-4 shadow-sm">
-          <h3 className="mb-2 text-sm font-bold">スタッフ別の訪問件数</h3>
-          {byStaff.length === 0 ? (
-            <p className="text-sm text-gray-500">この月の訪問記録はまだありません。</p>
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200 text-left text-xs text-gray-500">
-                  <th className="py-1.5 font-medium">拠点</th>
-                  <th className="py-1.5 font-medium">スタッフ</th>
-                  <th className="py-1.5 text-right font-medium">件数</th>
-                </tr>
-              </thead>
-              <tbody>
-                {byStaff.map(([key, count]) => {
-                  const [station, name] = key.split("|");
-                  return (
-                    <tr key={key} className="border-b border-gray-100">
-                      <td className="py-1.5 text-gray-500">{station}</td>
-                      <td className="py-1.5">{name}</td>
-                      <td className="py-1.5 text-right font-medium">{count}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
         </div>
         )}
       </div>
