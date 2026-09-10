@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Contact, Facility, FacilityStatus, NewFacility, Staff, Visit, VisitOutcome } from "../types";
 import { FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS, joinStaff, splitStaff } from "../types";
 import { store } from "../lib/store";
@@ -350,18 +350,37 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
   const [memo, setMemo] = useState("");
   const [roster, setRoster] = useState<Staff[]>([]);
 
-  const toggleStaff = (name: string) =>
-    setStaffList((prev) => (prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]));
-  const addExtraStaff = () => {
-    const name = extraStaff.trim();
-    if (!name) return;
-    setStaffList((prev) => (prev.includes(name) ? prev : [...prev, name]));
-    setExtraStaff("");
-  };
-
   useEffect(() => {
     store.listStaff().then(setRoster);
   }, []);
+
+  // 名前 → 所属店舗 の対応(訪問者を選ぶと拠点を自動で埋めるのに使う)
+  const nameToStation = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const s of roster) if (!m.has(s.name)) m.set(s.name, s.station);
+    return m;
+  }, [roster]);
+  const stations = useMemo(() => [...new Set(roster.map((s) => s.station))], [roster]);
+  // 店舗ごとの名簿(訪問者プルダウンの optgroup 用)
+  const rosterByStation = useMemo(
+    () => stations.map((st) => [st, roster.filter((s) => s.station === st).map((s) => s.name)] as const),
+    [stations, roster],
+  );
+
+  const toggleStaff = (name: string) =>
+    setStaffList((prev) => (prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]));
+  // 訪問者を追加。名簿の人なら その人の所属店舗を拠点に自動セットする
+  const addStaff = (name: string) => {
+    const n = name.trim();
+    if (!n) return;
+    setStaffList((prev) => (prev.includes(n) ? prev : [...prev, n]));
+    const st = nameToStation.get(n);
+    if (st) setStation(st);
+  };
+  const addExtraStaff = () => {
+    addStaff(extraStaff);
+    setExtraStaff("");
+  };
 
   // 初回のみ: 未設定なら選択中の本人(identity)を初期値にする
   useEffect(() => {
@@ -371,9 +390,6 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     setStation((prev) => prev || me.station);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const stations = [...new Set(roster.map((s) => s.station))];
-  const members = roster.filter((s) => s.station === station).map((s) => s.name);
 
   const openNew = () => {
     setEditingId("new");
@@ -462,58 +478,48 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
           </div>
           <div>
-            <div className="mb-1 text-xs font-medium text-gray-500">拠点</div>
-            {selectOrInput(
-              station,
-              (v) => {
-                setStation(v);
-                // 拠点を変えたら訪問者の選択をリセット (前の拠点のスタッフが残らないように)
-                if (v !== station) setStaffList([]);
-              },
-              stations,
-              "拠点",
-            )}
-          </div>
-          <div>
             <div className="mb-1 text-xs font-medium text-gray-500">
-              訪問者 (複数選べます{staffList.length > 0 ? ` ・ ${staffList.length}名選択中` : ""})
+              訪問者 (複数選べます{staffList.length > 0 ? ` ・ ${staffList.length}名` : ""})
             </div>
-            {members.length > 0 && (
+            {/* 選択済みの訪問者(タップで解除) */}
+            {staffList.length > 0 && (
               <div className="mb-1.5 flex flex-wrap gap-1.5">
-                {members.map((m) => (
+                {staffList.map((n) => (
                   <button
-                    key={m}
+                    key={n}
                     type="button"
-                    onClick={() => toggleStaff(m)}
-                    className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-                      staffList.includes(m)
-                        ? "bg-blue-100 text-blue-800 ring-2 ring-blue-500"
-                        : "bg-white text-gray-500 border border-gray-300"
-                    }`}
+                    onClick={() => toggleStaff(n)}
+                    className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-800 ring-2 ring-blue-500"
                   >
-                    {m}
+                    {n} ✕
                   </button>
                 ))}
               </div>
             )}
-            {/* 名簿に載っていない人 (他拠点の応援など) を選択済みとして表示・解除 */}
-            {staffList.filter((n) => !members.includes(n)).length > 0 && (
-              <div className="mb-1.5 flex flex-wrap gap-1.5">
-                {staffList
-                  .filter((n) => !members.includes(n))
-                  .map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => toggleStaff(n)}
-                      className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-800 ring-2 ring-blue-500"
-                    >
-                      {n} ✕
-                    </button>
-                  ))}
-              </div>
+            {/* 全店舗の名簿から選ぶ(選んだ人の店舗が下の拠点に自動で入る) */}
+            {rosterByStation.length > 0 && (
+              <select
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) addStaff(e.target.value);
+                }}
+                className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm"
+              >
+                <option value="">名簿から訪問者を追加(自分の名前を選択)</option>
+                {rosterByStation.map(([st, names]) => (
+                  <optgroup key={st} label={st}>
+                    {names
+                      .filter((n) => !staffList.includes(n))
+                      .map((n) => (
+                        <option key={st + "|" + n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                  </optgroup>
+                ))}
+              </select>
             )}
-            <div className="flex gap-2">
+            <div className="mt-1.5 flex gap-2">
               <input
                 value={extraStaff}
                 onChange={(e) => setExtraStaff(e.target.value)}
@@ -523,13 +529,22 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
                     addExtraStaff();
                   }
                 }}
-                placeholder={members.length > 0 ? "名簿に無い人を追加" : "訪問者の名前"}
+                placeholder="名簿に無い人を手入力"
                 className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2.5 py-2 text-sm"
               />
               <button type="button" onClick={addExtraStaff} disabled={!extraStaff.trim()} className="shrink-0 rounded border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-600 disabled:opacity-40">
                 追加
               </button>
             </div>
+          </div>
+          <div>
+            <div className="mb-1 text-xs font-medium text-gray-500">拠点(店舗)</div>
+            {selectOrInput(station, setStation, stations, "拠点")}
+            {!station && (
+              <p className="mt-1 text-[11px] text-amber-700">
+                上で訪問者を選ぶと自動で入ります。空のままだと店舗別に集計されません。
+              </p>
+            )}
           </div>
           <div>
             <div className="mb-1 text-xs font-medium text-gray-500">成果</div>
