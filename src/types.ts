@@ -80,7 +80,7 @@ export const OUTCOMES: Record<VisitOutcome, { label: string; badge: string }> = 
 };
 
 // 面談相手の選択肢
-export const MET_OPTIONS = ["ケアマネ", "相談員・連携室", "医師", "事務・受付", "不在"];
+export const MET_OPTIONS = ["ケアマネ", "ケアマネ不在", "相談員・連携室", "医師", "事務・受付", "不在"];
 
 // 先方の反応
 export const REACTIONS: Record<string, { label: string; badge: string }> = {

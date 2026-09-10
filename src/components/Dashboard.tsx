@@ -93,7 +93,7 @@ export default function Dashboard({
     for (const v of monthVisits) if (v.reaction && m[v.reaction] !== undefined) m[v.reaction]++;
     return m;
   }, [monthVisits]);
-  const absentCount = monthVisits.filter((v) => v.met === "不在").length;
+  const absentCount = monthVisits.filter((v) => v.met === "不在" || v.met === "ケアマネ不在").length;
 
   const shiftMonth = (delta: number) => {
     const [y, m] = month.split("-").map(Number);
