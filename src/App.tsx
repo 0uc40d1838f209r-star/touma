@@ -12,6 +12,7 @@ import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import StaffManager from "./components/StaffManager";
 import IdentityPicker from "./components/IdentityPicker";
+import RoutePanel from "./components/RoutePanel";
 import { getIdentity, type Identity } from "./lib/identity";
 
 export default function App() {
@@ -50,6 +51,21 @@ function MainScreen() {
   const [identity, setIdentityState] = useState<Identity | null>(() => getIdentity());
   // 起動時に本人が未選択なら選択を促す (スキップ可)
   const [showIdentity, setShowIdentity] = useState(() => getIdentity() === null);
+
+  // 訪問ルート (ピックアップした営業先の id を順番に保持。端末に保存)
+  const [route, setRoute] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("touma-route") ?? "[]") as string[];
+    } catch {
+      return [];
+    }
+  });
+  const [showRoute, setShowRoute] = useState(false);
+  useEffect(() => {
+    localStorage.setItem("touma-route", JSON.stringify(route));
+  }, [route]);
+  const toggleRoute = (id: string) =>
+    setRoute((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Facility | null>(null);
@@ -176,6 +192,15 @@ function MainScreen() {
             👤 <span className="max-w-[6rem] truncate">{identity?.name ?? "担当者を選択"}</span>
           </button>
           <button
+            onClick={() => setShowRoute(true)}
+            className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
+              route.length > 0 ? "bg-blue-600 text-white" : "border border-gray-300 text-gray-700"
+            }`}
+            title="訪問ルート"
+          >
+            🚗 ルート{route.length > 0 ? ` ${route.length}` : ""}
+          </button>
+          <button
             onClick={() => setView(view === "stats" ? "map" : "stats")}
             className={`hidden rounded-full px-3 py-1 text-xs font-bold md:inline ${
               view === "stats" ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-700"
@@ -267,6 +292,8 @@ function MainScreen() {
               onStatusChange={changeStatus}
               onUpdate={updateFacilityPatch}
               onVisitsChanged={reloadVisits}
+              inRoute={route.includes(selected.id)}
+              onToggleRoute={() => toggleRoute(selected.id)}
             />
           </div>
         )}
@@ -292,6 +319,20 @@ function MainScreen() {
       </nav>
 
       {showStaff && <StaffManager onClose={() => setShowStaff(false)} />}
+
+      {showRoute && (
+        <RoutePanel
+          facilities={facilities}
+          route={route}
+          onRemove={(id) => setRoute((prev) => prev.filter((x) => x !== id))}
+          onClear={() => setRoute([])}
+          onClose={() => setShowRoute(false)}
+          onSelect={(id) => {
+            setShowRoute(false);
+            selectFacility(id);
+          }}
+        />
+      )}
 
       {showIdentity && (
         <IdentityPicker

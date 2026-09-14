@@ -12,9 +12,11 @@ interface Props {
   onStatusChange: (status: FacilityStatus) => void;
   onUpdate: (patch: Partial<NewFacility>) => void;
   onVisitsChanged?: () => void;
+  inRoute?: boolean;
+  onToggleRoute?: () => void;
 }
 
-export default function FacilityDetail({ facility, onClose, onEdit, onDelete, onStatusChange, onUpdate, onVisitsChanged }: Props) {
+export default function FacilityDetail({ facility, onClose, onEdit, onDelete, onStatusChange, onUpdate, onVisitsChanged, inRoute, onToggleRoute }: Props) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [stations, setStations] = useState<string[]>([]);
@@ -50,6 +52,17 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
           </div>
           <h2 className="truncate text-lg font-bold">{facility.name}</h2>
         </div>
+        {onToggleRoute && (
+          <button
+            onClick={onToggleRoute}
+            className={`shrink-0 rounded-full px-2.5 py-1.5 text-xs font-bold ${
+              inRoute ? "bg-blue-600 text-white" : "border border-blue-300 text-blue-700"
+            }`}
+            title="訪問ルートに追加/削除"
+          >
+            {inRoute ? "🚗 追加済み" : "🚗 ルートに追加"}
+          </button>
+        )}
         <button onClick={onClose} className="shrink-0 rounded-full p-2 text-gray-500 hover:bg-gray-100" aria-label="閉じる">
           ✕
         </button>

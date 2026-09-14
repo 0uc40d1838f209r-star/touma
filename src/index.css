@@ -30,3 +30,13 @@ body,
 .mypos-tooltip.leaflet-tooltip-top::before {
   border-top-color: #2563eb;
 }
+
+/* 現在地の光の輪(脈打つ) */
+@keyframes mypos-pulse {
+  0% { fill-opacity: 0.28; }
+  50% { fill-opacity: 0.08; }
+  100% { fill-opacity: 0.28; }
+}
+.mypos-halo {
+  animation: mypos-pulse 1.8s ease-in-out infinite;
+}

@@ -263,11 +263,11 @@ export default function MapView({ facilities, selectedId, onSelect, picking, onP
       <LocateButton myPos={myPos} onLocated={setMyPos} />
       {myPos && (
         <>
-          {/* 淡い光の輪(自分の位置を目立たせる) */}
+          {/* 淡い光の輪(脈打たせて自分の位置を目立たせる) */}
           <CircleMarker
             center={myPos}
-            radius={22}
-            pathOptions={{ stroke: false, fillColor: "#2563eb", fillOpacity: 0.15 }}
+            radius={24}
+            pathOptions={{ stroke: false, fillColor: "#2563eb", fillOpacity: 0.15, className: "mypos-halo" }}
           />
           {/* 現在地の青い点 + 「現在地」ラベル */}
           <CircleMarker
