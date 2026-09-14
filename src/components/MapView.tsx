@@ -233,7 +233,7 @@ function LocateButton({
     <button
       onClick={locate}
       title="現在地へ移動"
-      className="absolute bottom-6 right-4 z-[1000] flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg text-xl active:bg-gray-100"
+      className="absolute bottom-6 left-4 z-[1000] flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg text-xl active:bg-gray-100"
     >
       {busy ? "…" : "📍"}
     </button>
