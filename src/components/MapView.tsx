@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CircleMarker, MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { CircleMarker, MapContainer, Marker, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import Supercluster from "supercluster";
 import type { Facility, FacilityStatus } from "../types";
@@ -262,11 +262,24 @@ export default function MapView({ facilities, selectedId, onSelect, picking, onP
       <ViewMemory facilities={facilities} />
       <LocateButton myPos={myPos} onLocated={setMyPos} />
       {myPos && (
-        <CircleMarker
-          center={myPos}
-          radius={8}
-          pathOptions={{ color: "white", weight: 3, fillColor: "#2563eb", fillOpacity: 1 }}
-        />
+        <>
+          {/* 淡い光の輪(自分の位置を目立たせる) */}
+          <CircleMarker
+            center={myPos}
+            radius={22}
+            pathOptions={{ stroke: false, fillColor: "#2563eb", fillOpacity: 0.15 }}
+          />
+          {/* 現在地の青い点 + 「現在地」ラベル */}
+          <CircleMarker
+            center={myPos}
+            radius={9}
+            pathOptions={{ color: "white", weight: 3, fillColor: "#2563eb", fillOpacity: 1 }}
+          >
+            <Tooltip permanent direction="top" offset={[0, -10]} className="mypos-tooltip">
+              現在地
+            </Tooltip>
+          </CircleMarker>
+        </>
       )}
       <ClusteredMarkers facilities={facilities} selectedId={selectedId} onSelect={onSelect} picking={picking} />
     </MapContainer>

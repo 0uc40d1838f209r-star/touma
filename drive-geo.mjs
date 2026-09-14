@@ -1,0 +1,16 @@
+import { chromium } from "playwright";
+const BASE="http://localhost:5183";
+const now=new Date().toISOString();
+const b=await chromium.launch();
+const ctx=await b.newContext({viewport:{width:390,height:844},locale:"ja-JP",geolocation:{latitude:35.462,longitude:139.522},permissions:["geolocation"]});
+const p=await ctx.newPage();
+p.on("pageerror",e=>console.log("[pageerror]",e.message));
+await p.addInitScript((now)=>{localStorage.setItem("touma-data-v1",JSON.stringify({facilities:[{id:"A",name:"居宅A",type:"kyotaku",address:"横浜市旭区二俣川",lat:35.462,lng:139.522,phone:"",status:"not_visited",note:"",referrals:{},care_manager_count:0,created_at:now,updated_at:now}],contacts:[],visits:[],staff:[]}));localStorage.setItem("touma-map-view",JSON.stringify({lat:35.462,lng:139.522,zoom:16}));localStorage.setItem("touma-identity",JSON.stringify({station:"二俣川",name:"山田"}));},now);
+await p.goto(BASE);
+await p.waitForSelector("text=営業先マップ");
+await p.waitForTimeout(2500);
+console.log("現在地ラベル数:", await p.locator(".mypos-tooltip").count());
+console.log("ラベル文言:", await p.locator(".mypos-tooltip").first().innerText().catch(()=>"(なし)"));
+await p.screenshot({path:"/tmp/claude-1000/-workspaces-touma/ebcf2d23-768a-4282-ae63-b9f443cb2e20/scratchpad/shots/95-mypos.png"});
+await b.close();
+console.log("DONE");
