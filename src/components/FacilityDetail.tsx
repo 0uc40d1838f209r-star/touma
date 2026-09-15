@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Contact, Facility, FacilityStatus, NewFacility, Staff, Visit, VisitOutcome } from "../types";
-import { ABSENT_ENCOURAGEMENTS, ENCOURAGEMENTS, FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS, joinStaff, splitStaff } from "../types";
+import { ABSENT_ENCOURAGEMENTS, ENCOURAGEMENTS, FACILITY_STATUSES, FACILITY_TYPES, KNOWN_STATIONS, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS, joinStaff, splitStaff } from "../types";
 import { store } from "../lib/store";
 import { getIdentity } from "../lib/identity";
 import Donut from "./Donut";
@@ -433,6 +433,11 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     return m;
   }, [roster]);
   const stations = useMemo(() => [...new Set(roster.map((s) => s.station))], [roster]);
+  // 拠点セレクトの候補は 既定店舗 + 名簿の店舗(センター南などメンバー未登録でも選べる)
+  const stationOptions = useMemo(
+    () => [...new Set([...KNOWN_STATIONS, ...roster.map((s) => s.station)])],
+    [roster],
+  );
   // 店舗ごとの名簿(訪問者プルダウンの optgroup 用)
   const rosterByStation = useMemo(
     () => stations.map((st) => [st, roster.filter((s) => s.station === st).map((s) => s.name)] as const),
@@ -463,6 +468,13 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 拠点が空なら、訪問者(名簿にいる人)の所属店舗から自動で補う
+  useEffect(() => {
+    if (station) return;
+    const primary = staffList.find((n) => nameToStation.has(n));
+    if (primary) setStation(nameToStation.get(primary)!);
+  }, [staffList, nameToStation, station]);
+
   const openNew = () => {
     setEditingId("new");
     setDate(today);
@@ -487,13 +499,16 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
   const submit = async () => {
     if (!date || !editingId) return;
     const staffName = joinStaff(staffList);
+    // 拠点が空なら、訪問者の所属店舗から補完してから保存する(拠点未入力を防ぐ)
+    const primary = staffList.find((n) => nameToStation.has(n));
+    const finalStation = station || (primary ? nameToStation.get(primary)! : "");
     localStorage.setItem("touma-staff-name", staffName);
-    localStorage.setItem("touma-station-name", station);
+    localStorage.setItem("touma-station-name", finalStation);
     const data = {
       facility_id: facilityId,
       visited_on: date,
       staff_name: staffName,
-      station_name: station,
+      station_name: finalStation,
       outcome,
       met,
       met_person: metPerson.trim(),
@@ -626,7 +641,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
           </div>
           <div>
             <div className="mb-1 text-xs font-medium text-gray-500">拠点(店舗)</div>
-            {selectOrInput(station, setStation, stations, "拠点")}
+            {selectOrInput(station, setStation, stationOptions, "拠点")}
             {!station && (
               <p className="mt-1 text-[11px] text-amber-700">
                 上で訪問者を選ぶと自動で入ります。空のままだと店舗別に集計されません。

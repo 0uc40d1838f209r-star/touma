@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Facility, Visit, VisitOutcome } from "../types";
-import { OUTCOMES, REACTIONS, splitStaff } from "../types";
+import { KNOWN_STATIONS, OUTCOMES, REACTIONS, splitStaff } from "../types";
 import FacilityAnalysis from "./FacilityAnalysis";
 import StoreCharts from "./StoreCharts";
 import StrategyTab from "./StrategyTab";
@@ -41,8 +41,9 @@ export default function Dashboard({
   const facilityName = useMemo(() => new Map(facilities.map((f) => [f.id, f.name])), [facilities]);
 
   // 記録に出てくる拠点(店舗)の一覧
+  // 既定店舗 + 記録に出てくる店舗(センター南などデータが無くても選べる)
   const stations = useMemo(
-    () => [...new Set(visits.map((v) => v.station_name).filter(Boolean))].sort(),
+    () => [...new Set([...KNOWN_STATIONS, ...visits.map((v) => v.station_name).filter(Boolean)])],
     [visits],
   );
 
