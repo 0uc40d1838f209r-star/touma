@@ -4,22 +4,29 @@ import { OUTCOMES, REACTIONS, splitStaff } from "../types";
 import FacilityAnalysis from "./FacilityAnalysis";
 import StoreCharts from "./StoreCharts";
 import StrategyTab from "./StrategyTab";
-import ManualModal from "./ManualModal";
 
 // 営業実績: 月次サマリー と 施設別の効果分析
 export default function Dashboard({
   facilities,
   visits,
   onSelectFacility,
+  focusStrategyKey,
+  onOpenManual,
 }: {
   facilities: Facility[];
   visits: Visit[];
   onSelectFacility?: (id: string) => void;
+  focusStrategyKey?: number; // トップから「戦略」を開いたとき増える
+  onOpenManual?: () => void;
 }) {
   const [tab, setTab] = useState<"monthly" | "strategy" | "stores" | "analysis">("monthly");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [station, setStation] = useState(""); // "" = 全拠点
-  const [showManual, setShowManual] = useState(false);
+
+  // トップの「戦略」ボタンから開かれたら戦略タブに切り替える
+  useEffect(() => {
+    if (focusStrategyKey) setTab("strategy");
+  }, [focusStrategyKey]);
 
   // 初回のみ: 記録のある最新の月を初期表示にする(当月がまだ空でも実績が見える)
   const jumped = useRef(false);
@@ -158,7 +165,7 @@ export default function Dashboard({
               <h2 className="text-lg font-bold">{y}年{Number(m)}月の戦略{station && <span className="text-sm font-normal text-brand"> / {station}</span>}</h2>
               <button onClick={() => shiftMonth(1)} className="rounded-full bg-white px-3 py-1.5 text-sm shadow-sm" aria-label="次の月">▶</button>
             </div>
-            <StrategyTab visits={monthVisits} onOpenManual={() => setShowManual(true)} />
+            <StrategyTab visits={monthVisits} onOpenManual={() => onOpenManual?.()} />
           </div>
         ) : tab === "stores" ? (
           <div className="space-y-4">
@@ -328,7 +335,6 @@ export default function Dashboard({
         </div>
         )}
       </div>
-      {showManual && <ManualModal onClose={() => setShowManual(false)} />}
     </div>
   );
 }

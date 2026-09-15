@@ -13,6 +13,7 @@ import Dashboard from "./components/Dashboard";
 import StaffManager from "./components/StaffManager";
 import IdentityPicker from "./components/IdentityPicker";
 import RoutePanel from "./components/RoutePanel";
+import ManualModal from "./components/ManualModal";
 import { getIdentity, type Identity } from "./lib/identity";
 
 export default function App() {
@@ -61,6 +62,12 @@ function MainScreen() {
     }
   });
   const [showRoute, setShowRoute] = useState(false);
+  const [showManual, setShowManual] = useState(false);
+  const [focusStrategyKey, setFocusStrategyKey] = useState(0);
+  const openStrategy = () => {
+    setView("stats");
+    setFocusStrategyKey((k) => k + 1);
+  };
   useEffect(() => {
     localStorage.setItem("touma-route", JSON.stringify(route));
   }, [route]);
@@ -177,7 +184,7 @@ function MainScreen() {
       <header className="sticky top-0 z-[1001] flex items-center justify-between gap-2 border-b border-gray-100 bg-white/90 px-4 py-2.5 backdrop-blur-md">
         <h1 className="flex min-w-0 items-center gap-2 text-[15px] font-extrabold tracking-tight text-gray-900">
           <span className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-brand text-sm text-white shadow-sm">営</span>
-          <span className="truncate">営業先マップ</span>
+          <span className="hidden truncate sm:inline">営業先マップ</span>
           {!isSupabaseMode && (
             <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
               デモ
@@ -185,6 +192,20 @@ function MainScreen() {
           )}
         </h1>
         <div className="flex shrink-0 items-center gap-1.5">
+          <button
+            onClick={openStrategy}
+            className="grid h-8 w-8 place-items-center rounded-full bg-gray-100 text-sm hover:bg-gray-200"
+            title="戦略・アドバイス"
+          >
+            🎯
+          </button>
+          <button
+            onClick={() => setShowManual(true)}
+            className="grid h-8 w-8 place-items-center rounded-full bg-gray-100 text-sm hover:bg-gray-200"
+            title="営業マニュアル"
+          >
+            📖
+          </button>
           <button
             onClick={() => setShowIdentity(true)}
             className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-800 hover:bg-gray-200"
@@ -241,7 +262,13 @@ function MainScreen() {
 
       <div className="relative min-h-0 flex-1">
         {view === "stats" ? (
-          <Dashboard facilities={facilities} visits={allVisits} onSelectFacility={selectFacility} />
+          <Dashboard
+            facilities={facilities}
+            visits={allVisits}
+            onSelectFacility={selectFacility}
+            focusStrategyKey={focusStrategyKey}
+            onOpenManual={() => setShowManual(true)}
+          />
         ) : (
         <div className="flex h-full">
           {/* PC: サイドバー一覧 */}
@@ -331,6 +358,7 @@ function MainScreen() {
       </nav>
 
       {showStaff && <StaffManager onClose={() => setShowStaff(false)} />}
+      {showManual && <ManualModal onClose={() => setShowManual(false)} />}
 
       {showRoute && (
         <RoutePanel

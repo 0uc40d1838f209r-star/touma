@@ -3,6 +3,7 @@ import type { Contact, Facility, FacilityStatus, NewFacility, Staff, Visit, Visi
 import { ABSENT_ENCOURAGEMENTS, ENCOURAGEMENTS, FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS, joinStaff, splitStaff } from "../types";
 import { store } from "../lib/store";
 import { getIdentity } from "../lib/identity";
+import Donut from "./Donut";
 
 interface Props {
   facility: Facility;
@@ -351,6 +352,44 @@ function ContactsTab({ facilityId, contacts, onChanged }: { facilityId: string; 
   );
 }
 
+// この施設の訪問記録の内訳を円グラフで(成果・反応。面談相手が空でも表示できる)
+const OUTCOME_COLOR: Record<VisitOutcome, string> = {
+  greeting: "#9ca3af",
+  consult: "#38bdf8",
+  new_client: "#f59e0b",
+  other: "#d1d5db",
+};
+const REACTION_COLOR: Record<string, string> = { hot: "#fb7185", warm: "#cbd5e1", cold: "#94a3b8" };
+
+function VisitSummary({ visits }: { visits: Visit[] }) {
+  const outcomeSeg = (Object.keys(OUTCOMES) as VisitOutcome[]).map((o) => ({
+    label: OUTCOMES[o].label.replace("!", ""),
+    value: visits.filter((v) => (v.outcome ?? "greeting") === o).length,
+    color: OUTCOME_COLOR[o],
+  }));
+  const reactionSeg = Object.entries(REACTIONS).map(([k, r]) => ({
+    label: r.label,
+    value: visits.filter((v) => v.reaction === k).length,
+    color: REACTION_COLOR[k],
+  }));
+  const hasReaction = reactionSeg.some((s) => s.value > 0);
+
+  return (
+    <div className="space-y-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+      <div>
+        <h4 className="mb-2 text-xs font-bold text-gray-600">成果の内訳(全{visits.length}件)</h4>
+        <Donut segments={outcomeSeg} centerLabel="件" />
+      </div>
+      {hasReaction && (
+        <div className="border-t border-gray-100 pt-3">
+          <h4 className="mb-2 text-xs font-bold text-gray-600">先方の反応</h4>
+          <Donut segments={reactionSeg} centerLabel="件" size={96} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visits: Visit[]; onChanged: () => void }) {
   const [editingId, setEditingId] = useState<string | null>(null); // "new" = 新規追加
   const today = new Date().toISOString().slice(0, 10);
@@ -667,6 +706,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
         </button>
       )}
       {visits.length === 0 && !editingId && <p className="text-sm text-gray-500">訪問記録はまだありません。</p>}
+      {visits.length > 0 && !editingId && <VisitSummary visits={visits} />}
       <ol className="relative space-y-3 border-l-2 border-gray-200 pl-4">
         {visits.map((v) => (
           <li key={v.id} className="relative">
