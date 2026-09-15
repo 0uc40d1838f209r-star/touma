@@ -175,8 +175,8 @@ function MainScreen() {
   return (
     <div className="flex h-full flex-col">
       <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2.5">
-        <h1 className="text-base font-bold">
-          🗺 営業先マップ
+        <h1 className="text-base font-extrabold tracking-tight text-brand">
+          営業先マップ
           {!isSupabaseMode && (
             <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-800">
               デモモード(この端末のみ保存)
@@ -194,7 +194,7 @@ function MainScreen() {
           <button
             onClick={() => setShowRoute(true)}
             className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
-              route.length > 0 ? "bg-blue-600 text-white" : "border border-gray-300 text-gray-700"
+              route.length > 0 ? "bg-brand text-white" : "border border-gray-300 text-gray-700"
             }`}
             title="訪問ルート"
           >
@@ -203,7 +203,7 @@ function MainScreen() {
           <button
             onClick={() => setView(view === "stats" ? "map" : "stats")}
             className={`hidden rounded-full px-3 py-1 text-xs font-bold md:inline ${
-              view === "stats" ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-700"
+              view === "stats" ? "bg-brand text-white" : "bg-brand-softer text-brand-ink"
             }`}
           >
             📊 実績・分析
@@ -252,7 +252,7 @@ function MainScreen() {
               flyTarget={flyTarget}
             />
             {picking && (
-              <div className="absolute inset-x-0 top-0 z-[1000] flex items-center justify-between gap-2 bg-blue-600 px-4 py-3 text-sm font-medium text-white">
+              <div className="absolute inset-x-0 top-0 z-[1000] flex items-center justify-between gap-2 bg-brand px-4 py-3 text-sm font-medium text-white">
                 地図をタップして位置を指定してください
                 <button onClick={() => setPicking(false)} className="rounded bg-white/20 px-2.5 py-1 text-xs">
                   キャンセル
@@ -274,7 +274,7 @@ function MainScreen() {
         {!picking && !formOpen && view !== "stats" && (
           <button
             onClick={openNewForm}
-            className="absolute bottom-20 right-4 z-[1000] flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-3xl font-light text-white shadow-lg active:bg-blue-700 md:bottom-6 md:right-6"
+            className="absolute bottom-20 right-4 z-[1000] flex h-14 w-14 items-center justify-center rounded-full bg-brand text-3xl font-light text-white shadow-lg active:bg-brand-dark md:bottom-6 md:right-6"
             aria-label="営業先を登録"
           >
             +
@@ -300,19 +300,20 @@ function MainScreen() {
       </div>
 
       {/* モバイル: 地図/リスト/実績切替タブ */}
-      <nav className="flex border-t border-gray-200 bg-white md:hidden">
+      <nav className="flex border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
         {(
           [
-            ["map", "🗺 地図"],
-            ["list", "📋 リスト"],
-            ["stats", "📊 実績"],
+            ["map", "🗺", "地図"],
+            ["list", "📋", "リスト"],
+            ["stats", "📊", "実績"],
           ] as const
-        ).map(([key, label]) => (
+        ).map(([key, icon, label]) => (
           <button
             key={key}
             onClick={() => setView(key)}
-            className={`flex-1 py-3 text-sm font-medium ${view === key ? "text-blue-600" : "text-gray-400"}`}
+            className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${view === key ? "text-brand" : "text-gray-400"}`}
           >
+            <span className="text-xl leading-none">{icon}</span>
             {label}
           </button>
         ))}

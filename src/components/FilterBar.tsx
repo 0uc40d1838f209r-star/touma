@@ -10,41 +10,65 @@ interface Props {
   onToggleStatus: (s: FacilityStatus) => void;
 }
 
+// 種別ごとのアイコン(Airbnb 風のカテゴリーバー用)
+const TYPE_ICON: Record<FacilityType, string> = {
+  kyotaku: "🏠",
+  takino: "🏢",
+  hospital: "🏥",
+  clinic: "💊",
+  other: "📍",
+};
+
 export default function FilterBar({ search, onSearch, activeTypes, onToggleType, activeStatuses, onToggleStatus }: Props) {
   return (
-    <div className="space-y-2 border-b border-gray-200 bg-white px-3 py-2">
-      <input
-        value={search}
-        onChange={(e) => onSearch(e.target.value)}
-        placeholder="名前・住所で検索"
-        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-      />
-      <div className="flex gap-1.5 overflow-x-auto pb-0.5 [-webkit-overflow-scrolling:touch]">
+    <div className="border-b border-gray-200 bg-white">
+      {/* 検索ピル */}
+      <div className="px-4 pt-3">
+        <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 shadow-[0_1px_6px_rgba(0,0,0,0.08)]">
+          <span className="text-gray-400">🔍</span>
+          <input
+            value={search}
+            onChange={(e) => onSearch(e.target.value)}
+            placeholder="名前・住所で検索"
+            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+          />
+          {search && (
+            <button onClick={() => onSearch("")} className="text-xs text-gray-400" aria-label="検索をクリア">
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* カテゴリーバー(種別) */}
+      <div className="flex gap-5 overflow-x-auto px-4 pt-2 [-webkit-overflow-scrolling:touch]">
         {(Object.keys(FACILITY_TYPES) as FacilityType[]).map((t) => {
           const active = activeTypes.has(t);
           return (
             <button
               key={t}
               onClick={() => onToggleType(t)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${
-                active ? "border-transparent text-white" : "border-gray-300 bg-white text-gray-600"
+              className={`flex shrink-0 flex-col items-center gap-1 border-b-2 pb-2 text-[11px] transition-colors ${
+                active ? "border-brand font-bold text-brand" : "border-transparent text-gray-500 hover:text-gray-800"
               }`}
-              style={active ? { background: FACILITY_TYPES[t].color } : undefined}
             >
-              <span className="h-2 w-2 rounded-full" style={{ background: active ? "white" : FACILITY_TYPES[t].color }} />
+              <span className="text-lg leading-none">{TYPE_ICON[t]}</span>
               {FACILITY_TYPES[t].label}
             </button>
           );
         })}
-        <span className="mx-0.5 shrink-0 border-l border-gray-200" />
+      </div>
+
+      {/* 営業ステータスの絞り込み */}
+      <div className="flex gap-1.5 overflow-x-auto px-4 pb-2.5 pt-2 [-webkit-overflow-scrolling:touch]">
         {(Object.keys(FACILITY_STATUSES) as FacilityStatus[]).map((s) => {
           const active = activeStatuses.has(s);
           return (
             <button
               key={s}
               onClick={() => onToggleStatus(s)}
-              className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium ${
-                active ? "border-blue-600 bg-blue-600 text-white" : "border-gray-300 bg-white text-gray-600"
+              className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium ${
+                active ? "border-gray-900 bg-gray-900 text-white" : "border-gray-300 bg-white text-gray-600"
               }`}
             >
               {FACILITY_STATUSES[s].label}

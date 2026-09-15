@@ -49,7 +49,7 @@ export default function RoutePanel({
             <ol className="space-y-2">
               {items.map((f, i) => (
                 <li key={f.id} className="flex items-center gap-2 rounded-lg border border-gray-200 p-2.5">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-xs font-bold text-white">
                     {i + 1}
                   </span>
                   <button onClick={() => onSelect(f.id)} className="min-w-0 flex-1 text-left">
@@ -71,7 +71,7 @@ export default function RoutePanel({
           <button
             onClick={openInGoogleMaps}
             disabled={items.length === 0}
-            className="w-full rounded-lg bg-blue-600 py-3 text-sm font-bold text-white disabled:opacity-40"
+            className="w-full rounded-lg bg-brand py-3 text-sm font-bold text-white disabled:opacity-40"
           >
             Google マップでルートを開く
           </button>

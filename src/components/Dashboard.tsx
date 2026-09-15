@@ -119,7 +119,7 @@ export default function Dashboard({
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`flex-1 rounded-full py-1.5 font-medium ${tab === key ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}
+              className={`flex-1 rounded-full py-1.5 font-medium ${tab === key ? "bg-white text-brand shadow-sm" : "text-gray-500"}`}
             >
               {label}
             </button>
@@ -165,7 +165,7 @@ export default function Dashboard({
           </button>
           <h2 className="text-center text-lg font-bold">
             {y}年{Number(m)}月の営業実績
-            {station && <span className="block text-xs font-normal text-blue-600">{station}</span>}
+            {station && <span className="block text-xs font-normal text-brand">{station}</span>}
           </h2>
           <button onClick={() => shiftMonth(1)} className="rounded-full bg-white px-3 py-1.5 text-sm shadow-sm" aria-label="次の月">
             ▶
@@ -257,7 +257,7 @@ export default function Dashboard({
                   </div>
                   <div className="h-3 w-full rounded-sm bg-gray-100">
                     <div
-                      className="h-3 rounded-sm bg-blue-600"
+                      className="h-3 rounded-sm bg-brand"
                       style={{ width: `${(a.visits / maxCount) * 100}%` }}
                     />
                   </div>

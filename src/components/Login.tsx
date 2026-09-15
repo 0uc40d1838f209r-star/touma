@@ -51,7 +51,7 @@ export default function Login() {
           <button
             onClick={submit}
             disabled={busy || password.length === 0}
-            className="w-full rounded-lg bg-blue-600 py-3 text-sm font-bold text-white disabled:opacity-40"
+            className="w-full rounded-lg bg-brand py-3 text-sm font-bold text-white disabled:opacity-40"
           >
             {busy ? "処理中…" : "はじめる"}
           </button>

@@ -58,14 +58,14 @@ export default function StoreCharts({ visits, highlight }: { visits: Visit[]; hi
             return (
               <div key={r.station} title={`${r.station}: ${r.visits}件 (${Math.round(share * 100)}%)`}>
                 <div className="mb-0.5 flex items-baseline justify-between gap-2">
-                  <span className={`truncate text-sm ${isHi(r.station) ? "font-bold text-blue-700" : ""}`}>{r.station}</span>
+                  <span className={`truncate text-sm ${isHi(r.station) ? "font-bold text-brand-ink" : ""}`}>{r.station}</span>
                   <span className="shrink-0 text-sm font-medium tabular-nums">
                     {Math.round(share * 100)}%<span className="ml-1 text-xs font-normal text-gray-400">{r.visits}件</span>
                   </span>
                 </div>
                 <div className="h-3 w-full rounded-full bg-gray-100">
                   <div
-                    className={`h-3 rounded-full ${isHi(r.station) ? "bg-blue-700" : "bg-blue-500"}`}
+                    className={`h-3 rounded-full ${isHi(r.station) ? "bg-brand-dark" : "bg-brand"}`}
                     style={{ width: `${Math.max(share * 100, 2)}%` }}
                   />
                 </div>

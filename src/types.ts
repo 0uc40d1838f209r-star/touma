@@ -67,6 +67,21 @@ export interface Staff {
   created_at: string;
 }
 
+// 既定の店舗(拠点)。メンバー未登録でも選べるよう、選択肢に含める
+export const KNOWN_STATIONS = [
+  "あざみ野",
+  "センター南",
+  "上星川",
+  "二俣川",
+  "大倉山",
+  "本部",
+  "東戸塚",
+  "瀬谷",
+  "片倉",
+  "茂原",
+  "鹿児島中央",
+];
+
 export type NewFacility = Omit<Facility, "id" | "created_at" | "updated_at">;
 export type NewContact = Omit<Contact, "id">;
 export type NewVisit = Omit<Visit, "id" | "created_at">;

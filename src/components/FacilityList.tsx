@@ -26,7 +26,7 @@ export default function FacilityList({ facilities, selectedId, onSelect, lastVis
         <li key={f.id}>
           <button
             onClick={() => onSelect(f.id)}
-            className={`w-full px-4 py-3 text-left ${f.id === selectedId ? "bg-blue-50" : "hover:bg-gray-50"}`}
+            className={`w-full px-4 py-3 text-left ${f.id === selectedId ? "bg-brand-softer" : "hover:bg-gray-50"}`}
           >
             <div className="flex items-center gap-2">
               <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: FACILITY_TYPES[f.type].color }} />
@@ -38,7 +38,7 @@ export default function FacilityList({ facilities, selectedId, onSelect, lastVis
             <div className="mt-0.5 flex items-baseline justify-between gap-2 pl-5">
               {f.address && <span className="min-w-0 truncate text-xs text-gray-500">{f.address}</span>}
               {lastVisit?.get(f.id) && (
-                <span className="shrink-0 text-[11px] text-blue-600">🕐 {lastVisit.get(f.id)}</span>
+                <span className="shrink-0 text-[11px] text-brand">🕐 {lastVisit.get(f.id)}</span>
               )}
             </div>
             {(totalReferrals(f) > 0 || (f.care_manager_count ?? 0) > 0) && (

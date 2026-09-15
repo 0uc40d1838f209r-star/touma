@@ -99,7 +99,7 @@ export default function FacilityForm({ initial, hidden, pickedPos, onStartPick, 
                   type="button"
                   onClick={() => setType(t)}
                   className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm ${
-                    type === t ? "border-blue-500 bg-blue-50 font-medium" : "border-gray-300"
+                    type === t ? "border-brand bg-brand-softer font-medium" : "border-gray-300"
                   }`}
                 >
                   <span className="h-3 w-3 rounded-full" style={{ background: FACILITY_TYPES[t].color }} />
@@ -122,7 +122,7 @@ export default function FacilityForm({ initial, hidden, pickedPos, onStartPick, 
                 type="button"
                 onClick={search}
                 disabled={!address.trim() || searching}
-                className="shrink-0 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white disabled:opacity-40"
+                className="shrink-0 rounded-lg bg-brand px-4 text-sm font-medium text-white disabled:opacity-40"
               >
                 {searching ? "検索中…" : "住所から検索"}
               </button>
@@ -139,7 +139,7 @@ export default function FacilityForm({ initial, hidden, pickedPos, onStartPick, 
                       setPos({ lat: c.lat, lng: c.lng });
                       setCandidates([]);
                     }}
-                    className="block w-full border-t border-gray-100 px-3 py-2.5 text-left text-sm hover:bg-blue-50"
+                    className="block w-full border-t border-gray-100 px-3 py-2.5 text-left text-sm hover:bg-brand-softer"
                   >
                     {c.label}
                   </button>
@@ -150,7 +150,7 @@ export default function FacilityForm({ initial, hidden, pickedPos, onStartPick, 
               <span className="text-xs text-gray-600">
                 {pos ? `位置設定済み (${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)})` : "位置が未設定です"}
               </span>
-              <button type="button" onClick={onStartPick} className="shrink-0 text-xs font-medium text-blue-600 underline">
+              <button type="button" onClick={onStartPick} className="shrink-0 text-xs font-medium text-brand underline">
                 地図タップで指定
               </button>
             </div>
@@ -205,7 +205,7 @@ export default function FacilityForm({ initial, hidden, pickedPos, onStartPick, 
                   type="button"
                   onClick={() => setStatus(s)}
                   className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-                    status === s ? FACILITY_STATUSES[s].badge + " ring-2 ring-blue-500" : "bg-gray-100 text-gray-500"
+                    status === s ? FACILITY_STATUSES[s].badge + " ring-2 ring-brand" : "bg-gray-100 text-gray-500"
                   }`}
                 >
                   {FACILITY_STATUSES[s].label}
@@ -229,7 +229,7 @@ export default function FacilityForm({ initial, hidden, pickedPos, onStartPick, 
           <button
             onClick={submit}
             disabled={!canSave}
-            className="flex-1 rounded-lg bg-blue-600 py-3 text-sm font-bold text-white disabled:opacity-40"
+            className="flex-1 rounded-lg bg-brand py-3 text-sm font-bold text-white disabled:opacity-40"
           >
             {initial ? "保存する" : "登録する"}
           </button>

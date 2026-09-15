@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import type { Staff } from "../types";
+import { KNOWN_STATIONS, type Staff } from "../types";
 import { store } from "../lib/store";
 import { getIdentity, setIdentity, type Identity } from "../lib/identity";
+
+const NEW_STORE = "__new__";
 
 // ログイン後に「自分は誰か」を名簿から選ぶモーダル。名簿に無い新メンバーはその場で追加できる。
 export default function IdentityPicker({ onClose, onDone }: { onClose: () => void; onDone: (id: Identity | null) => void }) {
@@ -11,6 +13,7 @@ export default function IdentityPicker({ onClose, onDone }: { onClose: () => voi
   const [name, setName] = useState(current?.name ?? "");
   const [newName, setNewName] = useState(""); // 名簿に無い自分を追加する場合
   const [adding, setAdding] = useState(false); // 名前を新規入力するモード
+  const [newStore, setNewStore] = useState(false); // 新しい店舗を入力するモード
   const [busy, setBusy] = useState(false);
 
   const reload = () => store.listStaff().then(setRoster);
@@ -18,7 +21,11 @@ export default function IdentityPicker({ onClose, onDone }: { onClose: () => voi
     reload();
   }, []);
 
-  const stations = useMemo(() => [...new Set(roster.map((s) => s.station))], [roster]);
+  // 既定店舗 + 名簿にある店舗(重複除く)
+  const stations = useMemo(
+    () => [...new Set([...KNOWN_STATIONS, ...roster.map((s) => s.station)])],
+    [roster],
+  );
   const members = useMemo(() => roster.filter((s) => s.station === station).map((s) => s.name), [roster, station]);
 
   const save = async () => {
@@ -60,24 +67,51 @@ export default function IdentityPicker({ onClose, onDone }: { onClose: () => voi
             自分を選んでおくと、訪問を記録するときに拠点と名前が自動で入ります。名簿に無い場合はその場で追加できます。あとからヘッダーの 👤 でいつでも変えられます。
           </p>
           <div>
-            <div className="mb-1 text-xs font-medium text-gray-500">拠点</div>
-            <select
-              value={station}
-              onChange={(e) => {
-                setStation(e.target.value);
-                setName("");
-                setAdding(false);
-                setNewName("");
-              }}
-              className="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2.5 text-sm"
-            >
-              <option value="">拠点を選択</option>
-              {stations.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+            <div className="mb-1 text-xs font-medium text-gray-500">店舗(拠点)</div>
+            {!newStore ? (
+              <select
+                value={station}
+                onChange={(e) => {
+                  if (e.target.value === NEW_STORE) {
+                    setNewStore(true);
+                    setStation("");
+                  } else {
+                    setStation(e.target.value);
+                  }
+                  setName("");
+                  setAdding(false);
+                  setNewName("");
+                }}
+                className="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2.5 text-sm"
+              >
+                <option value="">店舗を選択</option>
+                {stations.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+                <option value={NEW_STORE}>＋ 新しい店舗を追加</option>
+              </select>
+            ) : (
+              <div className="space-y-1.5">
+                <input
+                  value={station}
+                  onChange={(e) => setStation(e.target.value)}
+                  placeholder="新しい店舗名を入力"
+                  autoFocus
+                  className="w-full rounded-lg border border-brand-soft bg-white px-2.5 py-2.5 text-sm"
+                />
+                <button
+                  onClick={() => {
+                    setNewStore(false);
+                    setStation("");
+                  }}
+                  className="text-xs text-gray-500 underline"
+                >
+                  一覧から選ぶ
+                </button>
+              </div>
+            )}
           </div>
 
           <div>
@@ -103,7 +137,7 @@ export default function IdentityPicker({ onClose, onDone }: { onClose: () => voi
                       setAdding(true);
                       setName("");
                     }}
-                    className="mt-1.5 text-xs font-medium text-blue-600"
+                    className="mt-1.5 text-xs font-medium text-brand"
                   >
                     ＋ 名簿にない(新しく追加する)
                   </button>
@@ -116,7 +150,7 @@ export default function IdentityPicker({ onClose, onDone }: { onClose: () => voi
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="自分の名前を入力"
                   autoFocus
-                  className="w-full rounded-lg border border-blue-300 bg-white px-2.5 py-2.5 text-sm"
+                  className="w-full rounded-lg border border-brand-soft bg-white px-2.5 py-2.5 text-sm"
                 />
                 <button onClick={() => { setAdding(false); setNewName(""); }} className="text-xs text-gray-500 underline">
                   一覧から選ぶ
@@ -136,7 +170,7 @@ export default function IdentityPicker({ onClose, onDone }: { onClose: () => voi
           <button
             onClick={save}
             disabled={!station || (adding ? !newName.trim() : !name) || busy}
-            className="flex-1 rounded-lg bg-blue-600 py-3 text-sm font-bold text-white disabled:opacity-40"
+            className="flex-1 rounded-lg bg-brand py-3 text-sm font-bold text-white disabled:opacity-40"
           >
             {busy ? "処理中…" : adding ? "追加して使う" : "この人で使う"}
           </button>

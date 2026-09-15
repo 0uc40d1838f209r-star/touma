@@ -41,7 +41,7 @@ export default function StaffManager({ onClose }: { onClose: () => void }) {
           <p className="text-xs text-gray-500">
             ここに登録しておくと、訪問記録の「拠点」「訪問者」が選ぶだけで入力できます。全拠点で共有されます。
           </p>
-          <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
+          <div className="space-y-2 rounded-lg border border-brand-soft bg-brand-softer p-3">
             <input
               value={station}
               onChange={(e) => setStation(e.target.value)}
@@ -65,7 +65,7 @@ export default function StaffManager({ onClose }: { onClose: () => void }) {
             <button
               onClick={add}
               disabled={!station.trim() || !name.trim()}
-              className="w-full rounded bg-blue-600 py-2 text-sm font-medium text-white disabled:opacity-40"
+              className="w-full rounded bg-brand py-2 text-sm font-medium text-white disabled:opacity-40"
             >
               追加する
             </button>

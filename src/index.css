@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+/* Airbnb 風のブランドカラー(コーラル) */
+@theme {
+  --color-brand: #ff385c;
+  --color-brand-dark: #e00b41;
+  --color-brand-soft: #ffe7ec;
+  --color-brand-softer: #fff4f6;
+  --color-brand-ink: #b01238;
+}
+
 html,
 body,
 #root {

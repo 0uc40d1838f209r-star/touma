@@ -56,7 +56,7 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
           <button
             onClick={onToggleRoute}
             className={`shrink-0 rounded-full px-2.5 py-1.5 text-xs font-bold ${
-              inRoute ? "bg-blue-600 text-white" : "border border-blue-300 text-blue-700"
+              inRoute ? "bg-brand text-white" : "border border-brand-soft text-brand-ink"
             }`}
             title="訪問ルートに追加/削除"
           >
@@ -79,7 +79,7 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex-1 py-2.5 font-medium ${tab === key ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500"}`}
+            className={`flex-1 py-2.5 font-medium ${tab === key ? "border-b-2 border-brand text-brand" : "text-gray-500"}`}
           >
             {label}
           </button>
@@ -98,7 +98,7 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
                     onClick={() => onStatusChange(s)}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium ${
                       facility.status === s
-                        ? FACILITY_STATUSES[s].badge + " ring-2 ring-blue-500"
+                        ? FACILITY_STATUSES[s].badge + " ring-2 ring-brand"
                         : "bg-gray-100 text-gray-500"
                     }`}
                   >
@@ -116,7 +116,7 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
                 <dt className="text-xs font-medium text-gray-500">電話</dt>
                 <dd>
                   {facility.phone ? (
-                    <a href={`tel:${facility.phone}`} className="text-blue-600 underline">
+                    <a href={`tel:${facility.phone}`} className="text-brand underline">
                       {facility.phone}
                     </a>
                   ) : (
@@ -134,7 +134,7 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
             <ReferralSection facility={facility} stations={stations} onUpdate={onUpdate} />
 
             <div className="flex gap-2 pt-2">
-              <button onClick={onEdit} className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white active:bg-blue-700">
+              <button onClick={onEdit} className="flex-1 rounded-lg bg-brand py-2.5 text-sm font-medium text-white active:bg-brand-dark">
                 編集
               </button>
               <button
@@ -316,7 +316,7 @@ function ContactsTab({ facilityId, contacts, onChanged }: { facilityId: string; 
             </button>
           </div>
           {c.phone && (
-            <a href={`tel:${c.phone}`} className="mt-1 block text-sm text-blue-600 underline">
+            <a href={`tel:${c.phone}`} className="mt-1 block text-sm text-brand underline">
               {c.phone}
             </a>
           )}
@@ -324,13 +324,13 @@ function ContactsTab({ facilityId, contacts, onChanged }: { facilityId: string; 
         </div>
       ))}
       {adding ? (
-        <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
+        <div className="space-y-2 rounded-lg border border-brand-soft bg-brand-softer p-3">
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="名前 *" className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
           <input value={role} onChange={(e) => setRole(e.target.value)} placeholder="役職 (ケアマネ・連携室など)" className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
           <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="電話番号" className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
           <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="メモ" rows={2} className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
           <div className="flex gap-2">
-            <button onClick={submit} disabled={!name.trim()} className="flex-1 rounded bg-blue-600 py-2 text-sm font-medium text-white disabled:opacity-40">
+            <button onClick={submit} disabled={!name.trim()} className="flex-1 rounded bg-brand py-2 text-sm font-medium text-white disabled:opacity-40">
               追加する
             </button>
             <button onClick={() => setAdding(false)} className="rounded border border-gray-300 px-3 py-2 text-sm">
@@ -485,7 +485,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
   return (
     <div className="space-y-3">
       {editingId ? (
-        <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
+        <div className="space-y-2 rounded-lg border border-brand-soft bg-brand-softer p-3">
           <div>
             <div className="mb-1 text-xs font-medium text-gray-500">訪問日 (タップで変更できます)</div>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
@@ -502,7 +502,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
                     key={n}
                     type="button"
                     onClick={() => toggleStaff(n)}
-                    className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-800 ring-2 ring-blue-500"
+                    className="rounded-full bg-brand-soft px-3 py-1.5 text-xs font-medium text-brand-ink ring-2 ring-brand"
                   >
                     {n} ✕
                   </button>
@@ -568,7 +568,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
                   type="button"
                   onClick={() => setOutcome(o)}
                   className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-                    outcome === o ? OUTCOMES[o].badge + " ring-2 ring-blue-500" : "bg-white text-gray-500 border border-gray-300"
+                    outcome === o ? OUTCOMES[o].badge + " ring-2 ring-brand" : "bg-white text-gray-500 border border-gray-300"
                   }`}
                 >
                   {OUTCOMES[o].label}
@@ -585,7 +585,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
                   type="button"
                   onClick={() => setMet(met === m ? "" : m)}
                   className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-                    met === m ? "bg-indigo-100 text-indigo-800 ring-2 ring-blue-500" : "bg-white text-gray-500 border border-gray-300"
+                    met === m ? "bg-indigo-100 text-indigo-800 ring-2 ring-brand" : "bg-white text-gray-500 border border-gray-300"
                   }`}
                 >
                   {m}
@@ -611,7 +611,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
                   type="button"
                   onClick={() => setReaction(reaction === key ? "" : key)}
                   className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-                    reaction === key ? r.badge + " ring-2 ring-blue-500" : "bg-white text-gray-500 border border-gray-300"
+                    reaction === key ? r.badge + " ring-2 ring-brand" : "bg-white text-gray-500 border border-gray-300"
                   }`}
                 >
                   {r.label}
@@ -633,7 +633,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
           </div>
           <textarea value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="面談内容・反応などのメモ" rows={3} className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
           <div className="flex gap-2">
-            <button onClick={submit} className="flex-1 rounded bg-blue-600 py-2 text-sm font-medium text-white">
+            <button onClick={submit} className="flex-1 rounded bg-brand py-2 text-sm font-medium text-white">
               {editingId === "new" ? "記録する" : "保存する"}
             </button>
             <button onClick={() => setEditingId(null)} className="rounded border border-gray-300 px-3 py-2 text-sm">
@@ -642,7 +642,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
           </div>
         </div>
       ) : (
-        <button onClick={openNew} className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white">
+        <button onClick={openNew} className="w-full rounded-lg bg-brand py-2.5 text-sm font-medium text-white">
           + 訪問を記録
         </button>
       )}
@@ -650,7 +650,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
       <ol className="relative space-y-3 border-l-2 border-gray-200 pl-4">
         {visits.map((v) => (
           <li key={v.id} className="relative">
-            <span className="absolute -left-[23px] top-1.5 h-3 w-3 rounded-full border-2 border-white bg-blue-500" />
+            <span className="absolute -left-[23px] top-1.5 h-3 w-3 rounded-full border-2 border-white bg-brand" />
             <div className="rounded-lg border border-gray-200 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2">
@@ -665,7 +665,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
                   )}
                 </div>
                 <div className="flex shrink-0 gap-2">
-                  <button onClick={() => openEdit(v)} className="text-xs text-blue-600">
+                  <button onClick={() => openEdit(v)} className="text-xs text-brand">
                     編集
                   </button>
                   <button

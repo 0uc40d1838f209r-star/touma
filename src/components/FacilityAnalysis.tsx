@@ -127,7 +127,7 @@ export default function FacilityAnalysis({
             <button
               key={n}
               onClick={() => setMinVisits(n)}
-              className={`rounded-full px-2 py-0.5 text-xs ${minVisits === n ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"}`}
+              className={`rounded-full px-2 py-0.5 text-xs ${minVisits === n ? "bg-brand text-white" : "bg-gray-100 text-gray-600"}`}
             >
               {n}回+
             </button>
@@ -170,7 +170,7 @@ export default function FacilityAnalysis({
                 <tr
                   key={r.facility.id}
                   onClick={() => onSelectFacility?.(r.facility.id)}
-                  className="cursor-pointer border-b border-gray-100 last:border-0 hover:bg-blue-50"
+                  className="cursor-pointer border-b border-gray-100 last:border-0 hover:bg-brand-softer"
                 >
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-1.5">
