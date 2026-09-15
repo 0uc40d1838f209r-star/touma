@@ -97,6 +97,21 @@ export default function Dashboard({
 
   const newClients = monthVisits.filter((v) => v.outcome === "new_client");
 
+  // 不在が多い営業先(不在で空振りしている施設を見つける)
+  const absentByFacility = useMemo(() => {
+    const m = new Map<string, { absent: number; total: number }>();
+    for (const v of monthVisits) {
+      const a = m.get(v.facility_id) ?? { absent: 0, total: 0 };
+      a.total++;
+      if (v.met === "不在" || v.met === "ケアマネ不在") a.absent++;
+      m.set(v.facility_id, a);
+    }
+    return [...m.entries()]
+      .filter(([, a]) => a.absent > 0)
+      .sort((x, y) => y[1].absent - x[1].absent || y[1].total - x[1].total)
+      .slice(0, 10);
+  }, [monthVisits]);
+
   // 先方の反応と不在の集計 (データドリブンな振り返り用)
   const reactionCounts = useMemo(() => {
     const m: Record<string, number> = { hot: 0, warm: 0, cold: 0 };
@@ -256,6 +271,30 @@ export default function Dashboard({
                 )}
               </span>
             </div>
+          </div>
+        )}
+
+        {/* 不在が多い営業先(空振りしている先を見つける) */}
+        {absentByFacility.length > 0 && (
+          <div className="rounded-xl bg-white p-4 shadow-sm">
+            <h3 className="mb-1 text-sm font-bold">🚪 不在が多い営業先</h3>
+            <p className="mb-2 text-xs text-gray-500">何度も訪問しているのに不在が続く先です。電話でアポを取る・時間帯を変えるなどを検討しましょう。</p>
+            <ul className="divide-y divide-gray-100">
+              {absentByFacility.map(([id, a]) => (
+                <li key={id}>
+                  <button
+                    onClick={() => onSelectFacility?.(id)}
+                    className="flex w-full items-center justify-between gap-2 py-2 text-left"
+                  >
+                    <span className="min-w-0 flex-1 truncate text-sm">{facilityName.get(id) ?? "(削除された施設)"}</span>
+                    <span className="shrink-0 text-sm">
+                      <span className="font-bold text-gray-800">不在{a.absent}</span>
+                      <span className="ml-1 text-xs text-gray-400">/ 訪問{a.total}回</span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
