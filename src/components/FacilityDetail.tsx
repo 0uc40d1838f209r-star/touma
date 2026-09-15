@@ -135,6 +135,21 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
               </div>
             </dl>
 
+            {/* この施設の営業成果を円グラフで(記録があるときだけ) */}
+            {visits.length > 0 && (
+              <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                <h3 className="mb-2 text-sm font-bold">📊 この施設の営業成果(全{visits.length}件)</h3>
+                <Donut
+                  segments={(Object.keys(OUTCOMES) as VisitOutcome[]).map((o) => ({
+                    label: OUTCOMES[o].label.replace("!", ""),
+                    value: visits.filter((v) => (v.outcome ?? "greeting") === o).length,
+                    color: OUTCOME_COLOR[o],
+                  }))}
+                  centerLabel="件"
+                />
+              </div>
+            )}
+
             <CareManagerSection facility={facility} onUpdate={onUpdate} />
             <ReferralSection facility={facility} stations={stations} onUpdate={onUpdate} />
 
