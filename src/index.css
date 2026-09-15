@@ -16,6 +16,23 @@ body,
   height: 100%;
 }
 
+body {
+  font-family: "Plus Jakarta Sans", "Noto Sans JP", system-ui, -apple-system, sans-serif;
+  color: #1a1a1a;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ボタン・リンクに軽いトランジションを付けて上質に */
+button,
+a,
+.transition-base {
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+}
+button:active {
+  transform: scale(0.98);
+}
+
 .facility-pin {
   background: transparent;
   border: none;
@@ -23,6 +40,19 @@ body,
 
 .leaflet-container {
   font: inherit;
+}
+
+/* ボトムシートのつまみ */
+.sheet-handle::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  border-radius: 9999px;
+  background: #d1d1d1;
 }
 
 /* 現在地ラベル(青い吹き出し) */

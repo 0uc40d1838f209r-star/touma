@@ -174,46 +174,57 @@ function MainScreen() {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2.5">
-        <h1 className="text-base font-extrabold tracking-tight text-brand">
-          営業先マップ
+      <header className="sticky top-0 z-[1001] flex items-center justify-between gap-2 border-b border-gray-100 bg-white/90 px-4 py-2.5 backdrop-blur-md">
+        <h1 className="flex min-w-0 items-center gap-2 text-[15px] font-extrabold tracking-tight text-gray-900">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-brand text-sm text-white shadow-sm">営</span>
+          <span className="truncate">営業先マップ</span>
           {!isSupabaseMode && (
-            <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-800">
-              デモモード(この端末のみ保存)
+            <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+              デモ
             </span>
           )}
         </h1>
-        <div className="flex items-center gap-2.5">
+        <div className="flex shrink-0 items-center gap-1.5">
           <button
             onClick={() => setShowIdentity(true)}
-            className="flex items-center gap-1 rounded-full border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700"
+            className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-800 hover:bg-gray-200"
             title="担当者を選択"
           >
-            👤 <span className="max-w-[6rem] truncate">{identity?.name ?? "担当者を選択"}</span>
+            <span>👤</span>
+            <span className="hidden max-w-[6rem] truncate sm:inline">{identity?.name ?? "担当者"}</span>
           </button>
           <button
             onClick={() => setShowRoute(true)}
-            className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
-              route.length > 0 ? "bg-brand text-white" : "border border-gray-300 text-gray-700"
+            className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
+              route.length > 0 ? "bg-brand text-white shadow-sm" : "bg-gray-100 text-gray-800 hover:bg-gray-200"
             }`}
             title="訪問ルート"
           >
-            🚗 ルート{route.length > 0 ? ` ${route.length}` : ""}
+            <span>🚗</span>
+            {route.length > 0 && <span>{route.length}</span>}
           </button>
           <button
             onClick={() => setView(view === "stats" ? "map" : "stats")}
-            className={`hidden rounded-full px-3 py-1 text-xs font-bold md:inline ${
-              view === "stats" ? "bg-brand text-white" : "bg-brand-softer text-brand-ink"
+            className={`hidden rounded-full px-3 py-1.5 text-xs font-semibold md:inline ${
+              view === "stats" ? "bg-brand text-white shadow-sm" : "bg-gray-100 text-gray-800 hover:bg-gray-200"
             }`}
           >
-            📊 実績・分析
+            📊 実績
           </button>
-          <button onClick={() => setShowStaff(true)} className="text-xs text-gray-500 underline">
-            ⚙ 名簿
+          <button
+            onClick={() => setShowStaff(true)}
+            className="grid h-8 w-8 place-items-center rounded-full bg-gray-100 text-sm text-gray-600 hover:bg-gray-200"
+            title="名簿"
+          >
+            ⚙
           </button>
           {isSupabaseMode && (
-            <button onClick={() => supabase?.auth.signOut()} className="text-xs text-gray-500 underline">
-              ログアウト
+            <button
+              onClick={() => supabase?.auth.signOut()}
+              className="grid h-8 w-8 place-items-center rounded-full bg-gray-100 text-sm text-gray-600 hover:bg-gray-200"
+              title="ログアウト"
+            >
+              ⎋
             </button>
           )}
         </div>
@@ -234,7 +245,7 @@ function MainScreen() {
         ) : (
         <div className="flex h-full">
           {/* PC: サイドバー一覧 */}
-          <aside className="hidden w-80 shrink-0 overflow-y-auto border-r border-gray-200 bg-white md:block">
+          <aside className="hidden w-80 shrink-0 overflow-y-auto border-r border-gray-100 bg-gray-50 md:block">
             <FacilityList facilities={filtered} selectedId={selectedId} onSelect={selectFacility} lastVisit={lastVisitMap} />
           </aside>
 
@@ -263,7 +274,7 @@ function MainScreen() {
 
           {/* モバイル: リスト表示 */}
           {view === "list" && (
-            <div className="min-w-0 flex-1 overflow-y-auto bg-white md:hidden">
+            <div className="min-w-0 flex-1 overflow-y-auto bg-gray-50 md:hidden">
               <FacilityList facilities={filtered} selectedId={selectedId} onSelect={selectFacility} lastVisit={lastVisitMap} />
             </div>
           )}

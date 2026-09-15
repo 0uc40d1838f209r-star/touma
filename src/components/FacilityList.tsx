@@ -21,46 +21,52 @@ export default function FacilityList({ facilities, selectedId, onSelect, lastVis
   const MAX = 200;
   const shown = facilities.slice(0, MAX);
   return (
-    <ul className="divide-y divide-gray-100">
-      {shown.map((f) => (
-        <li key={f.id}>
-          <button
-            onClick={() => onSelect(f.id)}
-            className={`w-full px-4 py-3 text-left ${f.id === selectedId ? "bg-brand-softer" : "hover:bg-gray-50"}`}
-          >
-            <div className="flex items-center gap-2">
-              <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: FACILITY_TYPES[f.type].color }} />
-              <span className="min-w-0 flex-1 truncate text-sm font-medium">{f.name}</span>
-              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${FACILITY_STATUSES[f.status].badge}`}>
-                {FACILITY_STATUSES[f.status].label}
-              </span>
-            </div>
-            <div className="mt-0.5 flex items-baseline justify-between gap-2 pl-5">
-              {f.address && <span className="min-w-0 truncate text-xs text-gray-500">{f.address}</span>}
-              {lastVisit?.get(f.id) && (
-                <span className="shrink-0 text-[11px] text-brand">🕐 {lastVisit.get(f.id)}</span>
-              )}
-            </div>
-            {(totalReferrals(f) > 0 || (f.care_manager_count ?? 0) > 0) && (
-              <div className="mt-1 flex flex-wrap gap-1.5 pl-5">
-                {totalReferrals(f) > 0 && (
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
-                    ★ {totalReferrals(f)} 紹介
-                  </span>
-                )}
-                {(f.care_manager_count ?? 0) > 0 && (
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
-                    ケアマネ {f.care_manager_count}名
-                  </span>
-                )}
+    <ul className="space-y-2 p-3">
+      {shown.map((f) => {
+        const active = f.id === selectedId;
+        return (
+          <li key={f.id}>
+            <button
+              onClick={() => onSelect(f.id)}
+              className={`w-full rounded-2xl border bg-white p-3.5 text-left shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-md ${
+                active ? "border-brand ring-1 ring-brand" : "border-gray-100"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-sm"
+                  style={{ background: FACILITY_TYPES[f.type].color + "22" }}
+                >
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: FACILITY_TYPES[f.type].color }} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-bold text-gray-900">{f.name}</div>
+                  {f.address && <div className="mt-0.5 truncate text-xs text-gray-500">{f.address}</div>}
+                </div>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${FACILITY_STATUSES[f.status].badge}`}>
+                  {FACILITY_STATUSES[f.status].label}
+                </span>
               </div>
-            )}
-          </button>
-        </li>
-      ))}
+              {(totalReferrals(f) > 0 || (f.care_manager_count ?? 0) > 0 || lastVisit?.get(f.id)) && (
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  {totalReferrals(f) > 0 && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">★ {totalReferrals(f)} 紹介</span>
+                  )}
+                  {(f.care_manager_count ?? 0) > 0 && (
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">ケアマネ {f.care_manager_count}名</span>
+                  )}
+                  {lastVisit?.get(f.id) && (
+                    <span className="ml-auto text-[11px] text-gray-400">🕐 {lastVisit.get(f.id)}</span>
+                  )}
+                </div>
+              )}
+            </button>
+          </li>
+        );
+      })}
       {facilities.length > MAX && (
-        <li className="px-4 py-3 text-center text-xs text-gray-500">
-          他に {facilities.length - MAX} 件あります。検索や種別・ステータスの絞り込みで探してください。
+        <li className="px-4 py-3 text-center text-xs text-gray-400">
+          他に {facilities.length - MAX} 件あります。検索や絞り込みで探してください。
         </li>
       )}
     </ul>
