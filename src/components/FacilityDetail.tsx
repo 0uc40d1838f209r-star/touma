@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Contact, Facility, FacilityStatus, NewFacility, Staff, Visit, VisitOutcome } from "../types";
-import { FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS, joinStaff, splitStaff } from "../types";
+import { ABSENT_ENCOURAGEMENTS, ENCOURAGEMENTS, FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS, joinStaff, splitStaff } from "../types";
 import { store } from "../lib/store";
 import { getIdentity } from "../lib/identity";
 
@@ -366,6 +366,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
   const [reaction, setReaction] = useState("");
   const [memo, setMemo] = useState("");
   const [roster, setRoster] = useState<Staff[]>([]);
+  const [praise, setPraise] = useState(""); // 記録後のねぎらいメッセージ
 
   useEffect(() => {
     store.listStaff().then(setRoster);
@@ -445,12 +446,20 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
       reaction,
       memo,
     };
-    if (editingId === "new") await store.createVisit(data);
+    const isNew = editingId === "new";
+    if (isNew) await store.createVisit(data);
     else await store.updateVisit(editingId, data);
     setMemo("");
     setDate(today);
     setEditingId(null);
     onChanged();
+    if (isNew) {
+      // 記録おつかれさま。成果に応じたねぎらいを出す
+      const pick = (a: string[]) => a[Math.floor(Math.random() * a.length)];
+      const absent = met === "不在" || met === "ケアマネ不在";
+      setPraise(absent ? pick(ABSENT_ENCOURAGEMENTS) : pick(ENCOURAGEMENTS[outcome]));
+      setTimeout(() => setPraise(""), 4500);
+    }
   };
 
   // 名簿があればプルダウン、無ければ手入力 (プルダウンでも「手入力」を選べる)
@@ -488,6 +497,13 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
 
   return (
     <div className="space-y-3">
+      {praise && (
+        <div className="fixed inset-x-0 bottom-24 z-[1300] flex justify-center px-4 md:bottom-8" onClick={() => setPraise("")}>
+          <div className="max-w-sm rounded-2xl bg-gray-900 px-4 py-3 text-center text-sm font-medium text-white shadow-2xl">
+            {praise}
+          </div>
+        </div>
+      )}
       {editingId ? (
         <div className="space-y-2 rounded-lg border border-brand-soft bg-brand-softer p-3">
           <div>

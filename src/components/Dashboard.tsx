@@ -3,6 +3,8 @@ import type { Facility, Visit, VisitOutcome } from "../types";
 import { OUTCOMES, REACTIONS, splitStaff } from "../types";
 import FacilityAnalysis from "./FacilityAnalysis";
 import StoreCharts from "./StoreCharts";
+import StrategyTab from "./StrategyTab";
+import ManualModal from "./ManualModal";
 
 // 営業実績: 月次サマリー と 施設別の効果分析
 export default function Dashboard({
@@ -14,9 +16,10 @@ export default function Dashboard({
   visits: Visit[];
   onSelectFacility?: (id: string) => void;
 }) {
-  const [tab, setTab] = useState<"monthly" | "stores" | "analysis">("monthly");
+  const [tab, setTab] = useState<"monthly" | "strategy" | "stores" | "analysis">("monthly");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [station, setStation] = useState(""); // "" = 全拠点
+  const [showManual, setShowManual] = useState(false);
 
   // 初回のみ: 記録のある最新の月を初期表示にする(当月がまだ空でも実績が見える)
   const jumped = useRef(false);
@@ -107,11 +110,12 @@ export default function Dashboard({
   return (
     <div className="h-full overflow-y-auto bg-gray-50 p-4">
       <div className="mx-auto max-w-2xl space-y-4">
-        {/* サブタブ: 月次実績 / 施設別分析 */}
-        <div className="flex gap-1 rounded-full bg-gray-200 p-1 text-sm">
+        {/* サブタブ */}
+        <div className="flex gap-1 overflow-x-auto rounded-full bg-gray-200 p-1 text-sm">
           {(
             [
               ["monthly", "📅 月次"],
+              ["strategy", "🎯 戦略"],
               ["stores", "🏢 店舗比較"],
               ["analysis", "📈 施設別"],
             ] as const
@@ -119,7 +123,7 @@ export default function Dashboard({
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`flex-1 rounded-full py-1.5 font-medium ${tab === key ? "bg-white text-brand shadow-sm" : "text-gray-500"}`}
+              className={`flex-1 whitespace-nowrap rounded-full px-2 py-1.5 font-medium ${tab === key ? "bg-white text-brand shadow-sm" : "text-gray-500"}`}
             >
               {label}
             </button>
@@ -147,6 +151,15 @@ export default function Dashboard({
 
         {tab === "analysis" ? (
           <FacilityAnalysis facilities={facilities} visits={scopedVisits} station={station} onSelectFacility={onSelectFacility} />
+        ) : tab === "strategy" ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-4">
+              <button onClick={() => shiftMonth(-1)} className="rounded-full bg-white px-3 py-1.5 text-sm shadow-sm" aria-label="前の月">◀</button>
+              <h2 className="text-lg font-bold">{y}年{Number(m)}月の戦略{station && <span className="text-sm font-normal text-brand"> / {station}</span>}</h2>
+              <button onClick={() => shiftMonth(1)} className="rounded-full bg-white px-3 py-1.5 text-sm shadow-sm" aria-label="次の月">▶</button>
+            </div>
+            <StrategyTab visits={monthVisits} onOpenManual={() => setShowManual(true)} />
+          </div>
         ) : tab === "stores" ? (
           <div className="space-y-4">
             <div className="flex items-center justify-center gap-4">
@@ -315,6 +328,7 @@ export default function Dashboard({
         </div>
         )}
       </div>
+      {showManual && <ManualModal onClose={() => setShowManual(false)} />}
     </div>
   );
 }
