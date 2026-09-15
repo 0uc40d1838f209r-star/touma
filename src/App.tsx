@@ -182,15 +182,26 @@ function MainScreen() {
   return (
     <div className="flex h-full flex-col">
       <header className="sticky top-0 z-[1001] flex items-center justify-between gap-2 border-b border-gray-100 bg-white/90 px-4 py-2.5 backdrop-blur-md">
-        <h1 className="flex min-w-0 items-center gap-2 text-[15px] font-extrabold tracking-tight text-gray-900">
-          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-brand text-sm text-white shadow-sm">営</span>
-          <span className="hidden truncate sm:inline">営業先マップ</span>
-          {!isSupabaseMode && (
-            <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
-              デモ
-            </span>
+        <div className="flex min-w-0 items-center gap-2">
+          {view === "map" ? (
+            <h1 className="flex min-w-0 items-center gap-2 text-[15px] font-extrabold tracking-tight text-gray-900">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-brand text-sm text-white shadow-sm">営</span>
+              <span className="hidden truncate sm:inline">営業先マップ</span>
+              {!isSupabaseMode && (
+                <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+                  デモ
+                </span>
+              )}
+            </h1>
+          ) : (
+            <button
+              onClick={() => setView("map")}
+              className="flex shrink-0 items-center gap-1.5 rounded-full bg-gray-900 px-3.5 py-1.5 text-sm font-bold text-white shadow-sm active:bg-gray-700"
+            >
+              🗺 地図に戻る
+            </button>
           )}
-        </h1>
+        </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <button
             onClick={openStrategy}
