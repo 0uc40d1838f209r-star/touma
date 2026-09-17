@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import type { Facility, FacilityStatus, FacilityType, NewFacility, Visit } from "./types";
+import { splitStaff } from "./types";
 import { isSupabaseMode, store } from "./lib/store";
 import { supabase } from "./lib/supabaseStore";
 import MapView from "./components/MapView";
@@ -48,6 +49,8 @@ function MainScreen() {
   const [activeTypes, setActiveTypes] = useState<Set<FacilityType>>(new Set());
   const [activeStatuses, setActiveStatuses] = useState<Set<FacilityStatus>>(new Set());
   const [view, setView] = useState<"map" | "list" | "stats">("map");
+  const [mineOnly, setMineOnly] = useState(false); // 自分の訪問先だけ表示
+  const [detailTab, setDetailTab] = useState<"info" | "contacts" | "visits">("info");
   const [showStaff, setShowStaff] = useState(false);
   const [identity, setIdentityState] = useState<Identity | null>(() => getIdentity());
   // 起動時に本人が未選択なら選択を促す (スキップ可)
@@ -104,15 +107,34 @@ function MainScreen() {
     return m;
   }, [allVisits]);
 
+  // 自分(選択中の担当者)が訪問した施設ごとの最終訪問日
+  const myLastVisit = useMemo(() => {
+    const m = new Map<string, string>();
+    const me = identity?.name;
+    if (!me) return m;
+    for (const v of allVisits) {
+      if (!splitStaff(v.staff_name).includes(me)) continue;
+      const cur = m.get(v.facility_id);
+      if (!cur || v.visited_on > cur) m.set(v.facility_id, v.visited_on);
+    }
+    return m;
+  }, [allVisits, identity]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return facilities.filter((f) => {
+    let list = facilities.filter((f) => {
+      if (mineOnly && !myLastVisit.has(f.id)) return false;
       if (activeTypes.size > 0 && !activeTypes.has(f.type)) return false;
       if (activeStatuses.size > 0 && !activeStatuses.has(f.status)) return false;
       if (q && !f.name.toLowerCase().includes(q) && !f.address.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [facilities, search, activeTypes, activeStatuses]);
+    // 自分の訪問先モードは、新しく訪問した順に並べる(修正しやすいように)
+    if (mineOnly) {
+      list = [...list].sort((a, b) => (myLastVisit.get(b.id) ?? "").localeCompare(myLastVisit.get(a.id) ?? ""));
+    }
+    return list;
+  }, [facilities, search, activeTypes, activeStatuses, mineOnly, myLastVisit]);
 
   const selected = facilities.find((f) => f.id === selectedId) ?? null;
 
@@ -123,8 +145,9 @@ function MainScreen() {
     return next;
   };
 
-  const selectFacility = (id: string) => {
+  const selectFacility = (id: string, tab: "info" | "contacts" | "visits" = "info") => {
     setSelectedId(id);
+    setDetailTab(tab);
     const f = facilities.find((x) => x.id === id);
     if (f) setFlyTarget({ lat: f.lat, lng: f.lng, key: Date.now() });
     setView("map");
@@ -269,6 +292,17 @@ function MainScreen() {
         onToggleType={(t) => setActiveTypes((s) => toggleIn(s, t))}
         activeStatuses={activeStatuses}
         onToggleStatus={(s) => setActiveStatuses((prev) => toggleIn(prev, s))}
+        mineOnly={mineOnly}
+        myName={identity?.name ?? null}
+        onToggleMine={() => {
+          if (!identity?.name) {
+            setShowIdentity(true);
+            return;
+          }
+          const next = !mineOnly;
+          setMineOnly(next);
+          if (next) setView("list"); // 自分の訪問先は一覧で見せる
+        }}
       />
 
       <div className="relative min-h-0 flex-1">
@@ -284,7 +318,7 @@ function MainScreen() {
         <div className="flex h-full">
           {/* PC: サイドバー一覧 */}
           <aside className="hidden w-80 shrink-0 overflow-y-auto border-r border-gray-100 bg-gray-50 md:block">
-            <FacilityList facilities={filtered} selectedId={selectedId} onSelect={selectFacility} lastVisit={lastVisitMap} />
+            <FacilityList facilities={filtered} selectedId={selectedId} onSelect={(id) => selectFacility(id, mineOnly ? "visits" : "info")} lastVisit={mineOnly ? myLastVisit : lastVisitMap} />
           </aside>
 
           {/* 地図 (モバイルではタブで切替) */}
@@ -313,7 +347,7 @@ function MainScreen() {
           {/* モバイル: リスト表示 */}
           {view === "list" && (
             <div className="min-w-0 flex-1 overflow-y-auto bg-gray-50 md:hidden">
-              <FacilityList facilities={filtered} selectedId={selectedId} onSelect={selectFacility} lastVisit={lastVisitMap} />
+              <FacilityList facilities={filtered} selectedId={selectedId} onSelect={(id) => selectFacility(id, mineOnly ? "visits" : "info")} lastVisit={mineOnly ? myLastVisit : lastVisitMap} />
             </div>
           )}
         </div>
@@ -343,6 +377,7 @@ function MainScreen() {
               onVisitsChanged={reloadVisits}
               inRoute={route.includes(selected.id)}
               onToggleRoute={() => toggleRoute(selected.id)}
+              initialTab={detailTab}
             />
           </div>
         )}

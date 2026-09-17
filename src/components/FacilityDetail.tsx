@@ -15,17 +15,23 @@ interface Props {
   onVisitsChanged?: () => void;
   inRoute?: boolean;
   onToggleRoute?: () => void;
+  initialTab?: "info" | "contacts" | "visits";
 }
 
-export default function FacilityDetail({ facility, onClose, onEdit, onDelete, onStatusChange, onUpdate, onVisitsChanged, inRoute, onToggleRoute }: Props) {
+export default function FacilityDetail({ facility, onClose, onEdit, onDelete, onStatusChange, onUpdate, onVisitsChanged, inRoute, onToggleRoute, initialTab }: Props) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [stations, setStations] = useState<string[]>([]);
-  const [tab, setTab] = useState<"info" | "contacts" | "visits">("info");
+  const [tab, setTab] = useState<"info" | "contacts" | "visits">(initialTab ?? "info");
 
   useEffect(() => {
     store.listStaff().then((staff) => setStations([...new Set(staff.map((s) => s.station))]));
   }, []);
+
+  // 開いた施設 / 指定タブが変わったら、そのタブを表示(自分の訪問先一覧から記録に直行など)
+  useEffect(() => {
+    setTab(initialTab ?? "info");
+  }, [facility.id, initialTab]);
 
   const reload = useCallback(async () => {
     const [c, v] = await Promise.all([
