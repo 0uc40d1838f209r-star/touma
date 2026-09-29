@@ -166,8 +166,12 @@ def render_end(lines, idx, total):
     img = Image.new("RGB", (W, H), INK)
     d = ImageDraw.Draw(img)
 
-    main = [l for l in lines if not l.startswith("*")]
-    cta = [l[1:].strip() for l in lines if l.startswith("*")]
+    # 最後の空行より後ろの * 行だけが CTA。それより前の * 行は本文の朱色として残す
+    k = len(lines)
+    while k > 0 and lines[k - 1].startswith("*"):
+        k -= 1
+    main = lines[:k]
+    cta = [l[1:].strip() for l in lines[k:]]
     while main and not main[-1].strip():
         main.pop()
 

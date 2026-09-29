@@ -40,7 +40,7 @@ def convert(path):
 
         if s.strip() == "---":
             out.append("")
-            fmt.append(("区切り線", f"{n+1}行目のあたり", "ツールバーの「−」（区切り線）を入れる"))
+            fmt.append(("区切り線", len(out) - 1, None))
             n += 1
             continue
 
@@ -48,14 +48,14 @@ def convert(path):
             t = s[3:].strip()
             out.append(t)
             n += 1
-            fmt.append(("大見出し", f"{n}行目", t))
+            fmt.append(("大見出し", len(out) - 1, t))
             continue
 
         if s.startswith("### "):
             t = s[4:].strip()
             out.append(t)
             n += 1
-            fmt.append(("小見出し", f"{n}行目", t))
+            fmt.append(("小見出し", len(out) - 1, t))
             continue
 
         if s.startswith("> "):
@@ -63,28 +63,49 @@ def convert(path):
             t = re.sub(r"\*\*(.+?)\*\*", r"\1", t)
             out.append(t)
             n += 1
-            fmt.append(("引用", f"{n}行目", t[:30]))
+            fmt.append(("引用", len(out) - 1, t[:30]))
             continue
 
         # 太字を拾う
         for m in re.finditer(r"\*\*(.+?)\*\*", s):
-            fmt.append(("太字", f"{n+1}行目", m.group(1)))
+            fmt.append(("太字", len(out), m.group(1)))
 
         t = re.sub(r"\*\*(.+?)\*\*", r"\1", s)
         t = re.sub(r"^\s*[-*]\s+", "・", t)
         out.append(t)
         n += 1
 
-    # 連続する空行を1つに
-    cleaned, prev_blank = [], False
-    for l in out:
+    # 連続する空行を1つにし、先頭の空行も落とす。
+    # 整形メモの行番号は、この「貼り付けるテキスト」の行番号に合わせる
+    cleaned, where, prev_blank = [], {}, True
+    for i, l in enumerate(out):
         blank = not l.strip()
+        where[i] = len(cleaned)  # 落とした行は、次に残る行の位置を指す
         if blank and prev_blank:
             continue
         cleaned.append(l)
         prev_blank = blank
+    while cleaned and not cleaned[-1].strip():
+        cleaned.pop()
 
-    return title, "\n".join(cleaned).strip(), fmt
+    def last_text_before(j):
+        for k in range(min(j, len(cleaned)) - 1, -1, -1):
+            if cleaned[k].strip():
+                return k
+        return None
+
+    located = []
+    for kind, i, t in fmt:
+        j = where.get(i, len(cleaned))
+        if kind == "区切り線":
+            k = last_text_before(j)
+            if k is None or j >= len(cleaned):
+                continue  # 本文の最初や最後の区切り線は note では不要
+            located.append((kind, f"{k+1}行目のあと", f"「{cleaned[k][:20]}」の下に「−」（区切り線）を入れる"))
+        else:
+            located.append((kind, f"{j+1}行目", t))
+
+    return title, "\n".join(cleaned), located
 
 
 def main():
