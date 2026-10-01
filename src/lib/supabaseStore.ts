@@ -28,6 +28,37 @@ function unwrap<T>(result: { data: T | null; error: { message: string } | null }
   return result.data;
 }
 
+// エラーメッセージから「存在しない列名」を取り出す
+// 例: "column visits.met_person does not exist" / "Could not find the 'met_person' column"
+function missingColumnOf(message: string): string | null {
+  const m =
+    message.match(/column\s+(?:\w+\.)?["']?(\w+)["']?\s+does not exist/i) ||
+    message.match(/find the ["'](\w+)["'] column/i) ||
+    message.match(/["'](\w+)["'] column/i);
+  return m ? m[1] : null;
+}
+
+// migration がまだの環境でも、足りない列「だけ」を外して保存する。
+// (以前は列エラーで関係ない列まで一括で捨てていたため、反応や成果が消えていた)
+async function writeStrippingMissing<T>(
+  run: (payload: Record<string, unknown>) => PromiseLike<{ data: T | null; error: { message: string } | null }>,
+  initial: Record<string, unknown>,
+): Promise<T> {
+  let payload = { ...initial };
+  for (let i = 0; i < 8; i++) {
+    const result = await run(payload);
+    if (result.error && result.error.message.includes("column")) {
+      const col = missingColumnOf(result.error.message);
+      if (col && col in payload) {
+        delete payload[col];
+        continue;
+      }
+    }
+    return unwrap<T>(result);
+  }
+  throw new Error("保存に失敗しました(列の不一致)");
+}
+
 export const supabaseStore: Store = {
   async listFacilities() {
     // Supabase は 1 リクエスト最大 1000 行のため、全件をページングで取得する
@@ -47,24 +78,16 @@ export const supabaseStore: Store = {
     return all;
   },
   async createFacility(data: NewFacility) {
-    const result = await client().from("facilities").insert(data).select().single();
-    // referrals / care_manager_count 列がまだ無い環境では、その列を抜いて再試行する
-    if (result.error?.message.includes("column")) {
-      const { referrals: _r, care_manager_count: _c, ...base } = data;
-      return unwrap<Facility>(await client().from("facilities").insert(base).select().single());
-    }
-    return unwrap<Facility>(result);
+    return writeStrippingMissing<Facility>(
+      (payload) => client().from("facilities").insert(payload).select().single(),
+      data as unknown as Record<string, unknown>,
+    );
   },
   async updateFacility(id: string, patch: Partial<NewFacility>) {
-    const withTime = { ...patch, updated_at: new Date().toISOString() };
-    const result = await client().from("facilities").update(withTime).eq("id", id).select().single();
-    if (result.error?.message.includes("column")) {
-      const { referrals: _r, care_manager_count: _c, ...base } = withTime;
-      return unwrap<Facility>(
-        await client().from("facilities").update(base).eq("id", id).select().single(),
-      );
-    }
-    return unwrap<Facility>(result);
+    return writeStrippingMissing<Facility>(
+      (payload) => client().from("facilities").update(payload).eq("id", id).select().single(),
+      { ...patch, updated_at: new Date().toISOString() } as unknown as Record<string, unknown>,
+    );
   },
   async deleteFacility(id: string) {
     const { error } = await client().from("facilities").delete().eq("id", id);
@@ -117,23 +140,16 @@ export const supabaseStore: Store = {
     return all;
   },
   async createVisit(data: NewVisit) {
-    const result = await client().from("visits").insert(data).select().single();
-    // migration がまだ実行されていない環境では、無い列を抜いて再試行する
-    if (result.error?.message.includes("column")) {
-      const { station_name: _s, outcome: _o, met: _m, reaction: _r, met_person: _p, ...base } = data;
-      return unwrap<Visit>(await client().from("visits").insert(base).select().single());
-    }
-    return unwrap<Visit>(result);
+    return writeStrippingMissing<Visit>(
+      (payload) => client().from("visits").insert(payload).select().single(),
+      data as unknown as Record<string, unknown>,
+    );
   },
   async updateVisit(id: string, patch: Partial<NewVisit>) {
-    const result = await client().from("visits").update(patch).eq("id", id).select().single();
-    if (result.error?.message.includes("column")) {
-      const { station_name: _s, outcome: _o, met: _m, reaction: _r, met_person: _p, ...base } = patch;
-      return unwrap<Visit>(
-        await client().from("visits").update(base).eq("id", id).select().single(),
-      );
-    }
-    return unwrap<Visit>(result);
+    return writeStrippingMissing<Visit>(
+      (payload) => client().from("visits").update(payload).eq("id", id).select().single(),
+      patch as unknown as Record<string, unknown>,
+    );
   },
   async deleteVisit(id: string) {
     const { error } = await client().from("visits").delete().eq("id", id);
