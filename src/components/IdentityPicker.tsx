@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { KNOWN_STATIONS, type Staff } from "../types";
+import type { Staff } from "../types";
+import { useStations } from "../lib/stations";
 import { store } from "../lib/store";
 import { getIdentity, setIdentity, type Identity } from "../lib/identity";
 
@@ -22,10 +23,7 @@ export default function IdentityPicker({ onClose, onDone }: { onClose: () => voi
   }, []);
 
   // 既定店舗 + 名簿にある店舗(重複除く)
-  const stations = useMemo(
-    () => [...new Set([...KNOWN_STATIONS, ...roster.map((s) => s.station)])],
-    [roster],
-  );
+  const { stations } = useStations();
   const members = useMemo(() => roster.filter((s) => s.station === station).map((s) => s.name), [roster, station]);
 
   const save = async () => {

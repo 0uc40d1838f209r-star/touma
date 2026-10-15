@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Contact, Facility, FacilityStatus, NewFacility, Staff, Visit, VisitOutcome } from "../types";
-import { ABSENT_ENCOURAGEMENTS, ENCOURAGEMENTS, FACILITY_STATUSES, FACILITY_TYPES, KNOWN_STATIONS, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS, joinStaff, splitStaff } from "../types";
+import { ABSENT_ENCOURAGEMENTS, ENCOURAGEMENTS, FACILITY_STATUSES, FACILITY_TYPES, MEMO_TEMPLATES, MET_OPTIONS, OUTCOMES, REACTIONS, joinStaff, splitStaff } from "../types";
 import { store } from "../lib/store";
 import { getIdentity } from "../lib/identity";
 import Donut from "./Donut";
+import { useStations } from "../lib/stations";
 
 interface Props {
   facility: Facility;
@@ -21,12 +22,8 @@ interface Props {
 export default function FacilityDetail({ facility, onClose, onEdit, onDelete, onStatusChange, onUpdate, onVisitsChanged, inRoute, onToggleRoute, initialTab }: Props) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
-  const [stations, setStations] = useState<string[]>([]);
+  const { stations } = useStations();
   const [tab, setTab] = useState<"info" | "contacts" | "visits">(initialTab ?? "info");
-
-  useEffect(() => {
-    store.listStaff().then((staff) => setStations([...new Set(staff.map((s) => s.station))]));
-  }, []);
 
   // 開いた施設 / 指定タブが変わったら、そのタブを表示(自分の訪問先一覧から記録に直行など)
   useEffect(() => {
@@ -440,10 +437,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
   }, [roster]);
   const stations = useMemo(() => [...new Set(roster.map((s) => s.station))], [roster]);
   // 拠点セレクトの候補は 既定店舗 + 名簿の店舗(センター南などメンバー未登録でも選べる)
-  const stationOptions = useMemo(
-    () => [...new Set([...KNOWN_STATIONS, ...roster.map((s) => s.station)])],
-    [roster],
-  );
+  const { stations: stationOptions } = useStations();
   // 店舗ごとの名簿(訪問者プルダウンの optgroup 用)
   const rosterByStation = useMemo(
     () => stations.map((st) => [st, roster.filter((s) => s.station === st).map((s) => s.name)] as const),

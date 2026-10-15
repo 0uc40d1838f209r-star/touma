@@ -17,10 +17,11 @@ interface Data {
   contacts: Contact[];
   visits: Visit[];
   staff: Staff[];
+  stations: string[];
 }
 
 function load(): Data {
-  const empty: Data = { facilities: [], contacts: [], visits: [], staff: [] };
+  const empty: Data = { facilities: [], contacts: [], visits: [], staff: [], stations: [] };
   const raw = localStorage.getItem(KEY);
   if (!raw) return empty;
   try {
@@ -131,6 +132,20 @@ export const localStore: Store = {
   async deleteStaff(id: string) {
     const d = load();
     d.staff = d.staff.filter((s) => s.id !== id);
+    save(d);
+  },
+
+  async listStations() {
+    return load().stations;
+  },
+  async createStation(name: string) {
+    const d = load();
+    if (!d.stations.includes(name)) d.stations.push(name);
+    save(d);
+  },
+  async deleteStation(name: string) {
+    const d = load();
+    d.stations = d.stations.filter((s) => s !== name);
     save(d);
   },
 };

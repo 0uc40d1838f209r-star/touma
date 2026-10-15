@@ -31,6 +31,11 @@ export interface Store {
   listStaff(): Promise<Staff[]>;
   createStaff(data: NewStaff): Promise<Staff>;
   deleteStaff(id: string): Promise<void>;
+
+  // 拠点(店舗)。名簿メンバーがいなくても登録できる
+  listStations(): Promise<string[]>;
+  createStation(name: string): Promise<void>;
+  deleteStation(name: string): Promise<void>;
 }
 
 export const isSupabaseMode = supabase !== null;

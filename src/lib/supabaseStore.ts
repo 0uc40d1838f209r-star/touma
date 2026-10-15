@@ -169,4 +169,25 @@ export const supabaseStore: Store = {
     const { error } = await client().from("staff").delete().eq("id", id);
     if (error) throw new Error(error.message);
   },
+
+  async listStations() {
+    const result = await client().from("stations").select("name").order("created_at");
+    // stations テーブルの migration がまだの環境では空として扱う
+    if (result.error) return [];
+    return ((result.data ?? []) as { name: string }[]).map((r) => r.name);
+  },
+  async createStation(name: string) {
+    const { error } = await client().from("stations").insert({ name });
+    if (error && !error.message.includes("duplicate")) {
+      throw new Error(
+        error.message.includes("stations")
+          ? "拠点を保存する準備(SQL)がまだです。管理者に連絡してください。"
+          : error.message,
+      );
+    }
+  },
+  async deleteStation(name: string) {
+    const { error } = await client().from("stations").delete().eq("name", name);
+    if (error) throw new Error(error.message);
+  },
 };
