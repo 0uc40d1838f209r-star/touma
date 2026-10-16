@@ -82,6 +82,16 @@ export const KNOWN_STATIONS = [
   "鹿児島中央",
 ];
 
+// 上書き・削除される直前の内容(change_history)
+export interface HistoryEntry {
+  id: number | string;
+  table_name: string;
+  row_id: string;
+  action: "UPDATE" | "DELETE";
+  old_data: Visit;
+  changed_at: string;
+}
+
 export type NewFacility = Omit<Facility, "id" | "created_at" | "updated_at">;
 export type NewContact = Omit<Contact, "id">;
 export type NewVisit = Omit<Visit, "id" | "created_at">;

@@ -1,6 +1,7 @@
 import type {
   Contact,
   Facility,
+  HistoryEntry,
   NewContact,
   NewFacility,
   NewStaff,
@@ -18,10 +19,11 @@ interface Data {
   visits: Visit[];
   staff: Staff[];
   stations: string[];
+  history: HistoryEntry[];
 }
 
 function load(): Data {
-  const empty: Data = { facilities: [], contacts: [], visits: [], staff: [], stations: [] };
+  const empty: Data = { facilities: [], contacts: [], visits: [], staff: [], stations: [], history: [] };
   const raw = localStorage.getItem(KEY);
   if (!raw) return empty;
   try {
@@ -37,6 +39,11 @@ function save(data: Data) {
 
 const uid = () =>
   crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+
+function logHistory(d: Data, action: "UPDATE" | "DELETE", old: Visit) {
+  d.history.unshift({ id: uid(), table_name: "visits", row_id: old.id, action, old_data: old, changed_at: new Date().toISOString() });
+  d.history = d.history.slice(0, 300);
+}
 
 export const localStore: Store = {
   async listFacilities() {
@@ -109,12 +116,15 @@ export const localStore: Store = {
     const d = load();
     const i = d.visits.findIndex((v) => v.id === id);
     if (i < 0) throw new Error("訪問記録が見つかりません");
+    logHistory(d, "UPDATE", d.visits[i]);
     d.visits[i] = { ...d.visits[i], ...patch };
     save(d);
     return d.visits[i];
   },
   async deleteVisit(id: string) {
     const d = load();
+    const old = d.visits.find((v) => v.id === id);
+    if (old) logHistory(d, "DELETE", old);
     d.visits = d.visits.filter((v) => v.id !== id);
     save(d);
   },
@@ -147,5 +157,22 @@ export const localStore: Store = {
     const d = load();
     d.stations = d.stations.filter((s) => s !== name);
     save(d);
+  },
+
+  async listVisitHistory(facilityId?: string) {
+    const h = load().history;
+    return facilityId ? h.filter((e) => e.old_data.facility_id === facilityId) : h;
+  },
+  async restoreVisit(old: Visit) {
+    const d = load();
+    const i = d.visits.findIndex((v) => v.id === old.id);
+    if (i >= 0) {
+      logHistory(d, "UPDATE", d.visits[i]);
+      d.visits[i] = old;
+    } else {
+      d.visits.push(old);
+    }
+    save(d);
+    return old;
   },
 };

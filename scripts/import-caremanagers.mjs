@@ -12,7 +12,13 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const CITIES = ["川崎市", "横浜市", "千葉市", "茂原市", "鹿児島市"];
+// city を "" にすると県全域が対象(import-facilities.mjs と揃える)
+const CITIES = [
+  { pref: "神奈川県", city: "川崎市" },
+  { pref: "神奈川県", city: "横浜市" },
+  { pref: "千葉県", city: "" },
+  { pref: "鹿児島県", city: "鹿児島市" },
+];
 
 const PREF_CODE = {
   北海道: "01", 青森県: "02", 岩手県: "03", 宮城県: "04", 秋田県: "05", 山形県: "06",
@@ -75,7 +81,7 @@ function loadOffices() {
   const iCity = ci("市区町村名"), iName = ci("事業所名"), iAddr = ci("住所"), iNo = ci("事業所番号"), iPref = ci("都道府県名");
   const out = [];
   for (const r of rows.slice(1)) {
-    if (!CITIES.some((c) => (r[iCity] ?? "").startsWith(c))) continue;
+    if (!CITIES.some((c) => r[iPref] === c.pref && (r[iCity] ?? "").startsWith(c.city))) continue;
     if (!r[iNo]) continue;
     out.push({ name: r[iName], address: r[iAddr], no: r[iNo], pref: r[iPref] });
   }

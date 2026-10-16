@@ -1,6 +1,7 @@
 import type {
   Contact,
   Facility,
+  HistoryEntry,
   NewContact,
   NewFacility,
   NewStaff,
@@ -36,6 +37,10 @@ export interface Store {
   listStations(): Promise<string[]>;
   createStation(name: string): Promise<void>;
   deleteStation(name: string): Promise<void>;
+
+  // 消えた・上書きされた訪問記録の履歴と復元
+  listVisitHistory(facilityId?: string): Promise<HistoryEntry[]>;
+  restoreVisit(old: Visit): Promise<Visit>;
 }
 
 export const isSupabaseMode = supabase !== null;

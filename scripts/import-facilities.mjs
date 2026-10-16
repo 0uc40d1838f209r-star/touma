@@ -18,13 +18,16 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+// city を "" にすると県全域が対象になる
 const CITIES = [
   { pref: "神奈川県", city: "川崎市" },
   { pref: "神奈川県", city: "横浜市" },
-  { pref: "千葉県", city: "千葉市" },
-  { pref: "千葉県", city: "茂原市" },
+  { pref: "千葉県", city: "" }, // 千葉県全域
   { pref: "鹿児島県", city: "鹿児島市" },
 ];
+
+// 医療機関ファイルの「都道府県コード」との対応
+const PREF_CODE = { 神奈川県: "14", 千葉県: "12", 鹿児島県: "46" };
 
 const args = process.argv.slice(2);
 const getArg = (name) => {
@@ -101,6 +104,7 @@ function loadCsv(file) {
 // 介護サービス情報公表システムの事業所ファイル (居宅・小多機・看多機で列構成が同じ)
 function extractKaigo(file, type) {
   const { rows, col } = loadCsv(file);
+  const cPref = col("都道府県名");
   const cCity = col("市区町村名");
   const cName = col("事業所名");
   const cAddr = col("住所");
@@ -109,7 +113,7 @@ function extractKaigo(file, type) {
   const cPhone = col("電話番号");
   const out = [];
   for (const r of rows) {
-    if (!CITIES.some((c) => (r[cCity] ?? "").startsWith(c.city))) continue;
+    if (!CITIES.some((c) => r[cPref] === c.pref && (r[cCity] ?? "").startsWith(c.city))) continue;
     out.push({
       name: r[cName],
       type,
@@ -125,13 +129,20 @@ function extractKaigo(file, type) {
 function extractMedical(file, type) {
   const { rows, col } = loadCsv(file);
   const cName = col("正式名称");
+  const cPrefCode = col("都道府県コード");
   const cAddr = col("所在地");
   const cLat = col("所在地座標（緯度）");
   const cLng = col("所在地座標（経度）");
   const out = [];
   for (const r of rows) {
     const addr = r[cAddr] ?? "";
-    if (!CITIES.some((c) => addr.startsWith(c.pref + c.city))) continue;
+    const code = String(r[cPrefCode] ?? "").padStart(2, "0");
+    const hit = CITIES.some((c) =>
+      c.city === ""
+        ? code === PREF_CODE[c.pref] // 県全域: 都道府県コードで判定(住所に県名が無い行も拾う)
+        : addr.startsWith(c.pref + c.city),
+    );
+    if (!hit) continue;
     out.push({
       name: r[cName],
       type,
@@ -197,7 +208,9 @@ const valid = [];
 let skippedNoCoord = 0;
 const seen = new Set();
 for (const c of candidates) {
-  if (!c.name || !Number.isFinite(c.lat) || !Number.isFinite(c.lng) || c.lat === 0) {
+  // 日本の範囲外(緯度経度の入れ違い等の誤データ)は取り込まない
+  const outOfJapan = c.lat < 20 || c.lat > 46 || c.lng < 122 || c.lng > 154;
+  if (!c.name || !Number.isFinite(c.lat) || !Number.isFinite(c.lng) || c.lat === 0 || outOfJapan) {
     skippedNoCoord++;
     continue;
   }

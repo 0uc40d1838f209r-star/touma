@@ -4,7 +4,7 @@ import { store } from "../lib/store";
 import { useStations } from "../lib/stations";
 
 // 拠点とスタッフの名簿を管理するモーダル。訪問記録の選択式入力に使われる
-export default function StaffManager({ onClose }: { onClose: () => void }) {
+export default function StaffManager({ onClose, onOpenHistory }: { onClose: () => void; onOpenHistory?: () => void }) {
   const [roster, setRoster] = useState<Staff[]>([]);
   const { stations, custom, reload: reloadStations } = useStations();
   const [newStation, setNewStation] = useState("");
@@ -139,6 +139,12 @@ export default function StaffManager({ onClose }: { onClose: () => void }) {
               追加する
             </button>
           </section>
+
+          {onOpenHistory && (
+            <button onClick={onOpenHistory} className="w-full rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-700">
+              🕘 削除・変更された訪問記録を見る(全体・元に戻せます)
+            </button>
+          )}
 
           {/* 拠点ごとのメンバー */}
           {stations.map((st) => {

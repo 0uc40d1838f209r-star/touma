@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type {
   Contact,
   Facility,
+  HistoryEntry,
   NewContact,
   NewFacility,
   NewStaff,
@@ -189,5 +190,26 @@ export const supabaseStore: Store = {
   async deleteStation(name: string) {
     const { error } = await client().from("stations").delete().eq("name", name);
     if (error) throw new Error(error.message);
+  },
+
+  async listVisitHistory(facilityId?: string) {
+    let q = client()
+      .from("change_history")
+      .select("*")
+      .eq("table_name", "visits")
+      .order("changed_at", { ascending: false })
+      .limit(100);
+    if (facilityId) q = q.eq("old_data->>facility_id", facilityId);
+    const result = await q;
+    // 履歴テーブルの migration がまだの環境では空として扱う
+    if (result.error) return [];
+    return (result.data ?? []) as HistoryEntry[];
+  },
+  async restoreVisit(old: Visit) {
+    // 同じ id で書き戻す(削除済みなら作り直し、残っていれば上書き)
+    return writeStrippingMissing<Visit>(
+      (payload) => client().from("visits").upsert(payload).select().single(),
+      old as unknown as Record<string, unknown>,
+    );
   },
 };

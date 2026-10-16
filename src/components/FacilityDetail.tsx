@@ -4,6 +4,7 @@ import { ABSENT_ENCOURAGEMENTS, ENCOURAGEMENTS, FACILITY_STATUSES, FACILITY_TYPE
 import { store } from "../lib/store";
 import { getIdentity } from "../lib/identity";
 import Donut from "./Donut";
+import HistoryPanel from "./HistoryPanel";
 import { useStations } from "../lib/stations";
 
 interface Props {
@@ -173,7 +174,7 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
         )}
 
         {tab === "contacts" && <ContactsTab facilityId={facility.id} contacts={contacts} onChanged={reload} />}
-        {tab === "visits" && <VisitsTab facilityId={facility.id} visits={visits} onChanged={reload} />}
+        {tab === "visits" && <VisitsTab key={facility.id} facilityId={facility.id} visits={visits} onChanged={reload} />}
       </div>
     </div>
   );
@@ -424,6 +425,10 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
   const [memo, setMemo] = useState("");
   const [roster, setRoster] = useState<Staff[]>([]);
   const [praise, setPraise] = useState(""); // 記録後のねぎらいメッセージ
+  const [busy, setBusy] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [notice, setNotice] = useState(""); // 下書き復元などのお知らせ
+  const [original, setOriginal] = useState<string>(""); // 編集開始時の内容(変更検知用)
 
   useEffect(() => {
     store.listStaff().then(setRoster);
@@ -475,8 +480,46 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     if (primary) setStation(nameToStation.get(primary)!);
   }, [staffList, nameToStation, station]);
 
+  // ---- 書きかけの自動保存(アプリを閉じたり画面が切り替わっても入力が消えない) ----
+  type Draft = { date: string; staffList: string[]; station: string; outcome: VisitOutcome; met: string; metPerson: string; reaction: string; memo: string };
+  const draftKey = (eid: string) => `touma-draft:${facilityId}:${eid}`;
+  const readDraft = (eid: string): Draft | null => {
+    try {
+      return JSON.parse(localStorage.getItem(draftKey(eid)) ?? "null") as Draft | null;
+    } catch {
+      return null;
+    }
+  };
+  const hasContent = (d: Draft | null) =>
+    !!d && (!!d.memo.trim() || !!d.metPerson.trim() || !!d.met || !!d.reaction || d.outcome !== "greeting");
+  const current = (): Draft => ({ date, staffList, station, outcome, met, metPerson, reaction, memo });
+  const applyDraft = (d: Draft) => {
+    setDate(d.date);
+    setStaffList(d.staffList);
+    setStation(d.station);
+    setOutcome(d.outcome);
+    setMet(d.met);
+    setMetPerson(d.metPerson);
+    setReaction(d.reaction);
+    setMemo(d.memo);
+  };
+  useEffect(() => {
+    if (!editingId) return;
+    localStorage.setItem(draftKey(editingId), JSON.stringify(current()));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingId, date, staffList, station, outcome, met, metPerson, reaction, memo]);
+  const pendingNewDraft = !editingId && hasContent(readDraft("new"));
+
   const openNew = () => {
     setEditingId("new");
+    setOriginal("");
+    const d = readDraft("new");
+    if (hasContent(d)) {
+      applyDraft(d!);
+      setNotice("📝 書きかけの内容を復元しました");
+      return;
+    }
+    setNotice("");
     setDate(today);
     setOutcome("greeting");
     setMet("");
@@ -485,15 +528,34 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     setMemo("");
   };
   const openEdit = (v: Visit) => {
+    const base: Draft = {
+      date: v.visited_on,
+      staffList: splitStaff(v.staff_name),
+      station: v.station_name,
+      outcome: v.outcome ?? "greeting",
+      met: v.met ?? "",
+      metPerson: v.met_person ?? "",
+      reaction: v.reaction ?? "",
+      memo: v.memo,
+    };
     setEditingId(v.id);
-    setDate(v.visited_on);
-    setStation(v.station_name);
-    setStaffList(splitStaff(v.staff_name));
-    setOutcome(v.outcome ?? "greeting");
-    setMet(v.met ?? "");
-    setMetPerson(v.met_person ?? "");
-    setReaction(v.reaction ?? "");
-    setMemo(v.memo);
+    setOriginal(JSON.stringify(base));
+    const d = readDraft(v.id);
+    if (d && JSON.stringify(d) !== JSON.stringify(base)) {
+      applyDraft(d);
+      setNotice("📝 編集途中の内容を復元しました");
+    } else {
+      applyDraft(base);
+      setNotice("");
+    }
+  };
+  const cancelEdit = () => {
+    if (!editingId) return;
+    const changed = editingId === "new" ? hasContent(current()) : JSON.stringify(current()) !== original;
+    if (changed && !confirm("入力した内容を破棄しますか?\n(「キャンセル」を押すと入力に戻ります)")) return;
+    localStorage.removeItem(draftKey(editingId));
+    setNotice("");
+    setEditingId(null);
   };
 
   const submit = async () => {
@@ -516,8 +578,19 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
       memo,
     };
     const isNew = editingId === "new";
-    if (isNew) await store.createVisit(data);
-    else await store.updateVisit(editingId, data);
+    setBusy(true);
+    try {
+      if (isNew) await store.createVisit(data);
+      else await store.updateVisit(editingId, data);
+    } catch (e) {
+      // 保存に失敗しても入力は消さない(下書きとして残る)
+      alert("保存できませんでした。電波の良い所でもう一度「記録する」を押してください。\n入力内容はこのまま残っています。\n\n" + (e instanceof Error ? e.message : ""));
+      setBusy(false);
+      return;
+    }
+    setBusy(false);
+    localStorage.removeItem(draftKey(editingId));
+    setNotice("");
     setMemo("");
     setDate(today);
     setEditingId(null);
@@ -575,6 +648,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
       )}
       {editingId ? (
         <div className="space-y-2 rounded-lg border border-brand-soft bg-brand-softer p-3">
+          {notice && <p className="rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">{notice}</p>}
           <div>
             <div className="mb-1 text-xs font-medium text-gray-500">訪問日 (タップで変更できます)</div>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
@@ -722,18 +796,31 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
           </div>
           <textarea value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="面談内容・反応などのメモ" rows={3} className="w-full rounded border border-gray-300 bg-white px-2.5 py-2 text-sm" />
           <div className="flex gap-2">
-            <button onClick={submit} className="flex-1 rounded bg-brand py-2 text-sm font-medium text-white">
-              {editingId === "new" ? "記録する" : "保存する"}
+            <button onClick={submit} disabled={busy} className="flex-1 rounded bg-brand py-2 text-sm font-medium text-white disabled:opacity-50">
+              {busy ? "保存中…" : editingId === "new" ? "記録する" : "保存する"}
             </button>
-            <button onClick={() => setEditingId(null)} className="rounded border border-gray-300 px-3 py-2 text-sm">
+            <button onClick={cancelEdit} disabled={busy} className="rounded border border-gray-300 px-3 py-2 text-sm">
               キャンセル
             </button>
           </div>
         </div>
       ) : (
-        <button onClick={openNew} className="w-full rounded-lg bg-brand py-2.5 text-sm font-medium text-white">
-          + 訪問を記録
-        </button>
+        <div className="space-y-2">
+          {pendingNewDraft && (
+            <button onClick={openNew} className="w-full rounded-lg border border-amber-300 bg-amber-50 py-2 text-sm font-bold text-amber-800">
+              📝 書きかけの記録があります — 続きを書く
+            </button>
+          )}
+          <button onClick={openNew} className="w-full rounded-lg bg-brand py-2.5 text-sm font-medium text-white">
+            + 訪問を記録
+          </button>
+          <button onClick={() => setShowHistory(true)} className="w-full text-center text-xs text-gray-500 underline">
+            🕘 削除・変更前の記録を見る(元に戻せます)
+          </button>
+        </div>
+      )}
+      {showHistory && (
+        <HistoryPanel facilityId={facilityId} onClose={() => setShowHistory(false)} onRestored={onChanged} />
       )}
       {visits.length === 0 && !editingId && <p className="text-sm text-gray-500">訪問記録はまだありません。</p>}
       {visits.length > 0 && !editingId && <VisitSummary visits={visits} />}
@@ -760,7 +847,7 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
                   </button>
                   <button
                     onClick={async () => {
-                      if (confirm("この訪問記録を削除しますか?")) {
+                      if (confirm(`${v.visited_on} の訪問記録${v.staff_name ? `(${v.staff_name})` : ""}を削除しますか?\n※間違えて消しても「削除・変更前の記録」から戻せます`)) {
                         await store.deleteVisit(v.id);
                         onChanged();
                       }

@@ -15,6 +15,7 @@ import StaffManager from "./components/StaffManager";
 import IdentityPicker from "./components/IdentityPicker";
 import RoutePanel from "./components/RoutePanel";
 import ManualModal from "./components/ManualModal";
+import HistoryPanel from "./components/HistoryPanel";
 import { getIdentity, type Identity } from "./lib/identity";
 
 export default function App() {
@@ -66,6 +67,7 @@ function MainScreen() {
   });
   const [showRoute, setShowRoute] = useState(false);
   const [showManual, setShowManual] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [focusStrategyKey, setFocusStrategyKey] = useState(0);
   const openStrategy = () => {
     setView("stats");
@@ -403,7 +405,22 @@ function MainScreen() {
         ))}
       </nav>
 
-      {showStaff && <StaffManager onClose={() => setShowStaff(false)} />}
+      {showStaff && (
+        <StaffManager
+          onClose={() => setShowStaff(false)}
+          onOpenHistory={() => {
+            setShowStaff(false);
+            setShowHistory(true);
+          }}
+        />
+      )}
+      {showHistory && (
+        <HistoryPanel
+          facilityName={(id) => facilities.find((f) => f.id === id)?.name}
+          onClose={() => setShowHistory(false)}
+          onRestored={reloadVisits}
+        />
+      )}
       {showManual && <ManualModal onClose={() => setShowManual(false)} />}
 
       {showRoute && (
