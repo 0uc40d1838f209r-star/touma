@@ -59,7 +59,7 @@ function clusterIcon(count: number): L.DivIcon {
   const size = count >= 1000 ? 52 : count >= 100 ? 46 : count >= 10 ? 40 : 34;
   return L.divIcon({
     className: "facility-pin",
-    html: `<div style="width:${size}px;height:${size}px;border-radius:9999px;background:rgba(37,99,235,.85);border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);color:white;font-weight:bold;font-size:${count >= 1000 ? 12 : 13}px;display:flex;align-items:center;justify-content:center">${count >= 1000 ? (count / 1000).toFixed(1) + "k" : count}</div>`,
+    html: `<div style="width:${size}px;height:${size}px;border-radius:9999px;background:#1a73e8;border:3px solid white;box-shadow:0 1px 4px rgba(60,64,67,.45);color:white;font-weight:bold;font-size:${count >= 1000 ? 12 : 13}px;display:flex;align-items:center;justify-content:center">${count >= 1000 ? (count / 1000).toFixed(1) + "k" : count}</div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
@@ -233,9 +233,16 @@ function LocateButton({
     <button
       onClick={locate}
       title="現在地へ移動"
-      className="absolute bottom-6 left-4 z-[1000] flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg text-xl active:bg-gray-100"
+      aria-label="現在地へ移動"
+      className="g-elev absolute bottom-24 right-4 z-[1000] grid h-11 w-11 place-items-center rounded-full bg-white active:bg-gray-100 md:right-6"
     >
-      {busy ? "…" : "📍"}
+      {busy ? (
+        <span className="text-sm text-gray-500">…</span>
+      ) : (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill={myPos ? "#1a73e8" : "#5f6368"}>
+          <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" />
+        </svg>
+      )}
     </button>
   );
 }
@@ -252,10 +259,12 @@ export interface MapViewProps {
 export default function MapView({ facilities, selectedId, onSelect, picking, onPick, flyTarget }: MapViewProps) {
   const [myPos, setMyPos] = useState<[number, number] | null>(null);
   return (
-    <MapContainer center={DEFAULT_CENTER} zoom={12} className="h-full w-full" zoomControl={false}>
+    <MapContainer center={DEFAULT_CENTER} zoom={12} maxZoom={20} className="h-full w-full" zoomControl={false}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        maxNativeZoom={19}
+        maxZoom={20}
       />
       <MapEvents picking={picking} onPick={onPick} />
       <FlyTo target={flyTarget} />
@@ -267,13 +276,13 @@ export default function MapView({ facilities, selectedId, onSelect, picking, onP
           <CircleMarker
             center={myPos}
             radius={24}
-            pathOptions={{ stroke: false, fillColor: "#2563eb", fillOpacity: 0.15, className: "mypos-halo" }}
+            pathOptions={{ stroke: false, fillColor: "#1a73e8", fillOpacity: 0.15, className: "mypos-halo" }}
           />
           {/* 現在地の青い点 + 「現在地」ラベル */}
           <CircleMarker
             center={myPos}
             radius={9}
-            pathOptions={{ color: "white", weight: 3, fillColor: "#2563eb", fillOpacity: 1 }}
+            pathOptions={{ color: "white", weight: 3, fillColor: "#1a73e8", fillOpacity: 1 }}
           >
             <Tooltip permanent direction="top" offset={[0, -10]} className="mypos-tooltip">
               現在地

@@ -16,6 +16,7 @@ import IdentityPicker from "./components/IdentityPicker";
 import RoutePanel from "./components/RoutePanel";
 import ManualModal from "./components/ManualModal";
 import HistoryPanel from "./components/HistoryPanel";
+import SideMenu from "./components/SideMenu";
 import { getIdentity, type Identity } from "./lib/identity";
 
 export default function App() {
@@ -68,6 +69,7 @@ function MainScreen() {
   const [showRoute, setShowRoute] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const [focusStrategyKey, setFocusStrategyKey] = useState(0);
   const openStrategy = () => {
     setView("stats");
@@ -140,6 +142,17 @@ function MainScreen() {
 
   const selected = facilities.find((f) => f.id === selectedId) ?? null;
 
+  // 自分の訪問先の表示切替(担当者が未選択なら選んでもらう)
+  const toggleMine = () => {
+    if (!identity?.name) {
+      setShowIdentity(true);
+      return;
+    }
+    const next = !mineOnly;
+    setMineOnly(next);
+    if (next) setView("list"); // 自分の訪問先は一覧で見せる
+  };
+
   const toggleIn = <T,>(set: Set<T>, value: T): Set<T> => {
     const next = new Set(set);
     if (next.has(value)) next.delete(value);
@@ -204,112 +217,52 @@ function MainScreen() {
     await reload();
   };
 
-  return (
-    <div className="flex h-full flex-col">
-      <header className="sticky top-0 z-[1001] flex items-center justify-between gap-2 border-b border-gray-100 bg-white/90 px-4 py-2.5 backdrop-blur-md">
-        <div className="flex min-w-0 items-center gap-2">
-          {view === "map" ? (
-            <h1 className="flex min-w-0 items-center gap-2 text-[15px] font-extrabold tracking-tight text-gray-900">
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-brand text-sm text-white shadow-sm">営</span>
-              <span className="hidden truncate sm:inline">営業先マップ</span>
-              {!isSupabaseMode && (
-                <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
-                  デモ
-                </span>
-              )}
-            </h1>
-          ) : (
-            <button
-              onClick={() => setView("map")}
-              className="flex shrink-0 items-center gap-1.5 rounded-full bg-gray-900 px-3.5 py-1.5 text-sm font-bold text-white shadow-sm active:bg-gray-700"
-            >
-              🗺 地図に戻る
-            </button>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-1.5">
-          <button
-            onClick={openStrategy}
-            className="grid h-8 w-8 place-items-center rounded-full bg-gray-100 text-sm hover:bg-gray-200"
-            title="戦略・アドバイス"
-          >
-            🎯
-          </button>
-          <button
-            onClick={() => setShowManual(true)}
-            className="grid h-8 w-8 place-items-center rounded-full bg-gray-100 text-sm hover:bg-gray-200"
-            title="営業マニュアル"
-          >
-            📖
-          </button>
-          <button
-            onClick={() => setShowIdentity(true)}
-            className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-800 hover:bg-gray-200"
-            title="担当者を選択"
-          >
-            <span>👤</span>
-            <span className="hidden max-w-[6rem] truncate sm:inline">{identity?.name ?? "担当者"}</span>
-          </button>
-          <button
-            onClick={() => setShowRoute(true)}
-            className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
-              route.length > 0 ? "bg-brand text-white shadow-sm" : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-            }`}
-            title="訪問ルート"
-          >
-            <span>🚗</span>
-            {route.length > 0 && <span>{route.length}</span>}
-          </button>
-          <button
-            onClick={() => setView(view === "stats" ? "map" : "stats")}
-            className={`hidden rounded-full px-3 py-1.5 text-xs font-semibold md:inline ${
-              view === "stats" ? "bg-brand text-white shadow-sm" : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-            }`}
-          >
-            📊 実績
-          </button>
-          <button
-            onClick={() => setShowStaff(true)}
-            className="grid h-8 w-8 place-items-center rounded-full bg-gray-100 text-sm text-gray-600 hover:bg-gray-200"
-            title="名簿"
-          >
-            ⚙
-          </button>
-          {isSupabaseMode && (
-            <button
-              onClick={() => supabase?.auth.signOut()}
-              className="grid h-8 w-8 place-items-center rounded-full bg-gray-100 text-sm text-gray-600 hover:bg-gray-200"
-              title="ログアウト"
-            >
-              ⎋
-            </button>
-          )}
-        </div>
-      </header>
+  // 検索バー・チップの共通設定(地図の上 / リスト / PCサイドバーで使い回す)
+  const filterProps = {
+    search,
+    onSearch: setSearch,
+    activeTypes,
+    onToggleType: (t: FacilityType) => setActiveTypes((s) => toggleIn(s, t)),
+    activeStatuses,
+    onToggleStatus: (s: FacilityStatus) => setActiveStatuses((prev) => toggleIn(prev, s)),
+    mineOnly,
+    myName: identity?.name ?? null,
+    onToggleMine: toggleMine,
+    onMenu: () => setShowMenu(true),
+    onAvatar: () => setShowIdentity(true),
+    routeCount: route.length,
+    onRoute: () => setShowRoute(true),
+  };
 
-      <FilterBar
-        search={search}
-        onSearch={setSearch}
-        activeTypes={activeTypes}
-        onToggleType={(t) => setActiveTypes((s) => toggleIn(s, t))}
-        activeStatuses={activeStatuses}
-        onToggleStatus={(s) => setActiveStatuses((prev) => toggleIn(prev, s))}
-        mineOnly={mineOnly}
-        myName={identity?.name ?? null}
-        onToggleMine={() => {
-          if (!identity?.name) {
-            setShowIdentity(true);
-            return;
-          }
-          const next = !mineOnly;
-          setMineOnly(next);
-          if (next) setView("list"); // 自分の訪問先は一覧で見せる
-        }}
-      />
+  const navItems = [
+    { key: "map", label: "地図", path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" },
+    { key: "list", label: "リスト", path: "M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" },
+    { key: "stats", label: "実績", path: "M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z" },
+  ] as const;
+
+  return (
+    <div className="relative flex h-full flex-col bg-white">
+      {view === "stats" && (
+        // 実績: Google 風のアプリバー(← で地図に戻る)
+        <header className="flex h-14 shrink-0 items-center gap-1 border-b border-gray-200 bg-white px-1">
+          <button onClick={() => setView("map")} aria-label="地図に戻る" className="grid h-11 w-11 place-items-center rounded-full text-gray-700 hover:bg-gray-100">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
+          </button>
+          <h1 className="flex-1 text-lg font-medium text-gray-900">実績・分析</h1>
+          <button onClick={() => setShowMenu(true)} aria-label="メニュー" className="grid h-11 w-11 place-items-center rounded-full text-gray-700 hover:bg-gray-100">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" /></svg>
+          </button>
+        </header>
+      )}
+      {view === "list" && (
+        <div className="md:hidden">
+          <FilterBar {...filterProps} />
+        </div>
+      )}
 
       <div className="relative min-h-0 flex-1">
         {view === "stats" ? (
-          <Dashboard
+            <Dashboard
             facilities={facilities}
             visits={allVisits}
             onSelectFacility={selectFacility}
@@ -318,9 +271,12 @@ function MainScreen() {
           />
         ) : (
         <div className="flex h-full">
-          {/* PC: サイドバー一覧 */}
-          <aside className="hidden w-80 shrink-0 overflow-y-auto border-r border-gray-100 bg-gray-50 md:block">
-            <FacilityList facilities={filtered} selectedId={selectedId} onSelect={(id) => selectFacility(id, mineOnly ? "visits" : "info")} lastVisit={mineOnly ? myLastVisit : lastVisitMap} />
+          {/* PC: 左パネル(検索 + 一覧)。Google マップのデスクトップ版風 */}
+          <aside className="hidden w-[360px] shrink-0 flex-col border-r border-gray-200 bg-white md:flex">
+            <FilterBar {...filterProps} />
+            <div className="min-h-0 flex-1 overflow-y-auto bg-gray-50">
+              <FacilityList facilities={filtered} selectedId={selectedId} onSelect={(id) => selectFacility(id, mineOnly ? "visits" : "info")} lastVisit={mineOnly ? myLastVisit : lastVisitMap} />
+            </div>
           </aside>
 
           {/* 地図 (モバイルではタブで切替) */}
@@ -336,6 +292,14 @@ function MainScreen() {
               }}
               flyTarget={flyTarget}
             />
+            {/* スマホ: 地図の上に浮かぶ検索バーとチップ */}
+            {!picking && (
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-[1001] pt-[env(safe-area-inset-top)] md:hidden">
+                <div className="pointer-events-auto">
+                  <FilterBar {...filterProps} floating />
+                </div>
+              </div>
+            )}
             {picking && (
               <div className="absolute inset-x-0 top-0 z-[1000] flex items-center justify-between gap-2 bg-brand px-4 py-3 text-sm font-medium text-white">
                 地図をタップして位置を指定してください
@@ -355,14 +319,15 @@ function MainScreen() {
         </div>
         )}
 
-        {/* 追加ボタン */}
+        {/* 追加ボタン(Google 風の FAB) */}
         {!picking && !formOpen && view !== "stats" && (
           <button
             onClick={openNewForm}
-            className="absolute bottom-20 right-4 z-[1000] flex h-14 w-14 items-center justify-center rounded-full bg-brand text-3xl font-light text-white shadow-lg active:bg-brand-dark md:bottom-6 md:right-6"
+            className="g-elev absolute bottom-6 right-4 z-[1000] grid h-14 w-14 place-items-center rounded-2xl bg-brand text-white active:bg-brand-dark md:right-6"
             aria-label="営業先を登録"
+            title="営業先を登録"
           >
-            +
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>
           </button>
         )}
 
@@ -385,25 +350,53 @@ function MainScreen() {
         )}
       </div>
 
-      {/* モバイル: 地図/リスト/実績切替タブ */}
-      <nav className="flex border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
-        {(
-          [
-            ["map", "🗺", "地図"],
-            ["list", "📋", "リスト"],
-            ["stats", "📊", "実績"],
-          ] as const
-        ).map(([key, icon, label]) => (
-          <button
-            key={key}
-            onClick={() => setView(key)}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${view === key ? "text-brand" : "text-gray-400"}`}
-          >
-            <span className="text-xl leading-none">{icon}</span>
-            {label}
-          </button>
-        ))}
+      {/* モバイル: 下部ナビ(Material 3 風) */}
+      <nav className="flex shrink-0 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
+        {navItems.map((n) => {
+          const active = view === n.key;
+          return (
+            <button
+              key={n.key}
+              onClick={() => setView(n.key)}
+              className={`flex flex-1 flex-col items-center gap-1 pb-2 pt-2 text-xs font-medium ${active ? "text-brand-ink" : "text-gray-600"}`}
+            >
+              <span className={`grid h-8 w-16 place-items-center rounded-full ${active ? "bg-brand-softer" : ""}`}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d={n.path} /></svg>
+              </span>
+              {n.label}
+            </button>
+          );
+        })}
       </nav>
+
+      {showMenu && (
+        <SideMenu
+          onClose={() => setShowMenu(false)}
+          title="営業先マップ"
+          subtitle={`${identity ? `${identity.station} / ${identity.name}` : "担当者が未選択です"}${isSupabaseMode ? "" : "(デモ)"}`}
+          groups={[
+            [
+              { icon: "🗺", label: "地図", onClick: () => setView("map") },
+              { icon: "📋", label: "リスト", onClick: () => setView("list") },
+              { icon: "📊", label: "実績・分析", onClick: () => setView("stats") },
+            ],
+            [
+              { icon: "🎯", label: "戦略・アドバイス", onClick: openStrategy },
+              { icon: "📖", label: "営業マニュアル", onClick: () => setShowManual(true) },
+              { icon: "🚗", label: "訪問ルート", onClick: () => setShowRoute(true), badge: route.length },
+              { icon: "🧍", label: mineOnly ? "自分の訪問先(表示中)" : "自分の訪問先", onClick: toggleMine },
+            ],
+            [
+              { icon: "👤", label: "担当者を変更", onClick: () => setShowIdentity(true) },
+              { icon: "👥", label: "拠点・スタッフ名簿", onClick: () => setShowStaff(true) },
+              { icon: "🕘", label: "削除・変更された記録", onClick: () => setShowHistory(true) },
+            ],
+            ...(isSupabaseMode
+              ? [[{ icon: "⎋", label: "ログアウト", onClick: () => supabase?.auth.signOut(), danger: true }]]
+              : []),
+          ]}
+        />
+      )}
 
       {showStaff && (
         <StaffManager

@@ -1,13 +1,13 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-/* Airbnb 風のブランドカラー(コーラル) */
+/* Google マップ風のカラー(ブルー) */
 @theme {
-  --color-brand: #ff385c;
-  --color-brand-dark: #e00b41;
-  --color-brand-soft: #ffe7ec;
-  --color-brand-softer: #fff4f6;
-  --color-brand-ink: #b01238;
+  --color-brand: #1a73e8;
+  --color-brand-dark: #1557b0;
+  --color-brand-soft: #d2e3fc;
+  --color-brand-softer: #e8f0fe;
+  --color-brand-ink: #174ea6;
 }
 
 html,
@@ -17,8 +17,8 @@ body,
 }
 
 body {
-  font-family: "Plus Jakarta Sans", "Noto Sans JP", system-ui, -apple-system, sans-serif;
-  color: #1a1a1a;
+  font-family: "Roboto", "Noto Sans JP", system-ui, -apple-system, sans-serif;
+  color: #202124;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -57,8 +57,8 @@ button:active {
 
 /* 現在地ラベル(青い吹き出し) */
 .mypos-tooltip.leaflet-tooltip {
-  background: #2563eb;
-  color: #fff;
+  background: #fff;
+  color: #1a73e8;
   border: none;
   border-radius: 9999px;
   padding: 2px 10px;
@@ -67,7 +67,7 @@ button:active {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 .mypos-tooltip.leaflet-tooltip-top::before {
-  border-top-color: #2563eb;
+  border-top-color: #fff;
 }
 
 /* 現在地の光の輪(脈打つ) */
@@ -79,3 +79,13 @@ button:active {
 .mypos-halo {
   animation: mypos-pulse 1.8s ease-in-out infinite;
 }
+
+/* Google 風の浮かぶカード影 */
+.g-elev {
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 2px 6px 2px rgba(60, 64, 67, 0.15);
+}
+.g-elev-sm {
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }

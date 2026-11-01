@@ -48,51 +48,71 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
   const type = FACILITY_TYPES[facility.type];
 
   return (
-    <div className="sheet-handle pointer-events-auto relative flex h-full flex-col rounded-t-3xl bg-white shadow-2xl md:rounded-none md:shadow-xl">
-      <div className="flex items-start justify-between gap-2 border-b border-gray-100 p-4 pt-5 md:pt-4">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-3 w-3 shrink-0 rounded-full" style={{ background: type.color }} />
-            <span className="text-xs text-gray-500">{type.label}</span>
+    <div className="sheet-handle g-elev pointer-events-auto relative flex h-full flex-col rounded-t-2xl bg-white md:rounded-none">
+      {/* Google マップの施設カード風ヘッダー */}
+      <div className="flex items-start gap-2 px-4 pb-2 pt-6 md:pt-4">
+        <div className="min-w-0 flex-1">
+          <h2 className="line-clamp-2 text-[22px] leading-tight text-gray-900">{facility.name}</h2>
+          <div className="mt-1 flex items-center gap-1.5 text-sm text-gray-600">
+            <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: type.color }} />
+            <span>{type.label}</span>
+            {visits[0] && <span className="text-gray-400">・ 最終訪問 {visits[0].visited_on}</span>}
           </div>
-          <h2 className="truncate text-lg font-bold">{facility.name}</h2>
         </div>
-        {onToggleRoute && (
-          <button
-            onClick={onToggleRoute}
-            className={`shrink-0 rounded-full px-2.5 py-1.5 text-xs font-bold ${
-              inRoute ? "bg-brand text-white" : "border border-brand-soft text-brand-ink"
-            }`}
-            title="訪問ルートに追加/削除"
-          >
-            {inRoute ? "🚗 追加済み" : "🚗 ルートに追加"}
-          </button>
-        )}
-        <button onClick={onClose} className="shrink-0 rounded-full p-2 text-gray-500 hover:bg-gray-100" aria-label="閉じる">
-          ✕
+        <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200" aria-label="閉じる">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
         </button>
       </div>
 
-      <div className="flex gap-1 border-b border-gray-100 px-4 pb-3 pt-1 text-sm">
-        <div className="flex flex-1 gap-1 rounded-full bg-gray-100 p-1">
-          {(
-            [
-              ["info", "基本情報"],
-              ["contacts", `担当者 ${contacts.length}`],
-              ["visits", `記録 ${visits.length}`],
-            ] as const
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`flex-1 rounded-full py-1.5 text-xs font-semibold ${
-                tab === key ? "bg-white text-brand shadow-sm" : "text-gray-500"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      {/* アクションボタン(経路・ルート・電話・記録) */}
+      <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-3">
+        <a
+          href={`https://www.google.com/maps/dir/?api=1&destination=${facility.lat},${facility.lng}&travelmode=driving`}
+          target="_blank"
+          rel="noreferrer"
+          className="flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-brand px-4 text-sm font-medium text-white"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21.71 11.29 12.71 2.29a.996.996 0 0 0-1.41 0l-9 9a.996.996 0 0 0 0 1.41l9 9c.39.39 1.02.39 1.41 0l9-9a.996.996 0 0 0 0-1.41zM14 14.5V12h-4v3H8v-4c0-.55.45-1 1-1h5V7.5l3.5 3.5-3.5 3.5z" /></svg>
+          経路
+        </a>
+        {onToggleRoute && (
+          <button
+            onClick={onToggleRoute}
+            className={inRoute ? "flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-brand-softer px-3.5 text-sm font-medium text-brand-ink" : "flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-gray-300 bg-white px-3.5 text-sm font-medium text-brand-ink hover:bg-brand-softer"}
+            title="訪問ルートに追加/削除"
+          >
+            {inRoute ? "✓ ルートに追加済み" : "🚗 ルートに追加"}
+          </button>
+        )}
+        {facility.phone && (
+          <a href={`tel:${facility.phone}`} className="flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-gray-300 bg-white px-3.5 text-sm font-medium text-brand-ink hover:bg-brand-softer">
+            📞 電話
+          </a>
+        )}
+        <button onClick={() => setTab("visits")} className="flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-gray-300 bg-white px-3.5 text-sm font-medium text-brand-ink hover:bg-brand-softer">
+          ✏️ 訪問を記録
+        </button>
+      </div>
+
+      {/* タブ(Google 風の下線タブ) */}
+      <div className="flex border-b border-gray-200 text-sm">
+        {(
+          [
+            ["info", "概要"],
+            ["contacts", `担当者 ${contacts.length}`],
+            ["visits", `記録 ${visits.length}`],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`flex-1 border-b-[3px] py-3 font-medium ${
+              tab === key ? "border-brand text-brand" : "border-transparent text-gray-600"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
