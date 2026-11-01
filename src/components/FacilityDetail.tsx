@@ -18,9 +18,17 @@ interface Props {
   inRoute?: boolean;
   onToggleRoute?: () => void;
   initialTab?: "info" | "contacts" | "visits";
+  onRecorded?: (info: RecordedInfo) => void; // 新しい訪問を記録したとき(キャラのねぎらい用)
 }
 
-export default function FacilityDetail({ facility, onClose, onEdit, onDelete, onStatusChange, onUpdate, onVisitsChanged, inRoute, onToggleRoute, initialTab }: Props) {
+export interface RecordedInfo {
+  outcome: VisitOutcome;
+  met: string;
+  visitedOn: string;
+  staffNames: string[];
+}
+
+export default function FacilityDetail({ facility, onClose, onEdit, onDelete, onStatusChange, onUpdate, onVisitsChanged, inRoute, onToggleRoute, initialTab, onRecorded }: Props) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
   const { stations } = useStations();
@@ -194,7 +202,7 @@ export default function FacilityDetail({ facility, onClose, onEdit, onDelete, on
         )}
 
         {tab === "contacts" && <ContactsTab facilityId={facility.id} contacts={contacts} onChanged={reload} />}
-        {tab === "visits" && <VisitsTab key={facility.id} facilityId={facility.id} visits={visits} onChanged={reload} />}
+        {tab === "visits" && <VisitsTab key={facility.id} facilityId={facility.id} visits={visits} onChanged={reload} onRecorded={onRecorded} />}
       </div>
     </div>
   );
@@ -429,7 +437,7 @@ function VisitSummary({ visits }: { visits: Visit[] }) {
   );
 }
 
-function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visits: Visit[]; onChanged: () => void }) {
+function VisitsTab({ facilityId, visits, onChanged, onRecorded }: { facilityId: string; visits: Visit[]; onChanged: () => void; onRecorded?: (info: RecordedInfo) => void }) {
   const [editingId, setEditingId] = useState<string | null>(null); // "new" = 新規追加
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(today);
@@ -616,11 +624,15 @@ function VisitsTab({ facilityId, visits, onChanged }: { facilityId: string; visi
     setEditingId(null);
     onChanged();
     if (isNew) {
-      // 記録おつかれさま。成果に応じたねぎらいを出す
-      const pick = (a: string[]) => a[Math.floor(Math.random() * a.length)];
-      const absent = met === "不在" || met === "ケアマネ不在";
-      setPraise(absent ? pick(ABSENT_ENCOURAGEMENTS) : pick(ENCOURAGEMENTS[outcome]));
-      setTimeout(() => setPraise(""), 4500);
+      // 記録おつかれさま。キャラクターのねぎらいは App 側で(今月の件数に応じて)出す
+      if (onRecorded) {
+        onRecorded({ outcome, met, visitedOn: date, staffNames: staffList });
+      } else {
+        const pick = (a: string[]) => a[Math.floor(Math.random() * a.length)];
+        const absent = met === "不在" || met === "ケアマネ不在";
+        setPraise(absent ? pick(ABSENT_ENCOURAGEMENTS) : pick(ENCOURAGEMENTS[outcome]));
+        setTimeout(() => setPraise(""), 4500);
+      }
     }
   };
 

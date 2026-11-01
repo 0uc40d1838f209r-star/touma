@@ -18,7 +18,10 @@ import ManualModal from "./components/ManualModal";
 import HistoryPanel from "./components/HistoryPanel";
 import SideMenu from "./components/SideMenu";
 import OnboardingGuide, { ONBOARD_KEY } from "./components/OnboardingGuide";
-import TipCard, { shouldShowTip } from "./components/TipCard";
+import TipCard from "./components/TipCard";
+import { MILESTONES, MascotToast, MascotWidget, MilestoneCelebration, healingMessage } from "./components/Mascot";
+import type { RecordedInfo } from "./components/FacilityDetail";
+import { ABSENT_ENCOURAGEMENTS, ENCOURAGEMENTS } from "./types";
 import { getIdentity, type Identity } from "./lib/identity";
 
 export default function App() {
@@ -81,7 +84,10 @@ function MainScreen() {
     }
   };
   const [showGuide, setShowGuide] = useState(() => getIdentity() !== null && !onboarded());
-  const [showTip, setShowTip] = useState(() => onboarded() && shouldShowTip());
+  const [showTip, setShowTip] = useState(() => onboarded());
+  // 癒しキャラクター(記録後のねぎらい・節目のお祝い)
+  const [mascotToast, setMascotToast] = useState<{ month: number; message: string } | null>(null);
+  const [milestone, setMilestone] = useState<number | null>(null);
   const [focusStrategyKey, setFocusStrategyKey] = useState(0);
   const openStrategy = () => {
     setView("stats");
@@ -153,6 +159,59 @@ function MainScreen() {
   }, [facilities, search, activeTypes, activeStatuses, mineOnly, myLastVisit]);
 
   const selected = facilities.find((f) => f.id === selectedId) ?? null;
+
+  // 自分(担当者)の今月・今日の訪問件数(キャラクターの表示用)
+  const myCounts = useMemo(() => {
+    const me = identity?.name;
+    const ym = new Date().toISOString().slice(0, 7);
+    const td = new Date().toISOString().slice(0, 10);
+    if (!me) return { month: 0, today: 0 };
+    const mine = allVisits.filter((v) => splitStaff(v.staff_name).includes(me));
+    return {
+      month: mine.filter((v) => v.visited_on.startsWith(ym)).length,
+      today: mine.filter((v) => v.visited_on === td).length,
+    };
+  }, [allVisits, identity]);
+
+  // 訪問を記録したら、件数に応じてキャラクターがねぎらう(節目はお祝い)
+  const handleRecorded = async (info: RecordedInfo) => {
+    const vs = await store.listAllVisits();
+    setAllVisits(vs);
+    const me = identity?.name || info.staffNames[0];
+    if (!me) return;
+    const ym = new Date().toISOString().slice(0, 7);
+    const td = new Date().toISOString().slice(0, 10);
+    const mine = vs.filter((v) => splitStaff(v.staff_name).includes(me));
+    const month = mine.filter((v) => v.visited_on.startsWith(ym)).length;
+    const today = mine.filter((v) => v.visited_on === td).length;
+    const pick = (a: string[]) => a[Math.floor(Math.random() * a.length)];
+    const absent = info.met === "不在" || info.met === "ケアマネ不在";
+    const message =
+      info.outcome === "new_client"
+        ? pick(ENCOURAGEMENTS.new_client)
+        : absent
+          ? pick(ABSENT_ENCOURAGEMENTS)
+          : healingMessage(month, today);
+    setMascotToast({ month, message });
+    // 今月の記録で節目に届いたら、1回だけお祝い
+    if (info.visitedOn.startsWith(ym) && MILESTONES.includes(month)) {
+      const key = `touma-milestone:${ym}:${me}`;
+      let done = 0;
+      try {
+        done = Number(localStorage.getItem(key) ?? "0");
+      } catch {
+        /* 何もしない */
+      }
+      if (month > done) {
+        try {
+          localStorage.setItem(key, String(month));
+        } catch {
+          /* 何もしない */
+        }
+        setTimeout(() => setMilestone(month), 900);
+      }
+    }
+  };
 
   // 自分の訪問先の表示切替(担当者が未選択なら選んでもらう)
   const toggleMine = () => {
@@ -312,7 +371,13 @@ function MainScreen() {
                 </div>
               </div>
             )}
-            {/* こんなこともできます(1日1回) */}
+            {/* 癒しキャラクター(左下)。タップで話しかけられる */}
+            {identity && !picking && !selected && view === "map" && (
+              <div className="pointer-events-none absolute bottom-6 left-3 z-[1000]">
+                <MascotWidget month={myCounts.month} today={myCounts.today} />
+              </div>
+            )}
+            {/* こんなこともできます(常に表示。✕で今回だけ閉じる) */}
             {showTip && !picking && !selected && !showGuide && !showIdentity && view === "map" && (
               <div className="pointer-events-none absolute inset-x-3 top-[124px] z-[1001] md:left-3 md:right-auto md:top-3 md:w-96">
                 <TipCard
@@ -369,6 +434,7 @@ function MainScreen() {
               inRoute={route.includes(selected.id)}
               onToggleRoute={() => toggleRoute(selected.id)}
               initialTab={detailTab}
+              onRecorded={handleRecorded}
             />
           </div>
         )}
@@ -450,7 +516,16 @@ function MainScreen() {
         />
       )}
       {showManual && <ManualModal onClose={() => setShowManual(false)} />}
-      {showGuide && <OnboardingGuide onClose={() => setShowGuide(false)} />}
+      {showGuide && (
+        <OnboardingGuide
+          onClose={() => {
+            setShowGuide(false);
+            setShowTip(true);
+          }}
+        />
+      )}
+      {mascotToast && <MascotToast month={mascotToast.month} message={mascotToast.message} onClose={() => setMascotToast(null)} />}
+      {milestone !== null && <MilestoneCelebration month={milestone} onClose={() => setMilestone(null)} />}
 
       {showRoute && (
         <RoutePanel

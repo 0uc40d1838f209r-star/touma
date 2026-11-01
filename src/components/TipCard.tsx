@@ -1,9 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-// 「こんなこともできます」ヒント。1日1回、地図の上に小さく出す
-const TIP_DAY_KEY = "touma-tip-day";
-const TIP_OFF_KEY = "touma-tip-off";
-
+// 「こんなこともできます」ヒント。地図の上に常に表示(✕で今回だけ閉じる)
 export const TIPS: string[] = [
   "施設の青い「経路」ボタンで、Googleマップのナビがすぐ開きます。",
   "「ルートに追加」で回る先をためると、まとめてナビできます。",
@@ -20,32 +17,15 @@ export const TIPS: string[] = [
   "新しい拠点は ☰ →「拠点・スタッフ名簿」から追加できます。",
 ];
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-// 今日まだヒントを出していなければ true
-export function shouldShowTip(): boolean {
-  try {
-    if (localStorage.getItem(TIP_OFF_KEY) === "1") return false;
-    return localStorage.getItem(TIP_DAY_KEY) !== todayStr();
-  } catch {
-    return false;
-  }
-}
-
 export default function TipCard({ onClose, onOpenGuide }: { onClose: () => void; onOpenGuide: () => void }) {
   const [idx, setIdx] = useState(() => Math.floor(Math.random() * TIPS.length));
 
-  const close = (off = false) => {
-    try {
-      localStorage.setItem(TIP_DAY_KEY, todayStr());
-      if (off) localStorage.setItem(TIP_OFF_KEY, "1");
-    } catch {
-      /* 何もしない */
-    }
-    onClose();
-  };
+  // 15秒ごとに次のヒントへ
+  useEffect(() => {
+    const t = setInterval(() => setIdx((i) => (i + 1) % TIPS.length), 15000);
+    return () => clearInterval(t);
+  }, []);
+  const close = () => onClose();
 
   return (
     <div className="g-elev pointer-events-auto rounded-2xl bg-white p-3.5">
@@ -62,9 +42,6 @@ export default function TipCard({ onClose, onOpenGuide }: { onClose: () => void;
         </button>
         <button onClick={onOpenGuide} className="text-gray-500 underline">
           使い方ガイド
-        </button>
-        <button onClick={() => close(true)} className="ml-auto text-gray-400">
-          今後表示しない
         </button>
       </div>
     </div>
