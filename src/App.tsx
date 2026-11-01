@@ -89,7 +89,7 @@ function MainScreen() {
   const [mascotToast, setMascotToast] = useState<{ month: number; message: string } | null>(null);
   const [milestone, setMilestone] = useState<number | null>(null);
   const [showMascotPicker, setShowMascotPicker] = useState(false);
-  // 営業のお供(まっぷん)に話させる内容
+  // 営業のお供キャラに話させる内容
   const [companionSay, setCompanionSay] = useState<{ text: string; key: number } | null>(null);
   const companionTalk = (text: string) => setCompanionSay({ text, key: Date.now() });
   const [focusStrategyKey, setFocusStrategyKey] = useState(0);
@@ -501,7 +501,7 @@ function MainScreen() {
               { icon: "🕘", label: "削除・変更された記録", onClick: () => setShowHistory(true) },
             ],
             [
-              { icon: "🧸", label: "お供キャラを選ぶ", onClick: () => setShowMascotPicker(true) },
+              { icon: "📍", label: "お供キャラを選ぶ", onClick: () => setShowMascotPicker(true) },
               { icon: "📘", label: "使い方ガイド", onClick: () => setShowGuide(true) },
               {
                 icon: "💡",

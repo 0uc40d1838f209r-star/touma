@@ -1,23 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
-// 癒しキャラクター(営業のお供)。ちびキャラ風。訪問件数に応じて表情・装飾が変わる
+// 営業のお供キャラクター(オリジナル)。訪問看護と営業先マップにちなんだ4人。
+// 訪問件数に応じて表情・装飾が変わる
 export type Mood = "normal" | "happy" | "super";
-export type MascotKind = "bear" | "cat" | "rabbit" | "chick";
+export type MascotKind = "pin" | "capsule" | "house" | "bandage";
 
-export const MASCOTS: Record<MascotKind, { name: string; label: string }> = {
-  bear: { name: "まっぷん", label: "くま" },
-  cat: { name: "にゃっぷ", label: "ねこ" },
-  rabbit: { name: "ぴょんぷ", label: "うさぎ" },
-  chick: { name: "ぴよっぷ", label: "ひよこ" },
+export const MASCOTS: Record<MascotKind, { name: string; label: string; intro: string }> = {
+  pin: { name: "ピンキー", label: "地図のピン", intro: "行き先を見つけるのが得意。迷ったら任せて!" },
+  capsule: { name: "カプたん", label: "おくすりカプセル", intro: "元気のもとを届けるよ。疲れたら休憩してね" },
+  house: { name: "おうちん", label: "おうち", intro: "訪問看護といえば、おうち。ただいまを待ってるよ" },
+  bandage: { name: "ばんそ", label: "ばんそうこう", intro: "心のキズもそっと手当て。いつでも味方だよ" },
 };
 
 const MASCOT_KEY = "touma-mascot";
 export function getMascotKind(): MascotKind {
   try {
     const k = localStorage.getItem(MASCOT_KEY) as MascotKind | null;
-    return k && k in MASCOTS ? k : "bear";
+    return k && k in MASCOTS ? k : "pin";
   } catch {
-    return "bear";
+    return "pin";
   }
 }
 export function setMascotKind(k: MascotKind) {
@@ -39,41 +40,152 @@ export function useMascotKind(): MascotKind {
   return k;
 }
 
-const PAL: Record<MascotKind, { fill: string; line: string; inner: string; muzzle: string }> = {
-  bear: { fill: "#f8dcbc", line: "#cf9a6e", inner: "#f7b7b0", muzzle: "#fff4e8" },
-  cat: { fill: "#fff1dd", line: "#e3a36b", inner: "#ffc2c2", muzzle: "#ffffff" },
-  rabbit: { fill: "#ffffff", line: "#d9c3cc", inner: "#ffc6d3", muzzle: "#ffffff" },
-  chick: { fill: "#ffe680", line: "#e8b93a", inner: "#ffd0a0", muzzle: "#fff3b8" },
-};
-const INK = "#4a3a33";
+const INK = "#2b2540";
 
-function Eyes({ mood }: { mood: Mood }) {
-  if (mood === "happy") {
+// 顔(4人共通のパーツ)
+function Face({ cx, cy, mood, s = 1 }: { cx: number; cy: number; mood: Mood; s?: number }) {
+  const ex = 8.5 * s;
+  return (
+    <g>
+      {/* ほっぺ */}
+      <ellipse cx={cx - 14 * s} cy={cy + 5 * s} rx={4.6 * s} ry={2.8 * s} fill="#ff7fa1" opacity="0.45" />
+      <ellipse cx={cx + 14 * s} cy={cy + 5 * s} rx={4.6 * s} ry={2.8 * s} fill="#ff7fa1" opacity="0.45" />
+      {/* 目 */}
+      {mood === "normal" &&
+        [-1, 1].map((d) => (
+          <g key={d}>
+            <ellipse cx={cx + d * ex} cy={cy} rx={3 * s} ry={4 * s} fill={INK} />
+            <circle cx={cx + d * ex + 1 * s} cy={cy - 1.6 * s} r={1.2 * s} fill="#fff" />
+          </g>
+        ))}
+      {mood === "happy" && (
+        <g stroke={INK} strokeWidth={2.6 * s} fill="none" strokeLinecap="round">
+          <path d={`M${cx - ex - 3.6 * s} ${cy + 1 * s} Q${cx - ex} ${cy - 4 * s} ${cx - ex + 3.6 * s} ${cy + 1 * s}`} />
+          <path d={`M${cx + ex - 3.6 * s} ${cy + 1 * s} Q${cx + ex} ${cy - 4 * s} ${cx + ex + 3.6 * s} ${cy + 1 * s}`} />
+        </g>
+      )}
+      {mood === "super" &&
+        [-1, 1].map((d) => (
+          <path
+            key={d}
+            transform={`translate(${cx + d * ex} ${cy}) scale(${0.95 * s})`}
+            d="M0 -5.2 L1.5 -1.6 5.2 -1.4 2.3 1 3.2 4.8 0 2.8 -3.2 4.8 -2.3 1 -5.2 -1.4 -1.5 -1.6Z"
+            fill="#ffb300"
+          />
+        ))}
+      {/* 口 */}
+      {mood === "normal" ? (
+        <path
+          d={`M${cx - 3 * s} ${cy + 5.5 * s} Q${cx} ${cy + 8.5 * s} ${cx + 3 * s} ${cy + 5.5 * s}`}
+          stroke={INK}
+          strokeWidth={2 * s}
+          fill="none"
+          strokeLinecap="round"
+        />
+      ) : (
+        <g>
+          <path d={`M${cx - 4.2 * s} ${cy + 5 * s} Q${cx} ${cy + 12 * s} ${cx + 4.2 * s} ${cy + 5 * s}Z`} fill={INK} />
+          <ellipse cx={cx} cy={cy + 8.6 * s} rx={2.2 * s} ry={1.5 * s} fill="#ff7f8e" />
+        </g>
+      )}
+    </g>
+  );
+}
+
+// 頭の上の位置(王冠を乗せる場所)
+const TOP: Record<MascotKind, number> = { pin: 16, capsule: 13, house: 13, bandage: 38 };
+
+function Body({ k, id, mood }: { k: MascotKind; id: string; mood: Mood }) {
+  if (k === "pin") {
     return (
-      <g stroke={INK} strokeWidth="3.2" fill="none" strokeLinecap="round">
-        <path d="M34 53 Q39 46.5 44 53" />
-        <path d="M56 53 Q61 46.5 66 53" />
+      <g>
+        <defs>
+          <linearGradient id={`${id}g`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#ff9a8b" />
+            <stop offset="1" stopColor="#ff4f8b" />
+          </linearGradient>
+        </defs>
+        <path d="M50 93 C43 80 21 65 21 42 A29 29 0 1 1 79 42 C79 65 57 80 50 93Z" fill={`url(#${id}g)`} />
+        <path d="M33 27 Q40 19 50 18" stroke="#fff" strokeWidth="4" strokeLinecap="round" opacity="0.45" fill="none" />
+        <circle cx="50" cy="44" r="19" fill="#fff6f2" />
+        {/* ナースのヘアピン */}
+        <g transform="translate(70 22) rotate(18)">
+          <rect x="-5.5" y="-5.5" width="11" height="11" rx="3" fill="#fff" />
+          <rect x="-1.3" y="-3.8" width="2.6" height="7.6" rx="0.8" fill="#ff4f8b" />
+          <rect x="-3.8" y="-1.3" width="7.6" height="2.6" rx="0.8" fill="#ff4f8b" />
+        </g>
+        <Face cx={50} cy={43} mood={mood} s={0.95} />
       </g>
     );
   }
-  const big = mood === "super";
+  if (k === "capsule") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id={`${id}g`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#7cf0d2" />
+            <stop offset="1" stopColor="#19b7a0" />
+          </linearGradient>
+          <clipPath id={`${id}c`}>
+            <rect x="27" y="12" width="46" height="80" rx="23" />
+          </clipPath>
+        </defs>
+        <g transform="rotate(-8 50 52)">
+          <g clipPath={`url(#${id}c)`}>
+            <rect x="27" y="12" width="46" height="80" fill="#fffdf8" />
+            <rect x="27" y="12" width="46" height="36" fill={`url(#${id}g)`} />
+          </g>
+          <rect x="27" y="12" width="46" height="80" rx="23" fill="none" stroke="#e5ece9" strokeWidth="1.5" />
+          <path d="M36 22 Q39 17 45 16" stroke="#fff" strokeWidth="3.6" strokeLinecap="round" opacity="0.6" fill="none" />
+          {/* 手 */}
+          <ellipse cx="25" cy="66" rx="5" ry="4" fill="#fffdf8" stroke="#e5ece9" strokeWidth="1.4" />
+          <ellipse cx="75" cy="66" rx="5" ry="4" fill="#fffdf8" stroke="#e5ece9" strokeWidth="1.4" />
+          <Face cx={50} cy={62} mood={mood} s={0.95} />
+        </g>
+      </g>
+    );
+  }
+  if (k === "house") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id={`${id}g`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#ffc46b" />
+            <stop offset="1" stopColor="#ff8a3d" />
+          </linearGradient>
+        </defs>
+        {/* 煙突とハートの煙 */}
+        <rect x="64" y="20" width="9" height="16" rx="2" fill="#d96f2a" />
+        <path d="M68.5 13.5 c-1.6-2.6-5.6-1.6-5.2 1.3 .3 2 2.6 3.3 5.2 5 2.6-1.7 4.9-3 5.2-5 .4-2.9-3.6-3.9-5.2-1.3z" fill="#ff7fa1" />
+        {/* かべ */}
+        <rect x="22" y="42" width="56" height="48" rx="12" fill="#fff4e6" />
+        {/* やね */}
+        <path d="M17 47 L50 17 L83 47Z" fill={`url(#${id}g)`} stroke={`url(#${id}g)`} strokeWidth="9" strokeLinejoin="round" />
+        <path d="M34 33 L46 22" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.55" />
+        {/* ドア(ハート) */}
+        <rect x="44" y="76" width="12" height="14" rx="6" fill="#ffd2a8" />
+        <Face cx={50} cy={60} mood={mood} s={0.9} />
+      </g>
+    );
+  }
+  // bandage
   return (
     <g>
-      {[39, 61].map((x) => (
-        <g key={x}>
-          <ellipse cx={x} cy="51" rx={big ? 5.4 : 4.8} ry={big ? 6.4 : 5.8} fill={INK} />
-          {big ? (
-            <path
-              transform={`translate(${x + 1.2} 48.6) scale(0.55)`}
-              d="M0 -5 L1.4 -1.4 5 0 1.4 1.4 0 5 -1.4 1.4 -5 0 -1.4 -1.4Z"
-              fill="#fff"
-            />
-          ) : (
-            <circle cx={x + 1.5} cy="48.4" r="2" fill="#fff" />
-          )}
-          <circle cx={x - 1.4} cy="53.6" r="1" fill="#fff" />
-        </g>
-      ))}
+      <defs>
+        <linearGradient id={`${id}g`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#ffd3ad" />
+          <stop offset="1" stopColor="#ffb98a" />
+        </linearGradient>
+      </defs>
+      <g transform="rotate(-12 50 58)">
+        <rect x="8" y="38" width="84" height="40" rx="20" fill={`url(#${id}g)`} />
+        {[16, 24, 76, 84].map((x) =>
+          [52, 64].map((y) => <circle key={`${x}-${y}`} cx={x} cy={y} r="1.6" fill="#e8955e" opacity="0.7" />),
+        )}
+        <rect x="31" y="40" width="38" height="36" rx="9" fill="#fff6ee" />
+        <path d="M14 45 Q20 40 28 40" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.5" fill="none" />
+        <Face cx={50} cy={56} mood={mood} s={0.85} />
+      </g>
     </g>
   );
 }
@@ -91,104 +203,26 @@ export function Mascot({
 }) {
   const chosen = useMascotKind();
   const k = kind ?? chosen;
-  const c = PAL[k];
-  const sw = 2.4;
+  const id = "m" + useId().replace(/[^a-zA-Z0-9]/g, "");
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden>
+      {/* 影 */}
+      <ellipse cx="50" cy="96" rx="20" ry="2.6" fill="#000" opacity="0.08" />
       {/* キラキラ */}
       {mood === "super" && (
-        <g fill="#ffcf3f">
-          <path d="M11 30l2.4 5.6 5.6 2.4-5.6 2.4-2.4 5.6-2.4-5.6-5.6-2.4 5.6-2.4z" />
-          <path d="M89 22l1.8 4.2 4.2 1.8-4.2 1.8-1.8 4.2-1.8-4.2-4.2-1.8 4.2-1.8z" />
-          <path d="M88 66l1.5 3.5 3.5 1.5-3.5 1.5-1.5 3.5-1.5-3.5-3.5-1.5 3.5-1.5z" />
+        <g fill="#ffc83d">
+          <path d="M10 30l2.4 5.6 5.6 2.4-5.6 2.4-2.4 5.6-2.4-5.6-5.6-2.4 5.6-2.4z" />
+          <path d="M90 20l1.8 4.2 4.2 1.8-4.2 1.8-1.8 4.2-1.8-4.2-4.2-1.8 4.2-1.8z" />
+          <path d="M90 70l1.5 3.5 3.5 1.5-3.5 1.5-1.5 3.5-1.5-3.5-3.5-1.5 3.5-1.5z" />
         </g>
       )}
-
-      {/* からだ + 手 + お供のかばん */}
-      <g stroke={c.line} strokeWidth={sw} strokeLinejoin="round">
-        <ellipse cx="50" cy="86" rx="21" ry="12.5" fill={c.fill} />
-        <ellipse cx="30.5" cy="83" rx="6" ry="5" fill={c.fill} />
-        <ellipse cx="69.5" cy="83" rx="6" ry="5" fill={c.fill} />
-      </g>
-      <rect x="57" y="81" width="15" height="11" rx="3" fill="#8fb8f0" stroke="#5f8fd6" strokeWidth="1.6" />
-      <rect x="62" y="79" width="5" height="3" rx="1" fill="none" stroke="#5f8fd6" strokeWidth="1.4" />
-
-      {/* 耳(種類ごと) */}
-      {k === "bear" && (
-        <g stroke={c.line} strokeWidth={sw}>
-          <circle cx="26" cy="27" r="10" fill={c.fill} />
-          <circle cx="74" cy="27" r="10" fill={c.fill} />
-          <circle cx="26" cy="27" r="5" fill={c.inner} stroke="none" />
-          <circle cx="74" cy="27" r="5" fill={c.inner} stroke="none" />
-        </g>
-      )}
-      {k === "cat" && (
-        <g stroke={c.line} strokeWidth={sw} strokeLinejoin="round">
-          <path d="M22 35 Q20 14 28 13 Q35 15 40 25Z" fill={c.fill} />
-          <path d="M78 35 Q80 14 72 13 Q65 15 60 25Z" fill={c.fill} />
-          <path d="M26 30 Q25 20 29 19 Q33 21 35 26Z" fill={c.inner} stroke="none" />
-          <path d="M74 30 Q75 20 71 19 Q67 21 65 26Z" fill={c.inner} stroke="none" />
-        </g>
-      )}
-      {k === "rabbit" && (
-        <g stroke={c.line} strokeWidth={sw}>
-          <ellipse cx="38" cy="15" rx="7.5" ry="17" fill={c.fill} transform="rotate(-10 38 15)" />
-          <ellipse cx="62" cy="15" rx="7.5" ry="17" fill={c.fill} transform="rotate(10 62 15)" />
-          <ellipse cx="38" cy="16" rx="3.6" ry="11" fill={c.inner} stroke="none" transform="rotate(-10 38 16)" />
-          <ellipse cx="62" cy="16" rx="3.6" ry="11" fill={c.inner} stroke="none" transform="rotate(10 62 16)" />
-        </g>
-      )}
-
-      {/* あたま */}
-      <circle cx="50" cy="48" r="29" fill={c.fill} stroke={c.line} strokeWidth={sw} />
-      {k === "chick" && <path d="M47 20 Q49 11 53 14 Q52 17 56 15 Q55 21 51 20Z" fill={c.fill} stroke={c.line} strokeWidth="2" />}
-      {k === "cat" && (
-        <g fill="#f3b97f" opacity="0.8">
-          <path d="M44 21 Q50 19 56 21 L54 28 Q50 26 46 28Z" />
-        </g>
-      )}
-
-      {/* ナースキャップ */}
-      {k !== "rabbit" && k !== "chick" ? (
-        <g>
-          <path d="M37 24 Q50 15 63 24 L60.5 31 Q50 27 39.5 31Z" fill="#ffffff" stroke="#e2d4d8" strokeWidth="1.6" strokeLinejoin="round" />
-          <rect x="48.4" y="20.6" width="3.2" height="7.6" rx="1" fill="#ff7d96" />
-          <rect x="46.2" y="22.8" width="7.6" height="3.2" rx="1" fill="#ff7d96" />
-        </g>
-      ) : (
-        <g>
-          <path d="M40 24.5 Q50 18 60 24.5 L58 30 Q50 27 42 30Z" fill="#ffffff" stroke="#e2d4d8" strokeWidth="1.5" strokeLinejoin="round" />
-          <rect x="48.6" y="21.6" width="2.8" height="6.4" rx="0.8" fill="#ff7d96" />
-          <rect x="46.8" y="23.4" width="6.4" height="2.8" rx="0.8" fill="#ff7d96" />
-        </g>
-      )}
+      <Body k={k} id={id} mood={mood} />
       {/* 王冠(上位ランク) */}
       {crown && (
-        <path d="M37 13 L42 19 L50 8 L58 19 L63 13 L61 23 L39 23Z" fill="#ffcf3f" stroke="#e8a100" strokeWidth="1.4" strokeLinejoin="round" />
-      )}
-
-      {/* 顔 */}
-      <ellipse cx="50" cy="61" rx="11" ry="8" fill={c.muzzle} opacity={k === "rabbit" ? 0 : 0.9} />
-      <Eyes mood={mood} />
-      <ellipse cx="29.5" cy="60" rx="6.2" ry="3.8" fill="#ff9aa8" opacity="0.65" />
-      <ellipse cx="70.5" cy="60" rx="6.2" ry="3.8" fill="#ff9aa8" opacity="0.65" />
-      {k === "chick" ? (
-        <path d="M45.5 57.5 L54.5 57.5 L50 63Z" fill="#ff9f43" stroke="#e7832a" strokeWidth="1.2" strokeLinejoin="round" />
-      ) : (
-        <ellipse cx="50" cy="57.6" rx="2.6" ry="1.9" fill={INK} />
-      )}
-      {k === "cat" && (
-        <g stroke={c.line} strokeWidth="1.3" strokeLinecap="round">
-          <path d="M23 56 L33 57.5" />
-          <path d="M23 61 L33 60" />
-          <path d="M77 56 L67 57.5" />
-          <path d="M77 61 L67 60" />
+        <g transform={`translate(50 ${TOP[k] - 7})`}>
+          <path d="M-13 7 L-14 -5 L-6 1 L0 -9 L6 1 L14 -5 L13 7Z" fill="#ffcf3f" stroke="#eaa400" strokeWidth="1.4" strokeLinejoin="round" />
+          <circle cx="0" cy="2" r="1.8" fill="#ff4f8b" />
         </g>
-      )}
-      {mood === "normal" ? (
-        <path d="M45.5 61 Q47.8 64 50 61 Q52.2 64 54.5 61" stroke={INK} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      ) : (
-        <path d="M45 61 Q50 69.5 55 61Z" fill="#e8677a" stroke={INK} strokeWidth="1.6" strokeLinejoin="round" />
       )}
     </svg>
   );
@@ -456,6 +490,7 @@ export function MascotPicker({ onClose }: { onClose: () => void }) {
               <Mascot kind={k} mood={current === k ? "happy" : "normal"} size={84} />
               <span className="mt-1 text-sm font-medium text-gray-900">{MASCOTS[k].name}</span>
               <span className="text-[11px] text-gray-500">{MASCOTS[k].label}</span>
+              <span className="mt-1 text-[11px] leading-snug text-gray-600">{MASCOTS[k].intro}</span>
             </button>
           ))}
         </div>
