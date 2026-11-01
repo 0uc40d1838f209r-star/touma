@@ -221,3 +221,89 @@ export function MascotWidget({ month, today }: { month: number; today: number })
     </div>
   );
 }
+
+// ---- 営業のお供: 時間帯のあいさつ ----
+export function greetingMessage(name?: string | null): string {
+  const h = new Date().getHours();
+  const who = name ? `${name}さん、` : "";
+  if (h >= 5 && h < 10) return `${who}おはよう!今日もいっしょに回ろうね☀️`;
+  if (h >= 10 && h < 14) return `${who}こんにちは!お昼ごはんはちゃんと食べてね🍙`;
+  if (h >= 14 && h < 18) return `${who}午後もいっしょにがんばろう!水分補給も忘れずにね💧`;
+  return `${who}おつかれさま。今日もよくがんばったね🌙`;
+}
+
+// ---- 営業のお供: 施設を開いたときのひとこと ----
+export function facilityRemark(
+  f: { name: string; care_manager_count?: number; referrals?: Record<string, number> },
+  visits: { visited_on: string; met: string }[],
+): string {
+  const refs = Object.values(f.referrals ?? {}).reduce((a, b) => a + b, 0);
+  const cm = f.care_manager_count ?? 0;
+  const sorted = [...visits].sort((a, b) => b.visited_on.localeCompare(a.visited_on));
+  const absentStreak = sorted.length >= 2 && sorted.slice(0, 2).every((v) => v.met === "不在" || v.met === "ケアマネ不在");
+  const extra = cm >= 5 ? `ケアマネさんが${cm}人いる大きな事業所だよ!` : "";
+  if (absentStreak) return "ここ最近、不在が続いてるね。電話で在席を確かめてから行くとムダ足が減るよ📞";
+  if (refs > 0) return `紹介を${refs}件もらってる大事な先!会えたらお礼を伝えてね💐 ${extra}`.trim();
+  if (sorted.length === 0) return `ここは初めての訪問だね。笑顔でごあいさつ、がんばって!😊 ${extra}`.trim();
+  const last = sorted[0].visited_on.slice(5).replace("-", "/");
+  return `前回は${last}に来てるね。今回で${sorted.length + 1}回目の訪問だよ! ${extra}`.trim();
+}
+
+// ---- 営業のお供: 画面にずっといてくれるキャラ ----
+export function Companion({
+  month,
+  today,
+  hasIdentity,
+  say,
+  onNeedIdentity,
+}: {
+  month: number;
+  today: number;
+  hasIdentity: boolean;
+  say: { text: string; key: number } | null; // 外から話させたい内容
+  onNeedIdentity: () => void;
+}) {
+  const r = rankOf(month);
+  const [msg, setMsg] = useState<{ text: string; key: number } | null>(null);
+
+  // 外からのセリフ
+  useEffect(() => {
+    if (say) setMsg(say);
+  }, [say]);
+  // 6秒で吹き出しを閉じる
+  useEffect(() => {
+    if (!msg) return;
+    const t = setTimeout(() => setMsg(null), 6500);
+    return () => clearTimeout(t);
+  }, [msg]);
+
+  const talk = () => {
+    if (!hasIdentity) {
+      onNeedIdentity();
+      return;
+    }
+    setMsg({ text: healingMessage(month, today), key: Date.now() });
+  };
+
+  return (
+    <div className="pointer-events-auto flex items-end gap-1.5">
+      <button
+        onClick={talk}
+        className={`g-elev grid h-14 w-14 shrink-0 place-items-center rounded-full bg-white ${msg ? "mascot-hop" : "mascot-bob"}`}
+        aria-label="まっぷんに話しかける"
+        key={`btn-${msg?.key ?? 0}`}
+      >
+        <Mascot mood={msg ? "happy" : r.mood} crown={r.crown} size={48} />
+      </button>
+      {msg ? (
+        <div key={`msg-${msg.key}`} className="g-elev mascot-pop mb-1 max-w-[230px] rounded-2xl rounded-bl-sm bg-white px-3 py-2 text-xs leading-snug text-gray-800">
+          {msg.text}
+        </div>
+      ) : (
+        <div className="g-elev mb-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold" style={{ color: r.color }}>
+          {hasIdentity ? `今月${month}件` : "名前を選んでね"}
+        </div>
+      )}
+    </div>
+  );
+}

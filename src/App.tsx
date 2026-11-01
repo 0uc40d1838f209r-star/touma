@@ -19,7 +19,7 @@ import HistoryPanel from "./components/HistoryPanel";
 import SideMenu from "./components/SideMenu";
 import OnboardingGuide, { ONBOARD_KEY } from "./components/OnboardingGuide";
 import TipCard from "./components/TipCard";
-import { MILESTONES, MascotToast, MascotWidget, MilestoneCelebration, healingMessage } from "./components/Mascot";
+import { Companion, MILESTONES, MascotToast, MilestoneCelebration, facilityRemark, greetingMessage, healingMessage } from "./components/Mascot";
 import type { RecordedInfo } from "./components/FacilityDetail";
 import { ABSENT_ENCOURAGEMENTS, ENCOURAGEMENTS } from "./types";
 import { getIdentity, type Identity } from "./lib/identity";
@@ -88,6 +88,9 @@ function MainScreen() {
   // 癒しキャラクター(記録後のねぎらい・節目のお祝い)
   const [mascotToast, setMascotToast] = useState<{ month: number; message: string } | null>(null);
   const [milestone, setMilestone] = useState<number | null>(null);
+  // 営業のお供(まっぷん)に話させる内容
+  const [companionSay, setCompanionSay] = useState<{ text: string; key: number } | null>(null);
+  const companionTalk = (text: string) => setCompanionSay({ text, key: Date.now() });
   const [focusStrategyKey, setFocusStrategyKey] = useState(0);
   const openStrategy = () => {
     setView("stats");
@@ -172,6 +175,27 @@ function MainScreen() {
       today: mine.filter((v) => v.visited_on === td).length,
     };
   }, [allVisits, identity]);
+
+  // お供: 開いたときのあいさつ
+  useEffect(() => {
+    const t = setTimeout(() => companionTalk(greetingMessage(getIdentity()?.name)), 1500);
+    return () => clearTimeout(t);
+  }, []);
+  // お供: 施設を開いたら、その施設についてひとこと
+  useEffect(() => {
+    if (!selectedId) return;
+    const f = facilities.find((x) => x.id === selectedId);
+    if (!f) return;
+    companionTalk(facilityRemark(f, allVisits.filter((v) => v.facility_id === selectedId)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId]);
+  // お供: ときどき癒しのひとこと(3分ごと)
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (identity) companionTalk(healingMessage(myCounts.month, myCounts.today));
+    }, 180000);
+    return () => clearInterval(t);
+  }, [identity, myCounts.month, myCounts.today]);
 
   // 訪問を記録したら、件数に応じてキャラクターがねぎらう(節目はお祝い)
   const handleRecorded = async (info: RecordedInfo) => {
@@ -371,12 +395,6 @@ function MainScreen() {
                 </div>
               </div>
             )}
-            {/* 癒しキャラクター(左下)。タップで話しかけられる */}
-            {identity && !picking && !selected && view === "map" && (
-              <div className="pointer-events-none absolute bottom-6 left-3 z-[1000]">
-                <MascotWidget month={myCounts.month} today={myCounts.today} />
-              </div>
-            )}
             {/* こんなこともできます(常に表示。✕で今回だけ閉じる) */}
             {showTip && !picking && !selected && !showGuide && !showIdentity && view === "map" && (
               <div className="pointer-events-none absolute inset-x-3 top-[124px] z-[1001] md:left-3 md:right-auto md:top-3 md:w-96">
@@ -524,6 +542,30 @@ function MainScreen() {
           }}
         />
       )}
+      {/* 営業のお供: どの画面にもいる(施設カードを開いているときはその上に) */}
+      {!picking && !formOpen && !showGuide && !showIdentity && !mascotToast && milestone === null && (() => {
+        const sheetOpen = !!selected && view !== "stats";
+        const props = {
+          month: myCounts.month,
+          today: myCounts.today,
+          hasIdentity: !!identity,
+          say: companionSay,
+          onNeedIdentity: () => setShowIdentity(true),
+        };
+        return (
+          <>
+            <div
+              className="pointer-events-none fixed left-3 z-[1050] md:hidden"
+              style={{ bottom: sheetOpen ? "calc(62vh + 76px + env(safe-area-inset-bottom))" : "calc(76px + env(safe-area-inset-bottom))" }}
+            >
+              <Companion {...props} />
+            </div>
+            <div className={`pointer-events-none fixed bottom-6 z-[1050] hidden md:block ${view === "stats" ? "left-6" : "left-[376px]"}`}>
+              <Companion {...props} />
+            </div>
+          </>
+        );
+      })()}
       {mascotToast && <MascotToast month={mascotToast.month} message={mascotToast.message} onClose={() => setMascotToast(null)} />}
       {milestone !== null && <MilestoneCelebration month={milestone} onClose={() => setMilestone(null)} />}
 
