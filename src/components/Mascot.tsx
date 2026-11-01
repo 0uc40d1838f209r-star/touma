@@ -1,64 +1,194 @@
 import { useEffect, useState } from "react";
 
-// 癒しキャラクター「まっぷん」(ナースキャップのくま)。訪問件数に応じて表情・装飾が変わる
+// 癒しキャラクター(営業のお供)。ちびキャラ風。訪問件数に応じて表情・装飾が変わる
 export type Mood = "normal" | "happy" | "super";
+export type MascotKind = "bear" | "cat" | "rabbit" | "chick";
 
-export function Mascot({ mood = "normal", size = 64, crown = false }: { mood?: Mood; size?: number; crown?: boolean }) {
+export const MASCOTS: Record<MascotKind, { name: string; label: string }> = {
+  bear: { name: "まっぷん", label: "くま" },
+  cat: { name: "にゃっぷ", label: "ねこ" },
+  rabbit: { name: "ぴょんぷ", label: "うさぎ" },
+  chick: { name: "ぴよっぷ", label: "ひよこ" },
+};
+
+const MASCOT_KEY = "touma-mascot";
+export function getMascotKind(): MascotKind {
+  try {
+    const k = localStorage.getItem(MASCOT_KEY) as MascotKind | null;
+    return k && k in MASCOTS ? k : "bear";
+  } catch {
+    return "bear";
+  }
+}
+export function setMascotKind(k: MascotKind) {
+  try {
+    localStorage.setItem(MASCOT_KEY, k);
+  } catch {
+    /* 何もしない */
+  }
+  window.dispatchEvent(new Event("touma-mascot-change"));
+}
+// 選んだキャラを購読するフック
+export function useMascotKind(): MascotKind {
+  const [k, setK] = useState<MascotKind>(() => getMascotKind());
+  useEffect(() => {
+    const on = () => setK(getMascotKind());
+    window.addEventListener("touma-mascot-change", on);
+    return () => window.removeEventListener("touma-mascot-change", on);
+  }, []);
+  return k;
+}
+
+const PAL: Record<MascotKind, { fill: string; line: string; inner: string; muzzle: string }> = {
+  bear: { fill: "#f8dcbc", line: "#cf9a6e", inner: "#f7b7b0", muzzle: "#fff4e8" },
+  cat: { fill: "#fff1dd", line: "#e3a36b", inner: "#ffc2c2", muzzle: "#ffffff" },
+  rabbit: { fill: "#ffffff", line: "#d9c3cc", inner: "#ffc6d3", muzzle: "#ffffff" },
+  chick: { fill: "#ffe680", line: "#e8b93a", inner: "#ffd0a0", muzzle: "#fff3b8" },
+};
+const INK = "#4a3a33";
+
+function Eyes({ mood }: { mood: Mood }) {
+  if (mood === "happy") {
+    return (
+      <g stroke={INK} strokeWidth="3.2" fill="none" strokeLinecap="round">
+        <path d="M34 53 Q39 46.5 44 53" />
+        <path d="M56 53 Q61 46.5 66 53" />
+      </g>
+    );
+  }
+  const big = mood === "super";
+  return (
+    <g>
+      {[39, 61].map((x) => (
+        <g key={x}>
+          <ellipse cx={x} cy="51" rx={big ? 5.4 : 4.8} ry={big ? 6.4 : 5.8} fill={INK} />
+          {big ? (
+            <path
+              transform={`translate(${x + 1.2} 48.6) scale(0.55)`}
+              d="M0 -5 L1.4 -1.4 5 0 1.4 1.4 0 5 -1.4 1.4 -5 0 -1.4 -1.4Z"
+              fill="#fff"
+            />
+          ) : (
+            <circle cx={x + 1.5} cy="48.4" r="2" fill="#fff" />
+          )}
+          <circle cx={x - 1.4} cy="53.6" r="1" fill="#fff" />
+        </g>
+      ))}
+    </g>
+  );
+}
+
+export function Mascot({
+  mood = "normal",
+  size = 64,
+  crown = false,
+  kind,
+}: {
+  mood?: Mood;
+  size?: number;
+  crown?: boolean;
+  kind?: MascotKind;
+}) {
+  const chosen = useMascotKind();
+  const k = kind ?? chosen;
+  const c = PAL[k];
+  const sw = 2.4;
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden>
-      {/* キラキラ(super) */}
+      {/* キラキラ */}
       {mood === "super" && (
-        <g fill="#fbbc04">
-          <path d="M12 20l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" />
-          <path d="M88 30l2 4.5 4.5 2-4.5 2-2 4.5-2-4.5-4.5-2 4.5-2z" />
-          <path d="M84 72l1.6 3.6 3.6 1.6-3.6 1.6-1.6 3.6-1.6-3.6-3.6-1.6 3.6-1.6z" />
+        <g fill="#ffcf3f">
+          <path d="M11 30l2.4 5.6 5.6 2.4-5.6 2.4-2.4 5.6-2.4-5.6-5.6-2.4 5.6-2.4z" />
+          <path d="M89 22l1.8 4.2 4.2 1.8-4.2 1.8-1.8 4.2-1.8-4.2-4.2-1.8 4.2-1.8z" />
+          <path d="M88 66l1.5 3.5 3.5 1.5-3.5 1.5-1.5 3.5-1.5-3.5-3.5-1.5 3.5-1.5z" />
         </g>
       )}
-      {/* 耳 */}
-      <circle cx="27" cy="34" r="11" fill="#f2c9a0" />
-      <circle cx="73" cy="34" r="11" fill="#f2c9a0" />
-      <circle cx="27" cy="34" r="6" fill="#f7a8a0" />
-      <circle cx="73" cy="34" r="6" fill="#f7a8a0" />
-      {/* 顔 */}
-      <circle cx="50" cy="58" r="33" fill="#f6d6b4" />
+
+      {/* からだ + 手 + お供のかばん */}
+      <g stroke={c.line} strokeWidth={sw} strokeLinejoin="round">
+        <ellipse cx="50" cy="86" rx="21" ry="12.5" fill={c.fill} />
+        <ellipse cx="30.5" cy="83" rx="6" ry="5" fill={c.fill} />
+        <ellipse cx="69.5" cy="83" rx="6" ry="5" fill={c.fill} />
+      </g>
+      <rect x="57" y="81" width="15" height="11" rx="3" fill="#8fb8f0" stroke="#5f8fd6" strokeWidth="1.6" />
+      <rect x="62" y="79" width="5" height="3" rx="1" fill="none" stroke="#5f8fd6" strokeWidth="1.4" />
+
+      {/* 耳(種類ごと) */}
+      {k === "bear" && (
+        <g stroke={c.line} strokeWidth={sw}>
+          <circle cx="26" cy="27" r="10" fill={c.fill} />
+          <circle cx="74" cy="27" r="10" fill={c.fill} />
+          <circle cx="26" cy="27" r="5" fill={c.inner} stroke="none" />
+          <circle cx="74" cy="27" r="5" fill={c.inner} stroke="none" />
+        </g>
+      )}
+      {k === "cat" && (
+        <g stroke={c.line} strokeWidth={sw} strokeLinejoin="round">
+          <path d="M22 35 Q20 14 28 13 Q35 15 40 25Z" fill={c.fill} />
+          <path d="M78 35 Q80 14 72 13 Q65 15 60 25Z" fill={c.fill} />
+          <path d="M26 30 Q25 20 29 19 Q33 21 35 26Z" fill={c.inner} stroke="none" />
+          <path d="M74 30 Q75 20 71 19 Q67 21 65 26Z" fill={c.inner} stroke="none" />
+        </g>
+      )}
+      {k === "rabbit" && (
+        <g stroke={c.line} strokeWidth={sw}>
+          <ellipse cx="38" cy="15" rx="7.5" ry="17" fill={c.fill} transform="rotate(-10 38 15)" />
+          <ellipse cx="62" cy="15" rx="7.5" ry="17" fill={c.fill} transform="rotate(10 62 15)" />
+          <ellipse cx="38" cy="16" rx="3.6" ry="11" fill={c.inner} stroke="none" transform="rotate(-10 38 16)" />
+          <ellipse cx="62" cy="16" rx="3.6" ry="11" fill={c.inner} stroke="none" transform="rotate(10 62 16)" />
+        </g>
+      )}
+
+      {/* あたま */}
+      <circle cx="50" cy="48" r="29" fill={c.fill} stroke={c.line} strokeWidth={sw} />
+      {k === "chick" && <path d="M47 20 Q49 11 53 14 Q52 17 56 15 Q55 21 51 20Z" fill={c.fill} stroke={c.line} strokeWidth="2" />}
+      {k === "cat" && (
+        <g fill="#f3b97f" opacity="0.8">
+          <path d="M44 21 Q50 19 56 21 L54 28 Q50 26 46 28Z" />
+        </g>
+      )}
+
       {/* ナースキャップ */}
-      <path d="M30 32 Q50 18 70 32 L66 40 Q50 32 34 40 Z" fill="#ffffff" stroke="#dadce0" strokeWidth="1.5" />
-      <rect x="47" y="25" width="6" height="12" rx="1" fill="#1a73e8" />
-      <rect x="44" y="28" width="12" height="6" rx="1" fill="#1a73e8" />
+      {k !== "rabbit" && k !== "chick" ? (
+        <g>
+          <path d="M37 24 Q50 15 63 24 L60.5 31 Q50 27 39.5 31Z" fill="#ffffff" stroke="#e2d4d8" strokeWidth="1.6" strokeLinejoin="round" />
+          <rect x="48.4" y="20.6" width="3.2" height="7.6" rx="1" fill="#ff7d96" />
+          <rect x="46.2" y="22.8" width="7.6" height="3.2" rx="1" fill="#ff7d96" />
+        </g>
+      ) : (
+        <g>
+          <path d="M40 24.5 Q50 18 60 24.5 L58 30 Q50 27 42 30Z" fill="#ffffff" stroke="#e2d4d8" strokeWidth="1.5" strokeLinejoin="round" />
+          <rect x="48.6" y="21.6" width="2.8" height="6.4" rx="0.8" fill="#ff7d96" />
+          <rect x="46.8" y="23.4" width="6.4" height="2.8" rx="0.8" fill="#ff7d96" />
+        </g>
+      )}
       {/* 王冠(上位ランク) */}
       {crown && (
-        <path d="M36 16 L42 24 L50 12 L58 24 L64 16 L62 28 L38 28 Z" fill="#fbbc04" stroke="#e8a000" strokeWidth="1" />
+        <path d="M37 13 L42 19 L50 8 L58 19 L63 13 L61 23 L39 23Z" fill="#ffcf3f" stroke="#e8a100" strokeWidth="1.4" strokeLinejoin="round" />
       )}
-      {/* 目 */}
-      {mood === "normal" && (
-        <g fill="#3c4043">
-          <circle cx="39" cy="57" r="3.6" />
-          <circle cx="61" cy="57" r="3.6" />
-          <circle cx="40.2" cy="55.8" r="1.1" fill="#fff" />
-          <circle cx="62.2" cy="55.8" r="1.1" fill="#fff" />
-        </g>
-      )}
-      {mood === "happy" && (
-        <g stroke="#3c4043" strokeWidth="3" fill="none" strokeLinecap="round">
-          <path d="M34 58 Q39 52 44 58" />
-          <path d="M56 58 Q61 52 66 58" />
-        </g>
-      )}
-      {mood === "super" && (
-        <g fill="#fbbc04" stroke="#e8a000" strokeWidth="0.8">
-          <path d="M39 50l2 4.3 4.7.6-3.4 3.2.9 4.6-4.2-2.3-4.2 2.3.9-4.6-3.4-3.2 4.7-.6z" />
-          <path d="M61 50l2 4.3 4.7.6-3.4 3.2.9 4.6-4.2-2.3-4.2 2.3.9-4.6-3.4-3.2 4.7-.6z" />
-        </g>
-      )}
-      {/* ほっぺ */}
-      <ellipse cx="31" cy="67" rx="6" ry="3.6" fill="#f7a8a0" opacity="0.8" />
-      <ellipse cx="69" cy="67" rx="6" ry="3.6" fill="#f7a8a0" opacity="0.8" />
-      {/* 鼻・口 */}
-      <ellipse cx="50" cy="64" rx="3" ry="2.2" fill="#8d5a3b" />
-      {mood === "normal" ? (
-        <path d="M45 69 Q50 73 55 69" stroke="#8d5a3b" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+
+      {/* 顔 */}
+      <ellipse cx="50" cy="61" rx="11" ry="8" fill={c.muzzle} opacity={k === "rabbit" ? 0 : 0.9} />
+      <Eyes mood={mood} />
+      <ellipse cx="29.5" cy="60" rx="6.2" ry="3.8" fill="#ff9aa8" opacity="0.65" />
+      <ellipse cx="70.5" cy="60" rx="6.2" ry="3.8" fill="#ff9aa8" opacity="0.65" />
+      {k === "chick" ? (
+        <path d="M45.5 57.5 L54.5 57.5 L50 63Z" fill="#ff9f43" stroke="#e7832a" strokeWidth="1.2" strokeLinejoin="round" />
       ) : (
-        <path d="M43 68 Q50 78 57 68 Z" fill="#c0504d" />
+        <ellipse cx="50" cy="57.6" rx="2.6" ry="1.9" fill={INK} />
+      )}
+      {k === "cat" && (
+        <g stroke={c.line} strokeWidth="1.3" strokeLinecap="round">
+          <path d="M23 56 L33 57.5" />
+          <path d="M23 61 L33 60" />
+          <path d="M77 56 L67 57.5" />
+          <path d="M77 61 L67 60" />
+        </g>
+      )}
+      {mood === "normal" ? (
+        <path d="M45.5 61 Q47.8 64 50 61 Q52.2 64 54.5 61" stroke={INK} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      ) : (
+        <path d="M45 61 Q50 69.5 55 61Z" fill="#e8677a" stroke={INK} strokeWidth="1.6" strokeLinejoin="round" />
       )}
     </svg>
   );
@@ -205,7 +335,7 @@ export function MascotWidget({ month, today }: { month: number; today: number })
       <button
         onClick={() => setMsg(healingMessage(month, today))}
         className="g-elev mascot-bob grid h-14 w-14 shrink-0 place-items-center rounded-full bg-white"
-        aria-label="まっぷんに話しかける"
+        aria-label="お供キャラに話しかける"
       >
         <Mascot mood={r.mood} crown={r.crown} size={48} />
       </button>
@@ -290,7 +420,7 @@ export function Companion({
       <button
         onClick={talk}
         className={`g-elev grid h-14 w-14 shrink-0 place-items-center rounded-full bg-white ${msg ? "mascot-hop" : "mascot-bob"}`}
-        aria-label="まっぷんに話しかける"
+        aria-label="お供キャラに話しかける"
         key={`btn-${msg?.key ?? 0}`}
       >
         <Mascot mood={msg ? "happy" : r.mood} crown={r.crown} size={48} />
@@ -304,6 +434,35 @@ export function Companion({
           {hasIdentity ? `今月${month}件` : "名前を選んでね"}
         </div>
       )}
+    </div>
+  );
+}
+
+// ---- お供キャラを選ぶ画面 ----
+export function MascotPicker({ onClose }: { onClose: () => void }) {
+  const current = useMascotKind();
+  return (
+    <div className="fixed inset-0 z-[1300] flex items-end justify-center bg-black/40 md:items-center" onClick={onClose}>
+      <div className="w-full rounded-t-3xl bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:max-w-md md:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-lg font-medium text-gray-900">お供キャラを選ぶ</h2>
+        <p className="mb-4 mt-1 text-xs text-gray-500">営業にいっしょについてきてくれるキャラクターです。自分のスマホだけで変わります。</p>
+        <div className="grid grid-cols-2 gap-3">
+          {(Object.keys(MASCOTS) as MascotKind[]).map((k) => (
+            <button
+              key={k}
+              onClick={() => setMascotKind(k)}
+              className={`flex flex-col items-center rounded-2xl border-2 p-3 ${current === k ? "border-brand bg-brand-softer" : "border-gray-200"}`}
+            >
+              <Mascot kind={k} mood={current === k ? "happy" : "normal"} size={84} />
+              <span className="mt-1 text-sm font-medium text-gray-900">{MASCOTS[k].name}</span>
+              <span className="text-[11px] text-gray-500">{MASCOTS[k].label}</span>
+            </button>
+          ))}
+        </div>
+        <button onClick={onClose} className="mt-4 w-full rounded-full bg-brand py-3 text-sm font-medium text-white">
+          この子にする
+        </button>
+      </div>
     </div>
   );
 }
