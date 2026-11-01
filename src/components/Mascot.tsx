@@ -3,13 +3,16 @@ import { useEffect, useId, useState } from "react";
 // 営業のお供キャラクター(オリジナル)。訪問看護と営業先マップにちなんだ4人。
 // 訪問件数に応じて表情・装飾が変わる
 export type Mood = "normal" | "happy" | "super";
-export type MascotKind = "pin" | "capsule" | "house" | "bandage";
+export type MascotKind = "pin" | "capsule" | "house" | "bandage" | "heart" | "car" | "thermo";
 
 export const MASCOTS: Record<MascotKind, { name: string; label: string; intro: string }> = {
   pin: { name: "ピンキー", label: "地図のピン", intro: "行き先を見つけるのが得意。迷ったら任せて!" },
   capsule: { name: "カプたん", label: "おくすりカプセル", intro: "元気のもとを届けるよ。疲れたら休憩してね" },
   house: { name: "おうちん", label: "おうち", intro: "訪問看護といえば、おうち。ただいまを待ってるよ" },
   bandage: { name: "ばんそ", label: "ばんそうこう", intro: "心のキズもそっと手当て。いつでも味方だよ" },
+  heart: { name: "ハートン", label: "ハートと聴診器", intro: "あなたの思いやりが、いちばんのお薬だよ" },
+  car: { name: "ブンちゃん", label: "営業カー", intro: "次の訪問先までひとっ走り!安全運転でね" },
+  thermo: { name: "ピピ", label: "体温計", intro: "がんばりすぎてない?ときどき休んでね" },
 };
 
 const MASCOT_KEY = "touma-mascot";
@@ -93,7 +96,7 @@ function Face({ cx, cy, mood, s = 1 }: { cx: number; cy: number; mood: Mood; s?:
 }
 
 // 頭の上の位置(王冠を乗せる場所)
-const TOP: Record<MascotKind, number> = { pin: 16, capsule: 13, house: 13, bandage: 38 };
+const TOP: Record<MascotKind, number> = { pin: 16, capsule: 13, house: 13, bandage: 38, heart: 18, car: 28, thermo: 11 };
 
 function Body({ k, id, mood }: { k: MascotKind; id: string; mood: Mood }) {
   if (k === "pin") {
@@ -165,6 +168,87 @@ function Body({ k, id, mood }: { k: MascotKind; id: string; mood: Mood }) {
         {/* ドア(ハート) */}
         <rect x="44" y="76" width="12" height="14" rx="6" fill="#ffd2a8" />
         <Face cx={50} cy={60} mood={mood} s={0.9} />
+      </g>
+    );
+  }
+  if (k === "heart") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id={`${id}g`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#ff8fa3" />
+            <stop offset="1" stopColor="#f0386b" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M50 90 C20 70 11 52 11 37 C11 23 23 14 35 14 C42 14 47 18 50 23 C53 18 58 14 65 14 C77 14 89 23 89 37 C89 52 80 70 50 90Z"
+          fill={`url(#${id}g)`}
+        />
+        <path d="M22 30 Q25 21 34 19" stroke="#fff" strokeWidth="3.6" strokeLinecap="round" opacity="0.5" fill="none" />
+        {/* 聴診器 */}
+        <g stroke="#8b97ab" strokeWidth="3" fill="none" strokeLinecap="round">
+          <path d="M17 44 Q20 70 44 73" />
+          <path d="M83 44 Q80 70 56 73" />
+        </g>
+        <circle cx="50" cy="74" r="6.5" fill="#d7dde6" stroke="#8b97ab" strokeWidth="2.4" />
+        <circle cx="50" cy="74" r="2.6" fill="#8b97ab" />
+        <Face cx={50} cy={46} mood={mood} s={0.95} />
+      </g>
+    );
+  }
+  if (k === "car") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id={`${id}g`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#7fb6ff" />
+            <stop offset="1" stopColor="#3b7cf0" />
+          </linearGradient>
+        </defs>
+        {/* 屋根の窓が顔 */}
+        <rect x="24" y="26" width="52" height="34" rx="15" fill={`url(#${id}g)`} />
+        <rect x="29" y="31" width="42" height="24" rx="10" fill="#eaf4ff" />
+        {/* ボディ */}
+        <rect x="11" y="50" width="78" height="30" rx="14" fill={`url(#${id}g)`} />
+        <path d="M18 57 Q22 53 30 53" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.5" fill="none" />
+        {/* ライト */}
+        <ellipse cx="18" cy="66" rx="4" ry="3.4" fill="#fff3a6" />
+        <ellipse cx="82" cy="66" rx="4" ry="3.4" fill="#fff3a6" />
+        {/* 訪問看護のマーク */}
+        <circle cx="50" cy="66" r="7" fill="#fff" />
+        <rect x="48.6" y="61.8" width="2.8" height="8.4" rx="0.9" fill="#ff4f6e" />
+        <rect x="45.8" y="64.6" width="8.4" height="2.8" rx="0.9" fill="#ff4f6e" />
+        {/* タイヤ */}
+        {[28, 72].map((x) => (
+          <g key={x}>
+            <circle cx={x} cy="82" r="8.5" fill="#3c4150" />
+            <circle cx={x} cy="82" r="3.4" fill="#c9cfda" />
+          </g>
+        ))}
+        <Face cx={50} cy={41} mood={mood} s={0.72} />
+      </g>
+    );
+  }
+  if (k === "thermo") {
+    return (
+      <g>
+        <defs>
+          <linearGradient id={`${id}g`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#ff8a7a" />
+            <stop offset="1" stopColor="#ff4757" />
+          </linearGradient>
+        </defs>
+        <g transform="rotate(10 50 50)">
+          <rect x="31" y="9" width="38" height="76" rx="19" fill="#ffffff" stroke="#dfe4ec" strokeWidth="2" />
+          <rect x="45.5" y="48" width="9" height="34" rx="4.5" fill={`url(#${id}g)`} />
+          <circle cx="50" cy="84" r="13" fill={`url(#${id}g)`} />
+          <path d="M44 80 Q45 76 48 75" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" opacity="0.6" fill="none" />
+          {[52, 59, 66, 73].map((y) => (
+            <path key={y} d={`M${y % 2 ? 60 : 61} ${y} L64 ${y}`} stroke="#c8cfdb" strokeWidth="1.6" strokeLinecap="round" />
+          ))}
+          <path d="M37 18 Q40 13 46 12" stroke="#e8edf5" strokeWidth="3" strokeLinecap="round" fill="none" />
+          <Face cx={50} cy={31} mood={mood} s={0.78} />
+        </g>
       </g>
     );
   }
@@ -295,7 +379,7 @@ export function MascotToast({ month, message, onClose }: { month: number; messag
     <div className="fixed inset-x-0 bottom-24 z-[1350] flex justify-center px-4 md:bottom-8" onClick={onClose}>
       <div className="g-elev mascot-pop flex max-w-sm items-center gap-3 rounded-3xl bg-white p-3 pr-4">
         <div className="shrink-0">
-          <Mascot mood={r.mood} crown={r.crown} size={60} />
+          <Mascot mood={r.mood} crown={r.crown} size={84} />
         </div>
         <div className="min-w-0">
           <div className="text-[11px] font-bold" style={{ color: r.color }}>
@@ -420,7 +504,9 @@ export function Companion({
   hasIdentity,
   say,
   onNeedIdentity,
+  size = 104,
 }: {
+  size?: number;
   month: number;
   today: number;
   hasIdentity: boolean;
@@ -450,24 +536,30 @@ export function Companion({
   };
 
   return (
-    <div className="pointer-events-auto flex items-end gap-1.5">
-      <button
-        onClick={talk}
-        className={`g-elev grid h-14 w-14 shrink-0 place-items-center rounded-full bg-white ${msg ? "mascot-hop" : "mascot-bob"}`}
-        aria-label="お供キャラに話しかける"
-        key={`btn-${msg?.key ?? 0}`}
-      >
-        <Mascot mood={msg ? "happy" : r.mood} crown={r.crown} size={48} />
-      </button>
-      {msg ? (
-        <div key={`msg-${msg.key}`} className="g-elev mascot-pop mb-1 max-w-[230px] rounded-2xl rounded-bl-sm bg-white px-3 py-2 text-xs leading-snug text-gray-800">
+    <div className="pointer-events-auto flex flex-col items-start">
+      {msg && (
+        <div
+          key={`msg-${msg.key}`}
+          className="g-elev mascot-pop relative mb-1 ml-2 max-w-[250px] rounded-2xl rounded-bl-sm bg-white px-3 py-2 text-[13px] leading-snug text-gray-800"
+        >
           {msg.text}
         </div>
-      ) : (
-        <div className="g-elev mb-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold" style={{ color: r.color }}>
-          {hasIdentity ? `今月${month}件` : "名前を選んでね"}
-        </div>
       )}
+      <div className="flex items-end gap-1">
+        <button
+          onClick={talk}
+          className={`mascot-shadow shrink-0 ${msg ? "mascot-hop" : "mascot-bob"}`}
+          aria-label="お供キャラに話しかける"
+          key={`btn-${msg?.key ?? 0}`}
+        >
+          <Mascot mood={msg ? "happy" : r.mood} crown={r.crown} size={size} />
+        </button>
+        {!msg && (
+          <div className="g-elev mb-3 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold" style={{ color: r.color }}>
+            {hasIdentity ? `今月${month}件` : "名前を選んでね"}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -477,17 +569,17 @@ export function MascotPicker({ onClose }: { onClose: () => void }) {
   const current = useMascotKind();
   return (
     <div className="fixed inset-0 z-[1300] flex items-end justify-center bg-black/40 md:items-center" onClick={onClose}>
-      <div className="w-full rounded-t-3xl bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:max-w-md md:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+      <div className="flex max-h-[92vh] w-full flex-col rounded-t-3xl bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:max-w-lg md:rounded-3xl" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-medium text-gray-900">お供キャラを選ぶ</h2>
         <p className="mb-4 mt-1 text-xs text-gray-500">営業にいっしょについてきてくれるキャラクターです。自分のスマホだけで変わります。</p>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="-mx-1 grid min-h-0 flex-1 grid-cols-2 gap-2.5 overflow-y-auto px-1 sm:grid-cols-3">
           {(Object.keys(MASCOTS) as MascotKind[]).map((k) => (
             <button
               key={k}
               onClick={() => setMascotKind(k)}
               className={`flex flex-col items-center rounded-2xl border-2 p-3 ${current === k ? "border-brand bg-brand-softer" : "border-gray-200"}`}
             >
-              <Mascot kind={k} mood={current === k ? "happy" : "normal"} size={84} />
+              <Mascot kind={k} mood={current === k ? "happy" : "normal"} size={76} />
               <span className="mt-1 text-sm font-medium text-gray-900">{MASCOTS[k].name}</span>
               <span className="text-[11px] text-gray-500">{MASCOTS[k].label}</span>
               <span className="mt-1 text-[11px] leading-snug text-gray-600">{MASCOTS[k].intro}</span>

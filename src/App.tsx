@@ -558,9 +558,9 @@ function MainScreen() {
           <>
             <div
               className="pointer-events-none fixed left-3 z-[1050] md:hidden"
-              style={{ bottom: sheetOpen ? "calc(62vh + 76px + env(safe-area-inset-bottom))" : "calc(76px + env(safe-area-inset-bottom))" }}
+              style={{ bottom: sheetOpen ? "calc(62vh + 68px + env(safe-area-inset-bottom))" : "calc(76px + env(safe-area-inset-bottom))" }}
             >
-              <Companion {...props} />
+              <Companion {...props} size={sheetOpen ? 72 : 104} />
             </div>
             <div className={`pointer-events-none fixed bottom-6 z-[1050] hidden md:block ${view === "stats" ? "left-6" : "left-[376px]"}`}>
               <Companion {...props} />

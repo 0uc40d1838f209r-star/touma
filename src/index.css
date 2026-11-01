@@ -115,3 +115,4 @@ button:active {
   100% { transform: translateY(0); }
 }
 .mascot-hop { animation: mascot-hop 0.7s ease-out 1; }
+.mascot-shadow { filter: drop-shadow(0 3px 6px rgba(60, 64, 67, 0.28)); }
