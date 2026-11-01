@@ -1,0 +1,72 @@
+import { useState } from "react";
+
+// 「こんなこともできます」ヒント。1日1回、地図の上に小さく出す
+const TIP_DAY_KEY = "touma-tip-day";
+const TIP_OFF_KEY = "touma-tip-off";
+
+export const TIPS: string[] = [
+  "施設の青い「経路」ボタンで、Googleマップのナビがすぐ開きます。",
+  "「ルートに追加」で回る先をためると、まとめてナビできます。",
+  "「🧍 自分の訪問先」で、自分が行った施設だけを新しい順に見られます。記録の修正にも便利です。",
+  "2人で営業に行ったら、訪問者を2人とも選べます。実績は両方に1件ずつ入ります。",
+  "居宅のピンの中の数字は、そこにいるケアマネの人数です。",
+  "金色の「★数字」が付いたピンは、うちに利用者を紹介してくれた施設です。",
+  "☰ →「戦略・アドバイス」で、不在が多い先への対策などが自動で出ます。",
+  "書きかけの記録は自動保存されます。電話が入ってアプリを閉じても大丈夫。",
+  "間違えて記録を消しても「🕘 削除・変更前の記録」から元に戻せます。",
+  "実績の「店舗比較」で、店舗ごとの営業量と成功率がグラフで見られます。",
+  "「施設別」分析で、訪問回数に対して新規・紹介が多い“当たりの営業先”が分かります。",
+  "記録の「対応してくれた方のお名前」にケアマネ名を残すと、次の訪問で話がつながります。",
+  "新しい拠点は ☰ →「拠点・スタッフ名簿」から追加できます。",
+];
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// 今日まだヒントを出していなければ true
+export function shouldShowTip(): boolean {
+  try {
+    if (localStorage.getItem(TIP_OFF_KEY) === "1") return false;
+    return localStorage.getItem(TIP_DAY_KEY) !== todayStr();
+  } catch {
+    return false;
+  }
+}
+
+export default function TipCard({ onClose, onOpenGuide }: { onClose: () => void; onOpenGuide: () => void }) {
+  const [idx, setIdx] = useState(() => Math.floor(Math.random() * TIPS.length));
+
+  const close = (off = false) => {
+    try {
+      localStorage.setItem(TIP_DAY_KEY, todayStr());
+      if (off) localStorage.setItem(TIP_OFF_KEY, "1");
+    } catch {
+      /* 何もしない */
+    }
+    onClose();
+  };
+
+  return (
+    <div className="g-elev pointer-events-auto rounded-2xl bg-white p-3.5">
+      <div className="mb-1 flex items-center justify-between">
+        <span className="text-xs font-bold text-brand">💡 こんなこともできます</span>
+        <button onClick={() => close()} className="grid h-7 w-7 place-items-center rounded-full text-gray-500 hover:bg-gray-100" aria-label="ヒントを閉じる">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
+        </button>
+      </div>
+      <p className="text-sm leading-relaxed text-gray-800">{TIPS[idx]}</p>
+      <div className="mt-2 flex items-center gap-3 text-xs">
+        <button onClick={() => setIdx((idx + 1) % TIPS.length)} className="font-medium text-brand">
+          次のヒント →
+        </button>
+        <button onClick={onOpenGuide} className="text-gray-500 underline">
+          使い方ガイド
+        </button>
+        <button onClick={() => close(true)} className="ml-auto text-gray-400">
+          今後表示しない
+        </button>
+      </div>
+    </div>
+  );
+}

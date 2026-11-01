@@ -17,6 +17,8 @@ import RoutePanel from "./components/RoutePanel";
 import ManualModal from "./components/ManualModal";
 import HistoryPanel from "./components/HistoryPanel";
 import SideMenu from "./components/SideMenu";
+import OnboardingGuide, { ONBOARD_KEY } from "./components/OnboardingGuide";
+import TipCard, { shouldShowTip } from "./components/TipCard";
 import { getIdentity, type Identity } from "./lib/identity";
 
 export default function App() {
@@ -70,6 +72,16 @@ function MainScreen() {
   const [showManual, setShowManual] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  // 初めての人には使い方ガイドを出す(担当者選択が先に出る場合はその後)
+  const onboarded = () => {
+    try {
+      return localStorage.getItem(ONBOARD_KEY) === "1";
+    } catch {
+      return true;
+    }
+  };
+  const [showGuide, setShowGuide] = useState(() => getIdentity() !== null && !onboarded());
+  const [showTip, setShowTip] = useState(() => onboarded() && shouldShowTip());
   const [focusStrategyKey, setFocusStrategyKey] = useState(0);
   const openStrategy = () => {
     setView("stats");
@@ -300,6 +312,18 @@ function MainScreen() {
                 </div>
               </div>
             )}
+            {/* こんなこともできます(1日1回) */}
+            {showTip && !picking && !selected && !showGuide && !showIdentity && view === "map" && (
+              <div className="pointer-events-none absolute inset-x-3 top-[124px] z-[1001] md:left-3 md:right-auto md:top-3 md:w-96">
+                <TipCard
+                  onClose={() => setShowTip(false)}
+                  onOpenGuide={() => {
+                    setShowTip(false);
+                    setShowGuide(true);
+                  }}
+                />
+              </div>
+            )}
             {picking && (
               <div className="absolute inset-x-0 top-0 z-[1000] flex items-center justify-between gap-2 bg-brand px-4 py-3 text-sm font-medium text-white">
                 地図をタップして位置を指定してください
@@ -391,6 +415,17 @@ function MainScreen() {
               { icon: "👥", label: "拠点・スタッフ名簿", onClick: () => setShowStaff(true) },
               { icon: "🕘", label: "削除・変更された記録", onClick: () => setShowHistory(true) },
             ],
+            [
+              { icon: "📘", label: "使い方ガイド", onClick: () => setShowGuide(true) },
+              {
+                icon: "💡",
+                label: "こんなこともできます(ヒント)",
+                onClick: () => {
+                  setView("map");
+                  setShowTip(true);
+                },
+              },
+            ],
             ...(isSupabaseMode
               ? [[{ icon: "⎋", label: "ログアウト", onClick: () => supabase?.auth.signOut(), danger: true }]]
               : []),
@@ -415,6 +450,7 @@ function MainScreen() {
         />
       )}
       {showManual && <ManualModal onClose={() => setShowManual(false)} />}
+      {showGuide && <OnboardingGuide onClose={() => setShowGuide(false)} />}
 
       {showRoute && (
         <RoutePanel
@@ -432,10 +468,14 @@ function MainScreen() {
 
       {showIdentity && (
         <IdentityPicker
-          onClose={() => setShowIdentity(false)}
+          onClose={() => {
+            setShowIdentity(false);
+            if (!onboarded()) setShowGuide(true);
+          }}
           onDone={(id) => {
             setIdentityState(id ?? getIdentity());
             setShowIdentity(false);
+            if (!onboarded()) setShowGuide(true);
           }}
         />
       )}
