@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Facility, Visit, VisitOutcome } from "../types";
+import type { Facility, Staff, Visit, VisitOutcome } from "../types";
 import { OUTCOMES, REACTIONS, splitStaff } from "../types";
 import { mergeStations, useStations } from "../lib/stations";
+import { store } from "../lib/store";
 import FacilityAnalysis from "./FacilityAnalysis";
 import StoreCharts from "./StoreCharts";
 import StrategyTab from "./StrategyTab";
@@ -23,6 +24,12 @@ export default function Dashboard({
   const [tab, setTab] = useState<"monthly" | "strategy" | "stores" | "analysis">("monthly");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [station, setStation] = useState(""); // "" = 全拠点
+  const [member, setMember] = useState(""); // "" = 全員
+  const [roster, setRoster] = useState<Staff[]>([]);
+
+  useEffect(() => {
+    store.listStaff().then(setRoster);
+  }, []);
 
   // トップの「戦略」ボタンから開かれたら戦略タブに切り替える
   useEffect(() => {
@@ -50,10 +57,27 @@ export default function Dashboard({
   );
 
   // 選んだ拠点だけに絞った訪問(全拠点なら全件)
-  const scopedVisits = useMemo(
+  const stationVisits = useMemo(
     () => (station ? visits.filter((v) => v.station_name === station) : visits),
     [visits, station],
   );
+
+  // メンバーの選択肢 = 名簿(選んだ拠点の人) + 記録に出てくる訪問者
+  const members = useMemo(
+    () =>
+      mergeStations(
+        roster.filter((r) => !station || r.station === station).map((r) => r.name),
+        stationVisits.flatMap((v) => splitStaff(v.staff_name)),
+      ),
+    [roster, station, stationVisits],
+  );
+
+  // さらにメンバーで絞った訪問(複数人で行った訪問はその人の分として含める)
+  const scopedVisits = useMemo(
+    () => (member ? stationVisits.filter((v) => splitStaff(v.staff_name).includes(member)) : stationVisits),
+    [stationVisits, member],
+  );
+  const scopeLabel = [station, member].filter(Boolean).join(" / ");
 
   const monthVisits = useMemo(
     () => scopedVisits.filter((v) => v.visited_on.startsWith(month)),
@@ -91,12 +115,13 @@ export default function Dashboard({
     for (const v of monthVisits) {
       const names = splitStaff(v.staff_name);
       for (const name of names.length > 0 ? names : ["(名前未入力)"]) {
+        if (member && name !== member) continue;
         const key = `${v.station_name || "(拠点未入力)"}|${name}`;
         m.set(key, (m.get(key) ?? 0) + 1);
       }
     }
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
-  }, [monthVisits]);
+  }, [monthVisits, member]);
 
   const newClients = monthVisits.filter((v) => v.outcome === "new_client");
 
@@ -155,23 +180,47 @@ export default function Dashboard({
           ))}
         </div>
 
-        {/* 拠点(店舗)の絞り込み — 実績・分析の両方に効く */}
+        {/* 拠点(店舗)・メンバーの絞り込み — 月次・戦略・施設別に効く(店舗比較は全店舗で比べる) */}
         {stations.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="shrink-0 text-xs font-medium text-gray-500">店舗</span>
-            <select
-              value={station}
-              onChange={(e) => setStation(e.target.value)}
-              className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm"
-            >
-              <option value="">全拠点</option>
-              {stations.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="min-w-0">
+              <span className="mb-1 block text-xs font-medium text-gray-500">🏢 店舗</span>
+              <select
+                value={station}
+                onChange={(e) => {
+                  setStation(e.target.value);
+                  setMember("");
+                }}
+                className="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm"
+              >
+                <option value="">全拠点</option>
+                {stations.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="min-w-0">
+              <span className="mb-1 block text-xs font-medium text-gray-500">🧍 メンバー</span>
+              <select
+                value={member}
+                onChange={(e) => setMember(e.target.value)}
+                disabled={tab === "stores"}
+                className="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-400"
+              >
+                <option value="">全員</option>
+                {members.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
+        )}
+        {tab === "stores" && member && (
+          <p className="-mt-2 text-xs text-gray-500">店舗比較は全メンバーの合計で表示しています。</p>
         )}
 
         {tab === "analysis" ? (
@@ -180,7 +229,7 @@ export default function Dashboard({
           <div className="space-y-4">
             <div className="flex items-center justify-center gap-4">
               <button onClick={() => shiftMonth(-1)} className="rounded-full bg-white px-3 py-1.5 text-sm shadow-sm" aria-label="前の月">◀</button>
-              <h2 className="text-lg font-bold">{y}年{Number(m)}月の戦略{station && <span className="text-sm font-normal text-brand"> / {station}</span>}</h2>
+              <h2 className="text-lg font-bold">{y}年{Number(m)}月の戦略{scopeLabel && <span className="text-sm font-normal text-brand"> / {scopeLabel}</span>}</h2>
               <button onClick={() => shiftMonth(1)} className="rounded-full bg-white px-3 py-1.5 text-sm shadow-sm" aria-label="次の月">▶</button>
             </div>
             <StrategyTab visits={monthVisits} onOpenManual={() => onOpenManual?.()} />
@@ -203,7 +252,7 @@ export default function Dashboard({
           </button>
           <h2 className="text-center text-lg font-bold">
             {y}年{Number(m)}月の営業実績
-            {station && <span className="block text-xs font-normal text-brand">{station}</span>}
+            {scopeLabel && <span className="block text-xs font-normal text-brand">{scopeLabel}</span>}
           </h2>
           <button onClick={() => shiftMonth(1)} className="rounded-full bg-white px-3 py-1.5 text-sm shadow-sm" aria-label="次の月">
             ▶

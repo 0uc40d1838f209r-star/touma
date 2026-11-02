@@ -152,12 +152,13 @@ export const ABSENT_ENCOURAGEMENTS = [
   "空振りも営業のうち。次回は時間帯を変えて再チャレンジ!お疲れさまでした。",
 ];
 
-export const FACILITY_TYPES: Record<FacilityType, { label: string; color: string }> = {
-  kyotaku: { label: "居宅介護支援", color: "#e05d44" },
-  takino: { label: "小多機・看多機", color: "#0d9488" },
-  hospital: { label: "病院", color: "#2f6fdb" },
-  clinic: { label: "クリニック", color: "#1f9d63" },
-  other: { label: "その他", color: "#8b6bd1" },
+// short: 絞り込みボタン用の短い名前 / hint: どんな営業先かのひとこと説明
+export const FACILITY_TYPES: Record<FacilityType, { label: string; short: string; icon: string; hint: string; color: string }> = {
+  kyotaku: { label: "居宅介護支援", short: "居宅", icon: "🏠", hint: "ケアマネの事業所", color: "#e05d44" },
+  takino: { label: "小多機・看多機", short: "小多機", icon: "🏢", hint: "小規模多機能・看護小規模", color: "#0d9488" },
+  hospital: { label: "病院", short: "病院", icon: "🏥", hint: "地域連携室・退院調整", color: "#2f6fdb" },
+  clinic: { label: "クリニック(訪問診療)", short: "訪問診療", icon: "🩺", hint: "診療所・在宅医", color: "#1f9d63" },
+  other: { label: "その他", short: "その他", icon: "📍", hint: "上記以外の営業先", color: "#8b6bd1" },
 };
 
 export const FACILITY_STATUSES: Record<FacilityStatus, { label: string; badge: string }> = {

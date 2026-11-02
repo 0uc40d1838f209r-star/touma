@@ -92,20 +92,34 @@ export default function FacilityForm({ initial, hidden, pickedPos, onStartPick, 
 
           <div>
             <span className="mb-1 block text-xs font-medium text-gray-500">種別</span>
-            <div className="grid grid-cols-2 gap-1.5">
-              {(Object.keys(FACILITY_TYPES) as FacilityType[]).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setType(t)}
-                  className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm ${
-                    type === t ? "border-brand bg-brand-softer font-medium" : "border-gray-300"
-                  }`}
-                >
-                  <span className="h-3 w-3 rounded-full" style={{ background: FACILITY_TYPES[t].color }} />
-                  {FACILITY_TYPES[t].label}
-                </button>
-              ))}
+            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+              {(Object.keys(FACILITY_TYPES) as FacilityType[]).map((t) => {
+                const active = type === t;
+                const color = FACILITY_TYPES[t].color;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setType(t)}
+                    className={`flex items-center gap-3 rounded-xl border-2 px-3 py-2 text-left ${active ? "" : "border-gray-200"}`}
+                    style={active ? { borderColor: color, background: color + "14" } : undefined}
+                  >
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-lg" style={{ background: color + "26" }}>
+                      {FACILITY_TYPES[t].icon}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-bold text-gray-900">{FACILITY_TYPES[t].label}</span>
+                      <span className="block text-[11px] text-gray-500">{FACILITY_TYPES[t].hint}</span>
+                    </span>
+                    <span
+                      className="grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 text-[11px] font-bold text-white"
+                      style={active ? { background: color, borderColor: color } : { borderColor: "#d1d5db" }}
+                    >
+                      {active ? "✓" : ""}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

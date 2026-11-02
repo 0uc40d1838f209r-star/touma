@@ -11,6 +11,7 @@ import FilterBar from "./components/FilterBar";
 import FacilityList from "./components/FacilityList";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
+import MemberRecords from "./components/MemberRecords";
 import StaffManager from "./components/StaffManager";
 import IdentityPicker from "./components/IdentityPicker";
 import RoutePanel from "./components/RoutePanel";
@@ -55,7 +56,7 @@ function MainScreen() {
   const [search, setSearch] = useState("");
   const [activeTypes, setActiveTypes] = useState<Set<FacilityType>>(new Set());
   const [activeStatuses, setActiveStatuses] = useState<Set<FacilityStatus>>(new Set());
-  const [view, setView] = useState<"map" | "list" | "stats">("map");
+  const [view, setView] = useState<"map" | "list" | "records" | "stats">("map");
   const [mineOnly, setMineOnly] = useState(false); // 自分の訪問先だけ表示
   const [detailTab, setDetailTab] = useState<"info" | "contacts" | "visits">("info");
   const [showStaff, setShowStaff] = useState(false);
@@ -319,6 +320,7 @@ function MainScreen() {
     onSearch: setSearch,
     activeTypes,
     onToggleType: (t: FacilityType) => setActiveTypes((s) => toggleIn(s, t)),
+    onClearTypes: () => setActiveTypes(new Set()),
     activeStatuses,
     onToggleStatus: (s: FacilityStatus) => setActiveStatuses((prev) => toggleIn(prev, s)),
     mineOnly,
@@ -333,18 +335,22 @@ function MainScreen() {
   const navItems = [
     { key: "map", label: "地図", path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" },
     { key: "list", label: "リスト", path: "M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" },
+    { key: "records", label: "記録", path: "M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" },
     { key: "stats", label: "実績", path: "M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z" },
   ] as const;
 
+  // 地図を使わない全画面ページ(実績・メンバー記録)
+  const fullPage = view === "stats" || view === "records";
+
   return (
     <div className="relative flex h-full flex-col bg-white">
-      {view === "stats" && (
-        // 実績: Google 風のアプリバー(← で地図に戻る)
+      {fullPage && (
+        // 実績・記録: Google 風のアプリバー(← で地図に戻る)
         <header className="flex h-14 shrink-0 items-center gap-1 border-b border-gray-200 bg-white px-1">
           <button onClick={() => setView("map")} aria-label="地図に戻る" className="grid h-11 w-11 place-items-center rounded-full text-gray-700 hover:bg-gray-100">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
           </button>
-          <h1 className="flex-1 text-lg font-medium text-gray-900">実績・分析</h1>
+          <h1 className="flex-1 text-lg font-medium text-gray-900">{view === "records" ? "メンバーの営業記録" : "実績・分析"}</h1>
           <button onClick={() => setShowMenu(true)} aria-label="メニュー" className="grid h-11 w-11 place-items-center rounded-full text-gray-700 hover:bg-gray-100">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" /></svg>
           </button>
@@ -357,7 +363,14 @@ function MainScreen() {
       )}
 
       <div className="relative min-h-0 flex-1">
-        {view === "stats" ? (
+        {view === "records" ? (
+          <MemberRecords
+            facilities={facilities}
+            visits={allVisits}
+            myStation={identity?.station}
+            onSelectFacility={(id) => selectFacility(id, "visits")}
+          />
+        ) : view === "stats" ? (
             <Dashboard
             facilities={facilities}
             visits={allVisits}
@@ -398,7 +411,7 @@ function MainScreen() {
             )}
             {/* こんなこともできます(常に表示。✕で今回だけ閉じる) */}
             {showTip && !picking && !selected && !showGuide && !showIdentity && view === "map" && (
-              <div className="pointer-events-none absolute inset-x-3 top-[124px] z-[1001] md:left-3 md:right-auto md:top-3 md:w-96">
+              <div className="pointer-events-none absolute inset-x-3 top-[178px] z-[1001] md:left-3 md:right-auto md:top-3 md:w-96">
                 <TipCard
                   onClose={() => setShowTip(false)}
                   onOpenGuide={() => {
@@ -428,7 +441,7 @@ function MainScreen() {
         )}
 
         {/* 追加ボタン(Google 風の FAB) */}
-        {!picking && !formOpen && view !== "stats" && (
+        {!picking && !formOpen && !fullPage && (
           <button
             onClick={openNewForm}
             className="g-elev absolute bottom-6 right-4 z-[1000] grid h-14 w-14 place-items-center rounded-2xl bg-brand text-white active:bg-brand-dark md:right-6"
@@ -440,7 +453,7 @@ function MainScreen() {
         )}
 
         {/* 詳細パネル: PC は右サイド / スマホはボトムシート */}
-        {selected && !formOpen && !picking && view !== "stats" && (
+        {selected && !formOpen && !picking && !fullPage && (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1000] h-[62vh] md:inset-y-0 md:left-auto md:right-0 md:h-full md:w-96">
             <FacilityDetail
               facility={selected}
@@ -487,6 +500,7 @@ function MainScreen() {
             [
               { icon: "🗺", label: "地図", onClick: () => setView("map") },
               { icon: "📋", label: "リスト", onClick: () => setView("list") },
+              { icon: "📝", label: "メンバーの営業記録", onClick: () => setView("records") },
               { icon: "📊", label: "実績・分析", onClick: () => setView("stats") },
             ],
             [
@@ -546,7 +560,7 @@ function MainScreen() {
       )}
       {/* 営業のお供: どの画面にもいる(施設カードを開いているときはその上に) */}
       {!picking && !formOpen && !showGuide && !showIdentity && !mascotToast && milestone === null && (() => {
-        const sheetOpen = !!selected && view !== "stats";
+        const sheetOpen = !!selected && !fullPage;
         const props = {
           month: myCounts.month,
           today: myCounts.today,
@@ -562,7 +576,7 @@ function MainScreen() {
             >
               <Companion {...props} size={sheetOpen ? 72 : 104} />
             </div>
-            <div className={`pointer-events-none fixed bottom-6 z-[1050] hidden md:block ${view === "stats" ? "left-6" : "left-[376px]"}`}>
+            <div className={`pointer-events-none fixed bottom-6 z-[1050] hidden md:block ${fullPage ? "left-6" : "left-[376px]"}`}>
               <Companion {...props} />
             </div>
           </>

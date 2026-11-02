@@ -7,6 +7,7 @@ interface Props {
   onSearch: (v: string) => void;
   activeTypes: Set<FacilityType>;
   onToggleType: (t: FacilityType) => void;
+  onClearTypes?: () => void;
   activeStatuses: Set<FacilityStatus>;
   onToggleStatus: (s: FacilityStatus) => void;
   mineOnly?: boolean;
@@ -19,15 +20,6 @@ interface Props {
   routeCount?: number;
   onRoute?: () => void;
 }
-
-// 種別ごとのアイコン
-const TYPE_ICON: Record<FacilityType, string> = {
-  kyotaku: "🏠",
-  takino: "🏢",
-  hospital: "🏥",
-  clinic: "💊",
-  other: "📍",
-};
 
 // Google マップのカテゴリーチップ風
 function Chip({
@@ -62,6 +54,7 @@ export default function FilterBar({
   onSearch,
   activeTypes,
   onToggleType,
+  onClearTypes,
   activeStatuses,
   onToggleStatus,
   mineOnly,
@@ -110,8 +103,44 @@ export default function FilterBar({
         </div>
       </div>
 
+      {/* 種別の切替: 横スクロールさせず全部見えるように並べる。色は地図のピンと同じ */}
+      <div className="px-3 pt-2">
+        <div className={`grid grid-cols-5 gap-1 rounded-2xl bg-white p-1 ${floating ? "g-elev-sm" : "border border-gray-200"}`}>
+          {(Object.keys(FACILITY_TYPES) as FacilityType[]).map((t) => {
+            const active = activeTypes.has(t);
+            const dimmed = activeTypes.size > 0 && !active;
+            const color = FACILITY_TYPES[t].color;
+            return (
+              <button
+                key={t}
+                onClick={() => onToggleType(t)}
+                title={`${FACILITY_TYPES[t].label}(${FACILITY_TYPES[t].hint})`}
+                aria-pressed={active}
+                className={`flex min-w-0 flex-col items-center gap-0.5 rounded-xl px-0.5 py-1 text-[12px] font-bold leading-tight ${
+                  active ? "text-white" : dimmed ? "text-gray-400" : "text-gray-700 hover:bg-gray-50"
+                }`}
+                style={active ? { background: color } : undefined}
+              >
+                <span
+                  className={`grid h-6 w-6 place-items-center rounded-full text-sm ${dimmed ? "opacity-50" : ""}`}
+                  style={{ background: active ? "rgba(255,255,255,.3)" : color + "26", boxShadow: active ? undefined : `inset 0 0 0 2px ${color}` }}
+                >
+                  {FACILITY_TYPES[t].icon}
+                </span>
+                <span className="max-w-full truncate">{FACILITY_TYPES[t].short}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* チップ列(横スクロール) */}
-      <div className="no-scrollbar flex gap-2 overflow-x-auto px-3 pb-1 pt-2.5 [-webkit-overflow-scrolling:touch]">
+      <div className="no-scrollbar flex gap-2 overflow-x-auto px-3 pb-1 pt-2 [-webkit-overflow-scrolling:touch]">
+        {activeTypes.size > 0 && onClearTypes && (
+          <Chip active onClick={onClearTypes} floating={floating}>
+            ✕ {[...activeTypes].map((t) => FACILITY_TYPES[t].short).join("・")}だけ表示中
+          </Chip>
+        )}
         {onRoute && (
           <Chip active={routeCount > 0} onClick={onRoute} floating={floating}>
             🚗 ルート{routeCount > 0 ? ` ${routeCount}` : ""}
@@ -122,12 +151,6 @@ export default function FilterBar({
             🧍 {mineOnly ? "自分の訪問先(表示中)" : "自分の訪問先"}
           </Chip>
         )}
-        {(Object.keys(FACILITY_TYPES) as FacilityType[]).map((t) => (
-          <Chip key={t} active={activeTypes.has(t)} onClick={() => onToggleType(t)} floating={floating}>
-            <span>{TYPE_ICON[t]}</span>
-            {FACILITY_TYPES[t].label}
-          </Chip>
-        ))}
         {(Object.keys(FACILITY_STATUSES) as FacilityStatus[]).map((s) => (
           <Chip key={s} active={activeStatuses.has(s)} onClick={() => onToggleStatus(s)} floating={floating}>
             {FACILITY_STATUSES[s].label}

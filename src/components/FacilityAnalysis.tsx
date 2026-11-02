@@ -112,8 +112,9 @@ export default function FacilityAnalysis({
               }`}
               style={active ? { background: FACILITY_TYPES[t].color } : undefined}
             >
-              <span className="h-2 w-2 rounded-full" style={{ background: active ? "white" : FACILITY_TYPES[t].color }} />
+              <span>{FACILITY_TYPES[t].icon}</span>
               {FACILITY_TYPES[t].label}
+              {active && <span>✓</span>}
             </button>
           );
         })}
